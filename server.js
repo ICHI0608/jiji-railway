@@ -1,93 +1,60 @@
-const express = require("express");
-const axios = require("axios");
-const app = express();
 require("dotenv").config();
+const axios = require("axios");
 
-app.use(express.json());
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
-// LINE Webhook 受信用エンドポイント
-app.post("/webhook", async (req, res) => {
-  const events = req.body.events;
+const headers = {
+  "Authorization": `Bearer ${OPENAI_API_KEY}`,
+  "Content-Type": "application/json",
+  "OpenAI-Beta": "assistants=v1"
+};
 
-  if (!events || events.length === 0) {
-    return res.status(200).send("No events");
-  }
+let assistantId = "";
+let threadId = "";
 
-  for (const event of events) {
-    if (event.type === "message" && event.message.type === "text") {
-      const userMessage = event.message.text;
-      const replyToken = event.replyToken;
+async function setupAssistant() {
+  const res = await axios.post("https://api.openai.com/v1/assistants", {
+    name: "Kiki",
+    instructions: "あなたはフレンドリーで丁寧なダイビングアシスタントKikiです。潜る場所や不安などをやさしく聞き出しながら、おすすめを提案してください。",
+    model: "gpt-4o"
+  }, { headers });
 
-      // OpenAIに送信して応答を取得
-      const gptReply = await getOpenAIReply(userMessage);
-
-      // LINEに返信を送る
-      await replyToUser(replyToken, gptReply);
-    }
-  }
-
-  res.status(200).send("OK");
-});
-
-// OpenAIへのリクエスト処理
-async function getOpenAIReply(userInput) {
-  try {
-    const res = await axios.post(
-      "https://api.openai.com/v1/chat/completions",
-      {
-        model: "gpt-3.5-turbo",
-        messages: [
-          {
-            role: "system",
-            content: "あなたは優しくてフレンドリーなダイビングアシスタントKikiです。",
-          },
-          {
-            role: "user",
-            content: userInput,
-          },
-        ],
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-    return res.data.choices[0].message.content.trim();
-  } catch (error) {
-    console.error("OpenAI error:", error);
-    return "ごめんなさい、ちょっと調子が悪いみたい…もう一度試してくれる？";
-  }
+  assistantId = res.data.id;
+  console.log("Assistant ID:", assistantId);
 }
 
-// LINEへの返信処理
-async function replyToUser(replyToken, message) {
-  try {
-    await axios.post(
-      "https://api.line.me/v2/bot/message/reply",
-      {
-        replyToken: replyToken,
-        messages: [
-          {
-            type: "text",
-            text: message,
-          },
-        ],
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.LINE_ACCESS_TOKEN}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-  } catch (error) {
-    console.error("LINE Reply Error:", error);
-  }
+async function startThread() {
+  const res = await axios.post("https://api.openai.com/v1/threads", {}, { headers });
+  threadId = res.data.id;
+  console.log("Thread ID:", threadId);
 }
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log("Kiki Bot is running on port", PORT);
-});
+async function sendMessage(userMessage) {
+  await axios.post(`https://api.openai.com/v1/threads/${threadId}/messages`, {
+    role: "user",
+    content: userMessage
+  }, { headers });
+
+  const run = await axios.post(`https://api.openai.com/v1/threads/${threadId}/runs`, {
+    assistant_id: assistantId
+  }, { headers });
+
+  let runStatus = null;
+  do {
+    const statusRes = await axios.get(`https://api.openai.com/v1/threads/${threadId}/runs/${run.data.id}`, { headers });
+    runStatus = statusRes.data.status;
+    await new Promise(r => setTimeout(r, 1500));
+  } while (runStatus !== "completed");
+
+  const msgs = await axios.get(`https://api.openai.com/v1/threads/${threadId}/messages`, { headers });
+  const last = msgs.data.data.find(m => m.role === "assistant");
+  console.log("Kiki:", last.content[0].text.value);
+}
+
+// ----------------------------
+// 実行（テスト）
+(async () => {
+  await setupAssistant();
+  await startThread();
+  await sendMessage("こんにちは、沖縄で潜りたいんだけどおすすめある？");
+})();
