@@ -13,15 +13,22 @@ let assistantId = "";
 let threadId = "";
 
 async function setupAssistant() {
-  const res = await axios.post("https://api.openai.com/v1/assistants", {
-    name: "Kiki",
-    instructions: "あなたはフレンドリーで丁寧なダイビングアシスタントKikiです。潜る場所や不安などをやさしく聞き出しながら、おすすめを提案してください。",
-    model: "gpt-4o"
-  }, { headers });
+  const assistantRes = await axios.post(
+  "https://api.openai.com/v1/assistants",
+  {
+    model: "gpt-4",  // "gpt-4o" も可
+    instructions: "あなたは親切なダイビングコンシェルジュです。"
+  },
+  {
+    headers: {
+      Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+      "Content-Type": "application/json"
+    }
+  }
+);
 
-  assistantId = res.data.id;
-  console.log("Assistant ID:", assistantId);
-}
+const assistantId = assistantRes.data.id;
+console.log("✅ Assistant ID:", assistantId);
 
 async function startThread() {
   const res = await axios.post("https://api.openai.com/v1/threads", {}, { headers });
