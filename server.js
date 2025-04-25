@@ -6,7 +6,7 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const headers = {
   "Authorization": `Bearer ${OPENAI_API_KEY}`,
   "Content-Type": "application/json",
-  "OpenAI-Beta": "assistants=v1"
+  "OpenAI-Beta": "assistants=v2"
 };
 
 let assistantId = "";
@@ -54,7 +54,11 @@ async function sendMessage(userMessage) {
 // ----------------------------
 // 実行（テスト）
 (async () => {
-  await setupAssistant();
-  await startThread();
-  await sendMessage("こんにちは、沖縄で潜りたいんだけどおすすめある？");
+  try {
+    await setupAssistant();
+    await startThread();
+    await sendMessage("こんにちは、沖縄で潜りたいんだけどおすすめある？");
+  } catch (error) {
+    console.error("致命的なエラー:", error.response?.data || error.message);
+  }
 })();
