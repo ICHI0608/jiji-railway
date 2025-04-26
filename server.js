@@ -4,7 +4,7 @@ const axios = require("axios");
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
 const headers = {
-  "Authorization": `Bearer ${OPENAI_API_KEY}`,
+  Authorization: `Bearer ${OPENAI_API_KEY}`,
   "Content-Type": "application/json",
   "OpenAI-Beta": "assistants=v2"
 };
@@ -16,57 +16,56 @@ async function setupAssistant() {
   const assistantRes = await axios.post(
     "https://api.openai.com/v1/assistants",
     {
-      model: "gpt-4",  // "gpt-4o" も可
+      model: "gpt-4o", // 使用可能モデル
       instructions: "あなたは親切なダイビングコンシェルジュです。"
     },
-    { headers } // ← ここが重要！
+    { headers } // ← ここが重要！（このコメントはあってもなくてもOK）
   );
 
-  assistantId = assistantRes.data.id;
-  console.log("Assistant ID:", assistantId);
-}
-
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-        "Content-Type": "application/json"
-      }
-    }
-  );
-
-  assistantId = assistantRes.data.id;  // ← constを使わずグローバル変数に代入
-  console.log("Assistant ID:", assistantId);
+  assistantId = assistantRes.data.id; // ← 修正済み
+  console.log("✅ Assistant ID:", assistantId);
 }
 
 async function startThread() {
   const res = await axios.post("https://api.openai.com/v1/threads", {}, { headers });
   threadId = res.data.id;
-  console.log("Thread ID:", threadId);
+  console.log("🧵 Thread ID:", threadId);
 }
 
 async function sendMessage(userMessage) {
-  await axios.post(`https://api.openai.com/v1/threads/${threadId}/messages`, {
-    role: "user",
-    content: userMessage
-  }, { headers });
+  await axios.post(
+    `https://api.openai.com/v1/threads/${threadId}/messages`,
+    {
+      role: "user",
+      content: userMessage
+    },
+    { headers }
+  );
 
-  const run = await axios.post(`https://api.openai.com/v1/threads/${threadId}/runs`, {
-    assistant_id: assistantId
-  }, { headers });
+  const run = await axios.post(
+    `https://api.openai.com/v1/threads/${threadId}/runs`,
+    {
+      assistant_id: assistantId
+    },
+    { headers }
+  );
 
   let runStatus = null;
   do {
-    const statusRes = await axios.get(`https://api.openai.com/v1/threads/${threadId}/runs/${run.data.id}`, { headers });
+    const statusRes = await axios.get(
+      `https://api.openai.com/v1/threads/${threadId}/runs/${run.data.id}`,
+      { headers }
+    );
     runStatus = statusRes.data.status;
-    await new Promise(r => setTimeout(r, 1500));
+    await new Promise((r) => setTimeout(r, 1500));
   } while (runStatus !== "completed");
 
-  const msgs = await axios.get(`https://api.openai.com/v1/threads/${threadId}/messages`, { headers });
-  const last = msgs.data.data.find(m => m.role === "assistant");
-
-  if (last) {
-    console.log("Kiki:", last.content[0].text.value);
-  } else {
-    console.log("Kikiからの返答が取得できませんでした。");
-  }
+  const msgs = await axios.get(
+    `https://api.openai.com/v1/threads/${threadId}/messages`,
+    { headers }
+  );
+  const last = msgs.data.data.find((m) => m.role === "assistant");
+  console.log("🧞‍♀️ Kiki:", last.content[0].text.value);
 }
 
 // ----------------------------
