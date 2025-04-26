@@ -14,21 +14,27 @@ let threadId = "";
 
 async function setupAssistant() {
   const assistantRes = await axios.post(
-  "https://api.openai.com/v1/assistants",
-  {
-    model: "gpt-4",  // "gpt-4o" も可
-    instructions: "あなたは親切なダイビングコンシェルジュです。"
-  },
-  {
-    headers: {
-      Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-      "Content-Type": "application/json"
-    }
-  }
-);
+    "https://api.openai.com/v1/assistants",
+    {
+      model: "gpt-4",  // "gpt-4o" も可
+      instructions: "あなたは親切なダイビングコンシェルジュです。"
+    },
+    { headers } // ← ここが重要！
+  );
 
-const assistantId = assistantRes.data.id;
-console.log("✅ Assistant ID:", assistantId);
+  assistantId = assistantRes.data.id;
+  console.log("Assistant ID:", assistantId);
+}
+
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        "Content-Type": "application/json"
+      }
+    }
+  );
+
+  assistantId = assistantRes.data.id;  // ← constを使わずグローバル変数に代入
+  console.log("Assistant ID:", assistantId);
+}
 
 async function startThread() {
   const res = await axios.post("https://api.openai.com/v1/threads", {}, { headers });
@@ -55,7 +61,12 @@ async function sendMessage(userMessage) {
 
   const msgs = await axios.get(`https://api.openai.com/v1/threads/${threadId}/messages`, { headers });
   const last = msgs.data.data.find(m => m.role === "assistant");
-  console.log("Kiki:", last.content[0].text.value);
+
+  if (last) {
+    console.log("Kiki:", last.content[0].text.value);
+  } else {
+    console.log("Kikiからの返答が取得できませんでした。");
+  }
 }
 
 // ----------------------------
