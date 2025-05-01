@@ -1,0 +1,41 @@
+[
+  {
+    "id": "okinawa-blue-cave",
+    "name": "青の洞窟",
+    "location": "沖縄県恩納村",
+    "coordinates": {"lat": 26.4481, "lng": 127.7809},
+    "difficulty": "初心者向け",
+    "description": "沖縄で最も人気のあるダイビングスポットの一つ。洞窟内に差し込む太陽光が海水を美しいコバルトブルーに染める。水深は比較的浅く、初心者でも楽しめる。",
+    "bestSeasons": ["5月", "6月", "7月", "8月", "9月"],
+    "waterTemperature": {"min": 21, "max": 29, "unit": "celsius"},
+    "visibility": {"min": 10, "max": 30, "unit": "meters"},
+    "marineLife": ["クマノミ", "チョウチョウウオ", "スズメダイ", "ウミガメ"],
+    "tips": ["夏場は混雑するので早朝がおすすめ", "水中カメラがあると良い"]
+  },
+  {
+    "id": "izu-osezaki",
+    "name": "大瀬崎",
+    "location": "静岡県西伊豆町",
+    "coordinates": {"lat": 34.8024, "lng": 138.7768},
+    "difficulty": "初心者〜中級者向け",
+    "description": "富士山を望む絶景ポイント。入りやすいビーチエントリーと豊富な生物で初心者に人気。溶岩でできた地形も特徴的。",
+    "bestSeasons": ["4月", "5月", "6月", "9月", "10月"],
+    "waterTemperature": {"min": 14, "max": 26, "unit": "celsius"},
+    "visibility": {"min": 5, "max": 20, "unit": "meters"},
+    "marineLife": ["イセエビ", "アオリイカ", "ニジギンポ", "カエルアンコウ"],
+    "tips": ["冬場は水温が下がるので5mmウェットスーツ推奨", "潮の状態を確認することが重要"]
+  },
+  {
+    "id": "ishigaki-manta",
+    "name": "マンタスクランブル",
+    "location": "沖縄県石垣島",
+    "coordinates": {"lat": 24.3350, "lng": 124.1570},
+    "difficulty": "中級者向け",
+    "description": "マンタの遭遇率が高いことで有名なポイント。マンタのクリーニングステーションとなっている。潮流がやや強いため、中級者以上向け。",
+    "bestSeasons": ["7月", "8月", "9月", "10月"],
+    "waterTemperature": {"min": 23, "max": 30, "unit": "celsius"},
+    "visibility": {"min": 15, "max": 40, "unit": "meters"},
+    "marineLife": ["マンタ", "ナポレオンフィッシュ", "カスミアジ", "ロウニンアジ"],
+    "tips": ["マンタを驚かせないよう、上から覆いかぶさらない", "潮流が変わりやすいので経験豊富なガイド推奨"]
+  }
+]
