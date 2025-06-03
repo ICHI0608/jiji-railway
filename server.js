@@ -328,3 +328,249 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 サーバー起動: ポート ${PORT}`);
 });
+// ========== 管理API（データ更新用） ==========
+const fs = require('fs');
+
+// 認証ミドルウェア
+function authenticateAdmin(req, res, next) {
+  const { password } = req.body;
+  
+  if (password !== process.env.ADMIN_PASSWORD) {
+    return res.status(401).json({ 
+      success: false, 
+      error: '認証エラー: 無効なパスワードです' 
+    });
+  }
+  
+  next();
+}
+
+// ダイビングスポット情報の更新
+app.post('/admin/update-spots', authenticateAdmin, (req, res) => {
+  try {
+    const { data } = req.body;
+    
+    if (!Array.isArray(data)) {
+      return res.status(400).json({
+        success: false,
+        error: 'データは配列形式である必要があります'
+      });
+    }
+    
+    // JSONファイルに書き込み
+    const filePath = path.join(__dirname, 'data', 'diving-spots.json');
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
+    
+    // データマネージャーを再読み込み
+    dataManager.loadAllData();
+    
+    res.json({ 
+      success: true, 
+      message: `${data.length}件のダイビングスポット情報を更新しました`,
+      timestamp: new Date().toISOString()
+    });
+    
+    console.log(`✅ ダイビングスポット情報が更新されました (${data.length}件)`);
+  } catch (error) {
+    console.error('❌ スポット情報更新エラー:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'データ更新中にエラーが発生しました: ' + error.message 
+    });
+  }
+});
+
+// FAQ情報の更新
+app.post('/admin/update-faq', authenticateAdmin, (req, res) => {
+  try {
+    const { data } = req.body;
+    
+    if (!Array.isArray(data)) {
+      return res.status(400).json({
+        success: false,
+        error: 'データは配列形式である必要があります'
+      });
+    }
+    
+    // JSONファイルに書き込み
+    const filePath = path.join(__dirname, 'data', 'faq.json');
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
+    
+    // データマネージャーを再読み込み
+    dataManager.loadAllData();
+    
+    res.json({ 
+      success: true, 
+      message: `${data.length}件のFAQ情報を更新しました`,
+      timestamp: new Date().toISOString()
+    });
+    
+    console.log(`✅ FAQ情報が更新されました (${data.length}件)`);
+  } catch (error) {
+    console.error('❌ FAQ更新エラー:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'データ更新中にエラーが発生しました: ' + error.message 
+    });
+  }
+});
+
+// 単一スポットの追加
+app.post('/admin/add-spot', authenticateAdmin, (req, res) => {
+  try {
+    const { spotData } = req.body;
+    
+    if (!spotData || !spotData.id || !spotData.name) {
+      return res.status(400).json({
+        success: false,
+        error: 'スポットデータにはid, nameが必須です'
+      });
+    }
+    
+    // 既存データを読み込み
+    const filePath = path.join(__dirname, 'data', 'diving-spots.json');
+    let existingData = [];
+    
+    if (fs.existsSync(filePath)) {
+      const fileContent = fs.readFileSync(filePath, 'utf8');
+      existingData = JSON.parse(fileContent);
+    }
+    
+    // 同じIDが存在するかチェック
+    const existingIndex = existingData.findIndex(spot => spot.id === spotData.id);
+    
+    if (existingIndex >= 0) {
+      // 既存データを更新
+      existingData[existingIndex] = spotData;
+    } else {
+      // 新規追加
+      existingData.push(spotData);
+    }
+    
+    // ファイルに保存
+    fs.writeFileSync(filePath, JSON.stringify(existingData, null, 2), 'utf8');
+    
+    // データマネージャーを再読み込み
+    dataManager.loadAllData();
+    
+    res.json({ 
+      success: true, 
+      message: `スポット「${spotData.name}」を${existingIndex >= 0 ? '更新' : '追加'}しました`,
+      action: existingIndex >= 0 ? 'updated' : 'added',
+      spotId: spotData.id
+    });
+    
+    console.log(`✅ スポット${existingIndex >= 0 ? '更新' : '追加'}: ${spotData.name}`);
+  } catch (error) {
+    console.error('❌ スポット追加エラー:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'スポット追加中にエラーが発生しました: ' + error.message 
+    });
+  }
+});
+
+// 現在のデータ確認
+app.get('/admin/data/:type', (req, res) => {
+  try {
+    const { type } = req.params;
+    const { password } = req.query;
+    
+    if (password !== process.env.ADMIN_PASSWORD) {
+      return res.status(401).json({ 
+        success: false, 
+        error: '認証エラー: 無効なパスワードです' 
+      });
+    }
+    
+    let data;
+    switch (type) {
+      case 'spots':
+        data = dataManager.getAllDivingSpots();
+        break;
+      case 'faq':
+        data = dataManager.getAllFAQ();
+        break;
+      default:
+        return res.status(400).json({
+          success: false,
+          error: '無効なデータタイプです。spots または faq を指定してください'
+        });
+    }
+    
+    res.json({
+      success: true,
+      type: type,
+      count: data.length,
+      data: data,
+      timestamp: new Date().toISOString()
+    });
+    
+  } catch (error) {
+    console.error('❌ データ取得エラー:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'データ取得中にエラーが発生しました: ' + error.message 
+    });
+  }
+});
+
+// データ削除
+app.delete('/admin/data/:type/:id', authenticateAdmin, (req, res) => {
+  try {
+    const { type, id } = req.params;
+    
+    let filePath, data;
+    
+    switch (type) {
+      case 'spots':
+        filePath = path.join(__dirname, 'data', 'diving-spots.json');
+        break;
+      case 'faq':
+        filePath = path.join(__dirname, 'data', 'faq.json');
+        break;
+      default:
+        return res.status(400).json({
+          success: false,
+          error: '無効なデータタイプです'
+        });
+    }
+    
+    // 既存データを読み込み
+    const fileContent = fs.readFileSync(filePath, 'utf8');
+    data = JSON.parse(fileContent);
+    
+    // 指定IDのデータを削除
+    const initialLength = data.length;
+    data = data.filter(item => item.id !== id);
+    
+    if (data.length === initialLength) {
+      return res.status(404).json({
+        success: false,
+        error: `ID: ${id} のデータが見つかりません`
+      });
+    }
+    
+    // ファイルに保存
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
+    
+    // データマネージャーを再読み込み
+    dataManager.loadAllData();
+    
+    res.json({
+      success: true,
+      message: `ID: ${id} のデータを削除しました`,
+      deletedId: id,
+      remainingCount: data.length
+    });
+    
+    console.log(`✅ データ削除完了: ${type}/${id}`);
+    
+  } catch (error) {
+    console.error('❌ データ削除エラー:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'データ削除中にエラーが発生しました: ' + error.message 
+    });
+  }
+});
