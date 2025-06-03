@@ -324,11 +324,6 @@ app.get('/api/faq', (req, res) => {
   res.json(faqs);
 });
 
-// サーバー起動
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`🚀 サーバー起動: ポート ${PORT}`);
-});
 // ========== 管理API（データ更新用） ==========
 
 // 認証ミドルウェア
@@ -573,4 +568,10 @@ app.delete('/admin/data/:type/:id', authenticateAdmin, (req, res) => {
       error: 'データ削除中にエラーが発生しました: ' + error.message 
     });
   }
+});
+
+// サーバー起動
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`🚀 サーバー起動: ポート ${PORT}`);
 });
