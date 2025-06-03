@@ -2,6 +2,7 @@
 require('dotenv').config();
 const express = require('express');
 const axios = require('axios');
+const fs = require('fs');
 const ConversationManager = require('./conversation');
 const path = require('path');
 
@@ -329,7 +330,6 @@ app.listen(PORT, () => {
   console.log(`🚀 サーバー起動: ポート ${PORT}`);
 });
 // ========== 管理API（データ更新用） ==========
-const fs = require('fs');
 
 // 認証ミドルウェア
 function authenticateAdmin(req, res, next) {
