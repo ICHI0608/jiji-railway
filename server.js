@@ -544,11 +544,11 @@ app.listen(PORT, () => {
       timestamp: new Date().toISOString()
     });
     
-  } catch (error) {
-    logger.error('スポット情報更新エラー', error);
+   } catch (error) {
+    logger.error('スポット追加エラー', error);
     res.status(500).json({ 
       success: false, 
-      error: 'データ更新中にエラーが発生しました: ' + error.message 
+      error: 'スポット追加中にエラーが発生しました: ' + error.message 
     });
   }
 });
@@ -733,4 +733,33 @@ app.delete('/admin/data/:type/:id', authenticateAdmin, (req, res) => {
     // ファイルに保存
     fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
     
-    // データマネージャー
+    // データマネージャーを再読み込み
+    dataManager.loadAllData();
+    
+    logger.info('データ削除完了', { type, id, remainingCount: data.length });
+    
+    res.json({
+      success: true,
+      message: `ID: ${id} のデータを削除しました`,
+      deletedId: id,
+      remainingCount: data.length
+    });
+    
+  } catch (error) {
+    logger.error('データ削除エラー', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'データ削除中にエラーが発生しました: ' + error.message 
+    });
+  }
+});
+
+// サーバー起動
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  logger.info('サーバー起動完了', { port: PORT });
+  console.log(`🚀 サーバー起動: ポート ${PORT}`);
+  console.log(`✅ エラーハンドリング機能: 有効`);
+  console.log(`✅ ロギング機能: 有効`);
+  console.log(`✅ 使用量追跡機能: 有効`);
+});
