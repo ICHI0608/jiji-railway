@@ -1,4 +1,4 @@
-// server.js - メインサーバーコード（エラーハンドリング強化版）
+// server.js - メインサーバーコード（エラーハンドリング強化版 - 完全版）
 require('dotenv').config();
 const express = require('express');
 const axios = require('axios');
@@ -19,7 +19,7 @@ const {
 const app = express();
 app.use(express.json());
 
-// 環境変数
+// 環境変数（.envファイルから自動読み込み）
 const LINE_CHANNEL_ACCESS_TOKEN = process.env.LINE_ACCESS_TOKEN;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
@@ -507,35 +507,6 @@ app.post('/admin/update-spots', authenticateAdmin, (req, res) => {
     // データマネージャーを再読み込み
     dataManager.loadAllData();
     
-    logger.info('データ削除完了', { type, id, remainingCount: data.length });
-    
-    res.json({
-      success: true,
-      message: `ID: ${id} のデータを削除しました`,
-      deletedId: id,
-      remainingCount: data.length
-    });
-    
-  } catch (error) {
-    logger.error('データ削除エラー', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'データ削除中にエラーが発生しました: ' + error.message 
-    });
-  }
-});
-
-// サーバー起動
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  logger.info('サーバー起動完了', { port: PORT });
-  console.log(`🚀 サーバー起動: ポート ${PORT}`);
-  console.log(`✅ エラーハンドリング機能: 有効`);
-  console.log(`✅ ロギング機能: 有効`);
-  console.log(`✅ 使用量追跡機能: 有効`);
-});を再読み込み
-    dataManager.loadAllData();
-    
     logger.info('ダイビングスポット情報更新', { count: data.length });
     
     res.json({ 
@@ -544,11 +515,11 @@ app.listen(PORT, () => {
       timestamp: new Date().toISOString()
     });
     
-   } catch (error) {
-    logger.error('スポット追加エラー', error);
+  } catch (error) {
+    logger.error('スポット情報更新エラー', error);
     res.status(500).json({ 
       success: false, 
-      error: 'スポット追加中にエラーが発生しました: ' + error.message 
+      error: 'データ更新中にエラーが発生しました: ' + error.message 
     });
   }
 });
@@ -762,4 +733,5 @@ app.listen(PORT, () => {
   console.log(`✅ エラーハンドリング機能: 有効`);
   console.log(`✅ ロギング機能: 有効`);
   console.log(`✅ 使用量追跡機能: 有効`);
+  console.log(`✅ 管理API機能: 有効`);
 });
