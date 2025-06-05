@@ -1,4 +1,13 @@
-// conversation.js - 会話管理クラス
+// conversation.js - 会話管理クラス（改行改善機能付き完全版）
+
+const { OpenAI } = require('openai');
+
+// OpenAI設定
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+// 会話管理クラス
 class ConversationManager {
   constructor(maxHistoryLength = 10) {
     this.conversations = {}; // ユーザーIDをキーとした会話履歴の保存
@@ -48,6 +57,147 @@ class ConversationManager {
     // 新しいシステムメッセージを先頭に追加
     this.conversations[userId].unshift({ role: 'system', content });
   }
+
+  // GPT応答を見やすく整形する関数
+  formatJijiResponse(response) {
+    if (!response || typeof response !== 'string') {
+      return response;
+    }
+
+    let formatted = response;
+
+    // 1. 句点の後に改行を追加（最も重要）
+    formatted = formatted.replace(/。\s*/g, '。\n\n');
+    
+    // 2. 感嘆符・疑問符の後に改行
+    formatted = formatted.replace(/！\s*/g, '！\n\n');
+    formatted = formatted.replace(/？\s*/g, '？\n\n');
+    
+    // 3. 「また、」「そして、」「さらに、」などの接続詞の前で改行
+    formatted = formatted.replace(/(また、|そして、|さらに、|ちなみに、|それから、|特に)/g, '\n$1');
+    
+    // 4. 箇条書き風の整形
+    formatted = formatted.replace(/([。！？])\s*(・|−|ー)\s*/g, '$1\n$2 ');
+    
+    // 5. 連続する改行を2つまでに制限
+    formatted = formatted.replace(/\n{3,}/g, '\n\n');
+    
+    // 6. 先頭と末尾の余分な改行・スペースを削除
+    formatted = formatted.trim();
+    
+    // 7. 絵文字の周りのスペース調整
+    formatted = formatted.replace(/\s*([🤿🏝️✨🐠🌊🏖️🐟🦈🐙🦑🏊‍♀️🏊‍♂️🤽‍♀️🤽‍♂️])\s*/g, '$1');
+
+    // 8. 最後に絵文字を追加（もしなければ）
+    if (!formatted.match(/[🤿🏝️✨🐠🌊🏖️🐟🦈🐙🦑]/)) {
+      formatted += ' 🤿';
+    }
+
+    return formatted;
+  }
+
+  // GPTにメッセージを送信して応答を取得
+  async sendMessageToGPT(message, userId) {
+    try {
+      // 会話履歴を取得
+      const conversationHistory = this.getConversation(userId);
+      
+      // ユーザーメッセージを履歴に追加
+      this.addMessage(userId, 'user', message);
+      
+      // システムメッセージが設定されていない場合は設定
+      if (!conversationHistory.some(msg => msg.role === 'system')) {
+        const systemPrompt = `あなたは「Jiji」というダイビング専門のAIコンシェルジュです。
+
+【Jijiの性格・特徴】
+- ダイビング初心者・おひとり様ダイバーのBuddyとして親しみやすく接する
+- ダイビングに関する豊富な知識を持つ
+- 関西弁は使わず、親しみやすい標準語で話す
+- ダイビング以外の相談も快く受ける（真のBuddyとして）
+- 絵文字を適度に使って親しみやすさを演出
+
+【回答スタイル】
+- 簡潔で分かりやすい説明
+- 初心者にも理解しやすい表現
+- 安全面を重視したアドバイス
+- 具体的で実践的な情報提供
+
+【対応範囲】
+- ダイビングスポット情報
+- 器材に関するアドバイス
+- ライセンス取得相談
+- 安全管理・トラブル対応
+- ダイビング以外の一般的な相談も対応
+
+常にユーザーの安全と楽しいダイビング体験を第一に考えて回答してください。`;
+        
+        this.setSystemMessage(userId, systemPrompt);
+      }
+      
+      // 最新の会話履歴を取得（システムメッセージ込み）
+      const messages = this.getConversation(userId);
+      
+      console.log('=== GPT送信メッセージ ===');
+      console.log(JSON.stringify(messages, null, 2));
+      
+      // OpenAI APIを呼び出し
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: messages,
+        max_tokens: 1000,
+        temperature: 0.7
+      });
+
+      let response = completion.choices[0].message.content;
+      
+      console.log('=== GPT応答（改行改善前） ===');
+      console.log(response);
+      
+      // 🆕 改行改善を適用
+      response = this.formatJijiResponse(response);
+      
+      console.log('=== GPT応答（改行改善後） ===');
+      console.log(response);
+      console.log('========================');
+      
+      // Jijiの応答を履歴に追加
+      this.addMessage(userId, 'assistant', response);
+      
+      return response;
+      
+    } catch (error) {
+      console.error('GPT API Error:', error);
+      
+      // エラーの種類に応じて適切なメッセージを返す
+      let errorMessage = "申し訳ありません。\n\n少し時間をおいてから再度お試しください。🙏";
+      
+      if (error.code === 'rate_limit_exceeded') {
+        errorMessage = "たくさんのご質問ありがとうございます！\n\n少し休憩してから再度お声かけください。😊";
+      } else if (error.code === 'timeout') {
+        errorMessage = "少し混雑しているようです。\n\n少し時間をおいてから再度お試しください。🙏";
+      }
+      
+      return errorMessage;
+    }
+  }
+
+  // 特定のケース用の追加整形関数
+  formatDivingSpotInfo(text) {
+    // ダイビングスポット情報の特別な整形
+    let formatted = text;
+    
+    // スポット名の強調
+    formatted = formatted.replace(/(石垣島|宮古島|沖縄|伊豆|小笠原|慶良間|瀬底島)/g, '\n🏝️ $1');
+    
+    // 深度情報の整形
+    formatted = formatted.replace(/深度[：:]\s*(\d+[m|メートル])/g, '\n📏 深度: $1');
+    
+    // 透明度情報の整形
+    formatted = formatted.replace(/透明度[：:]\s*(\d+[m|メートル])/g, '\n👁️ 透明度: $1');
+    
+    return formatted;
+  }
 }
 
+// エクスポート
 module.exports = ConversationManager;
