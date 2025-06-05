@@ -1,11 +1,12 @@
-// conversation.js - 会話管理クラス（改行改善機能付き完全版）
+// conversation.js - OpenAI v3対応版
 
-const { OpenAI } = require('openai');
+const { Configuration, OpenAIApi } = require('openai');
 
-// OpenAI設定
-const openai = new OpenAI({
+// OpenAI設定（v3用）
+const configuration = new Configuration({
   apiKey: process.env.OPENAI_API_KEY,
 });
+const openai = new OpenAIApi(configuration);
 
 // 会話管理クラス
 class ConversationManager {
@@ -96,7 +97,7 @@ class ConversationManager {
     return formatted;
   }
 
-  // GPTにメッセージを送信して応答を取得
+  // GPTにメッセージを送信（OpenAI v3用）
   async sendMessageToGPT(message, userId) {
     try {
       // 会話履歴を取得
@@ -140,15 +141,15 @@ class ConversationManager {
       console.log('=== GPT送信メッセージ ===');
       console.log(JSON.stringify(messages, null, 2));
       
-      // OpenAI APIを呼び出し
-      const completion = await openai.chat.completions.create({
-        model: "gpt-4o",
+      // OpenAI API v3を呼び出し
+      const completion = await openai.createChatCompletion({
+        model: "gpt-4",
         messages: messages,
         max_tokens: 1000,
         temperature: 0.7
       });
 
-      let response = completion.choices[0].message.content;
+      let response = completion.data.choices[0].message.content;
       
       console.log('=== GPT応答（改行改善前） ===');
       console.log(response);
@@ -171,31 +172,14 @@ class ConversationManager {
       // エラーの種類に応じて適切なメッセージを返す
       let errorMessage = "申し訳ありません。\n\n少し時間をおいてから再度お試しください。🙏";
       
-      if (error.code === 'rate_limit_exceeded') {
+      if (error.response?.status === 429) {
         errorMessage = "たくさんのご質問ありがとうございます！\n\n少し休憩してから再度お声かけください。😊";
-      } else if (error.code === 'timeout') {
+      } else if (error.code === 'ECONNABORTED') {
         errorMessage = "少し混雑しているようです。\n\n少し時間をおいてから再度お試しください。🙏";
       }
       
       return errorMessage;
     }
-  }
-
-  // 特定のケース用の追加整形関数
-  formatDivingSpotInfo(text) {
-    // ダイビングスポット情報の特別な整形
-    let formatted = text;
-    
-    // スポット名の強調
-    formatted = formatted.replace(/(石垣島|宮古島|沖縄|伊豆|小笠原|慶良間|瀬底島)/g, '\n🏝️ $1');
-    
-    // 深度情報の整形
-    formatted = formatted.replace(/深度[：:]\s*(\d+[m|メートル])/g, '\n📏 深度: $1');
-    
-    // 透明度情報の整形
-    formatted = formatted.replace(/透明度[：:]\s*(\d+[m|メートル])/g, '\n👁️ 透明度: $1');
-    
-    return formatted;
   }
 }
 
