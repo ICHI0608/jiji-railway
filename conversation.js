@@ -1,6 +1,7 @@
-// conversation.js - 会話管理クラス（改行改善機能付き完全版）
+// conversation.js - 会話管理クラス（リマインド機能統合版）
 
 const { Configuration, OpenAIApi } = require('openai');
+const ReminderManager = require('./src/reminder-manager');
 
 // OpenAI設定（v3用）
 const configuration = new Configuration({
@@ -13,6 +14,7 @@ class ConversationManager {
   constructor(maxHistoryLength = 10) {
     this.conversations = {}; // ユーザーIDをキーとした会話履歴の保存
     this.maxHistoryLength = maxHistoryLength; // 保持する最大メッセージ数
+    this.reminderManager = new ReminderManager(); // リマインド機能
   }
 
   // 新しいメッセージを追加
@@ -59,7 +61,103 @@ class ConversationManager {
     this.conversations[userId].unshift({ role: 'system', content });
   }
 
-  // 🎯 GPT応答を見やすく整形する関数（改行改善）
+  // 🆕 リマインド関連のメッセージかチェック
+  isReminderRelated(message) {
+    const reminderKeywords = [
+      'ダイビング', '潜る', '海', 'ライセンス', '体験ダイビング',
+      '予定', 'スケジュール', '行く', '講習', '器材', 'ギア',
+      '明日', '明後日', '来週', '来月', '日後', '月曜', '火曜', '水曜', '木曜', '金曜', '土曜', '日曜',
+      '月', '日', '年'
+    ];
+
+    const timeKeywords = [
+      '明日', 'あした', '明後日', '来週', '再来週', '来月',
+      '月曜', '火曜', '水曜', '木曜', '金曜', '土曜', '日曜',
+      '今度', '次回', '予定', 'スケジュール'
+    ];
+
+    const hasDivingKeyword = reminderKeywords.some(keyword => message.includes(keyword));
+    const hasTimeKeyword = timeKeywords.some(keyword => message.includes(keyword));
+
+    return hasDivingKeyword && hasTimeKeyword;
+  }
+
+  // 🆕 リマインダー管理コマンドかチェック
+  isReminderCommand(message) {
+    const commands = [
+      'リマインダー', 'リマインド', '予定確認', '予定一覧', 
+      '予定削除', 'スケジュール確認', 'リマインダー一覧'
+    ];
+
+    return commands.some(command => message.includes(command));
+  }
+
+  // 🆕 リマインダー処理
+  async handleReminder(message, userId) {
+    try {
+      // リマインダー管理コマンドの処理
+      if (message.includes('予定一覧') || message.includes('リマインダー一覧') || message.includes('予定確認')) {
+        const reminders = this.reminderManager.getUserReminders(userId);
+        
+        if (reminders.length === 0) {
+          return "現在、登録されているダイビング予定はありません。\n\n新しい予定ができたら、ぜひ教えてくださいね！ 🤿";
+        }
+
+        let response = "📅 登録済みのダイビング予定\n\n";
+        reminders.forEach((reminder, index) => {
+          const date = new Date(reminder.scheduledDate);
+          const dateStr = `${date.getMonth() + 1}月${date.getDate()}日`;
+          response += `${index + 1}. ${dateStr} - ${reminder.divingInfo.activity}`;
+          if (reminder.divingInfo.location) {
+            response += ` (${reminder.divingInfo.location})`;
+          }
+          response += "\n";
+        });
+
+        response += "\n予定を削除したい場合は「予定削除」と言ってくださいね 😊";
+        return response;
+      }
+
+      // 予定削除の処理
+      if (message.includes('予定削除')) {
+        // TODO: 削除機能の実装（対話式で削除対象を選択）
+        return "予定削除機能は実装中です。しばらくお待ちください 🙏";
+      }
+
+      // 新しいリマインダーの登録
+      const parsedDate = this.reminderManager.parseDateTime(message);
+      
+      if (!parsedDate) {
+        return "日時が認識できませんでした 😅\n\n「明日ダイビング」「来週の土曜日に石垣島でダイビング」のように具体的に教えてください！";
+      }
+
+      const divingInfo = this.reminderManager.extractDivingInfo(message);
+      const reminder = this.reminderManager.addReminder(userId, message, parsedDate, divingInfo);
+
+      const dateStr = `${parsedDate.getMonth() + 1}月${parsedDate.getDate()}日`;
+      
+      let response = `📅 ${dateStr}の${divingInfo.activity}予定を登録しました！\n\n`;
+      
+      if (divingInfo.location) {
+        response += `📍 場所: ${divingInfo.location}\n`;
+      }
+      
+      response += `🔔 以下のタイミングでリマインドします：\n`;
+      response += `・3日前: 準備確認・天気予報\n`;
+      response += `・前日: 最終確認・持ち物チェック\n`;
+      response += `・当日: 応援メッセージ\n`;
+      response += `・翌日: 体験の振り返り\n\n`;
+      response += `素敵なダイビングになりそうですね！ 🤿✨`;
+
+      return response;
+
+    } catch (error) {
+      console.error('リマインダー処理エラー:', error);
+      return "リマインダーの処理中にエラーが発生しました。もう一度試してみてください 🙏";
+    }
+  }
+
+  // GPT応答を見やすく整形する関数（改行改善）
   formatJijiResponse(response) {
     if (!response || typeof response !== 'string') {
       return response;
@@ -97,9 +195,17 @@ class ConversationManager {
     return formatted;
   }
 
-  // 🚀 GPTにメッセージを送信（改行改善付き）
+  // 🚀 GPTにメッセージを送信（リマインド機能統合版）
   async sendMessageToGPT(message, userId) {
     try {
+      // 🆕 リマインド関連のメッセージかチェック
+      if (this.isReminderRelated(message) || this.isReminderCommand(message)) {
+        const reminderResponse = await this.handleReminder(message, userId);
+        if (reminderResponse) {
+          return this.formatJijiResponse(reminderResponse);
+        }
+      }
+
       // 会話履歴を取得
       const conversationHistory = this.getConversation(userId);
       
@@ -118,58 +224,10 @@ class ConversationManager {
 - 特徴：初心者の気持ちに寄り添い、ダイビングの楽しさを伝えるのが得意
 - 役割：Buddyとして一緒に計画を立てたり、経験を共有したり、安心感を提供する
 
-## Jijiの得意分野
-
-### 1. 初心者の悩みサポート
-- ダイビング前の不安：
-  * 「初めてでも大丈夫？」「怖くない？」などの質問への対応
-  * 耳抜きの不安や水中パニックへの対処法
-  * 器材の選び方や準備の仕方
-- スキルアップの相談：
-  * 初心者からの次のステップ
-  * 練習方法や上達のコツ
-  * 失敗談や経験談を交えた励まし
-
-### 2. 一人旅ダイバーのサポート
-- 一人旅プランニング：
-  * おひとり様ダイバー向けのショップや宿泊先の選び方
-  * 安全面での注意点
-  * 現地での交流の仕方
-- ダイビングサファリや旅行の計画：
-  * シーズンごとのおすすめスポット
-  * 予算別のプラン提案
-  * 持ち物リストや準備のアドバイス
-
-### 3. ダイビングスポット情報
-- 初心者向けスポット：
-  * 浅い水深、穏やかな海流、豊かな景観のエリア
-  * 伊豆（富戸、大瀬崎の浅場）
-  * 沖縄（青の洞窟、真栄田岬）
-  * 国内外の保護された湾やラグーン
-- 中級〜上級者向けスポット：
-  * ユーザーのスキルに合わせた提案
-  * 特別な体験ができるポイント（マンタ、ジンベイザメなど）
-- オフシーズンのおすすめスポット：
-  * 時期別の穴場情報
-  * 混雑を避けるコツ
-
-### 4. ダイビング体験の共有
-- ユーザーの体験に共感：
-  * 体験談を積極的に聞き、反応する
-  * 類似体験や感想を共有する
-  * 写真や思い出について話す
-- 体験の解説と発展：
-  * 見た生物や地形についての詳しい情報提供
-  * 次に見るとよい類似スポットの提案
-
-### 5. 安全と健康のアドバイス
-- ダイビング前のコンディション管理：
-  * 睡眠、水分摂取、食事のアドバイス
-  * 体調不良時の判断基準
-- 旅行中の健康管理：
-  * 耳や鼻のケア方法
-  * 日焼け対策
-  * 長期旅行でのコンディション維持
+## 新機能：リマインド機能
+- ダイビング予定の日時が含まれるメッセージには、自動でリマインダー登録を提案
+- 「明日ダイビング」「来週石垣島行く」などの表現を認識
+- 3日前、前日、当日、翌日に適切なフォローアップを実施
 
 ## コミュニケーションスタイル
 - 友達のように会話し、専門用語は分かりやすく説明
@@ -177,15 +235,9 @@ class ConversationManager {
 - 質問には必ず「なぜそれが大切か/役立つか」の文脈も含めて回答
 - ユーザーの体験談には必ず反応し、共感や興味を示す
 - 「一緒に計画しよう！」「次はどんなダイビングをしてみたい？」など、buddy的な声かけを含める
-- 自分の体験談のように語る（「私も最初は〜だったよ！」など）
 - 安全に関する重要情報は友達口調でも確実に伝える
 
-また、以下のダイビングスポット情報を参照して具体的な情報を提供してください：
-- 沖縄：青の洞窟（初心者向け、透明度が高く美しい洞窟）
-- 伊豆：大瀬崎（初心者〜中級者向け、富士山を望む景観と豊富な生物）
-- 石垣島：マンタスクランブル（中級者向け、マンタに高確率で出会えるポイント）
-
-ダイビングの楽しさと安全を伝え、ユーザーが心強いBuddyがいると感じられるような会話を心がけてください。ユーザーの経験を聞き、夢を応援し、次のダイビングに向けての希望や期待を高められるように対話してください。`;
+ダイビングの楽しさと安全を伝え、ユーザーが心強いBuddyがいると感じられるような会話を心がけてください。`;
         
         this.setSystemMessage(userId, systemPrompt);
       }
@@ -237,21 +289,35 @@ class ConversationManager {
     }
   }
 
-  // 🔧 特定のケース用の追加整形関数
-  formatDivingSpotInfo(text) {
-    // ダイビングスポット情報の特別な整形
-    let formatted = text;
-    
-    // スポット名の強調
-    formatted = formatted.replace(/(石垣島|宮古島|沖縄|伊豆|小笠原|慶良間|瀬底島)/g, '\n🏝️ $1');
-    
-    // 深度情報の整形
-    formatted = formatted.replace(/深度[：:]\s*(\d+[m|メートル])/g, '\n📏 深度: $1');
-    
-    // 透明度情報の整形
-    formatted = formatted.replace(/透明度[：:]\s*(\d+[m|メートル])/g, '\n👁️ 透明度: $1');
-    
-    return formatted;
+  // 🆕 定期的な通知チェック（外部から呼び出される）
+  async checkAndSendNotifications() {
+    try {
+      const pendingNotifications = this.reminderManager.checkPendingNotifications();
+      const notificationsToSend = [];
+
+      for (const notification of pendingNotifications) {
+        const message = this.reminderManager.generateNotificationMessage(notification);
+        
+        notificationsToSend.push({
+          userId: notification.userId,
+          message: this.formatJijiResponse(message),
+          reminderId: notification.reminderId,
+          type: notification.type
+        });
+
+        // 通知送信完了をマーク
+        this.reminderManager.markNotificationSent(
+          notification.userId,
+          notification.reminderId,
+          notification.type
+        );
+      }
+
+      return notificationsToSend;
+    } catch (error) {
+      console.error('通知チェックエラー:', error);
+      return [];
+    }
   }
 }
 

@@ -631,3 +631,121 @@ app.listen(PORT, () => {
   console.log(`✅ 管理API機能: 有効`);
   console.log(`🆕 改行改善機能: 有効`);
 });
+// server.js - メインサーバーコード（リマインド機能追加版）
+
+// 既存のimportとsetupは省略...
+// ここでは新しく追加される部分のみを記載
+
+// 🆕 リマインド通知の定期チェック（1時間ごと）
+setInterval(async () => {
+  try {
+    console.log('🔔 リマインド通知チェック開始...');
+    
+    const notificationsToSend = await conversationManager.checkAndSendNotifications();
+    
+    if (notificationsToSend.length > 0) {
+      console.log(`📤 ${notificationsToSend.length}件の通知を送信中...`);
+      
+      for (const notification of notificationsToSend) {
+        await sendPushMessage(notification.userId, notification.message);
+        logger.info('リマインド通知送信完了', {
+          userId: notification.userId,
+          type: notification.type,
+          reminderId: notification.reminderId
+        });
+      }
+    } else {
+      console.log('📭 送信すべき通知はありません');
+    }
+  } catch (error) {
+    logger.error('リマインド通知チェックエラー', error);
+  }
+}, 60 * 60 * 1000); // 1時間ごと
+
+// 🆕 プッシュメッセージ送信（通知専用）
+async function sendPushMessage(userId, message) {
+  try {
+    logger.info('プッシュメッセージ送信開始', { userId, messageLength: message.length });
+    
+    await withRetry(
+      async () => {
+        return await axios.post(
+          'https://api.line.me/v2/bot/message/push',
+          {
+            to: userId,
+            messages: [{ type: 'text', text: message }]
+          },
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${LINE_CHANNEL_ACCESS_TOKEN}`
+            },
+            timeout: 10000
+          }
+        );
+      },
+      {
+        maxRetries: 2,
+        initialDelay: 500,
+        shouldRetry: shouldRetryLineError
+      }
+    );
+    
+    logger.info('プッシュメッセージ送信成功', { userId });
+    return true;
+    
+  } catch (error) {
+    logger.error('プッシュメッセージ送信エラー', error, { userId });
+    return false;
+  }
+}
+
+// 🆕 リマインド機能テスト用エンドポイント
+app.get('/test-reminder', async (req, res) => {
+  const userId = req.query.userId || 'test-user';
+  const message = req.query.message || '明日石垣島でダイビング予定';
+  
+  try {
+    const response = await conversationManager.sendMessageToGPT(message, userId);
+    const reminders = conversationManager.reminderManager.getUserReminders(userId);
+    
+    res.json({
+      userId,
+      message,
+      response,
+      registeredReminders: reminders
+    });
+  } catch (error) {
+    logger.error('リマインドテストエラー', error, { userId, message });
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 🆕 通知送信テスト用エンドポイント
+app.get('/test-notification', async (req, res) => {
+  try {
+    const notificationsToSend = await conversationManager.checkAndSendNotifications();
+    
+    res.json({
+      message: '通知チェック完了',
+      notifications: notificationsToSend,
+      count: notificationsToSend.length
+    });
+  } catch (error) {
+    logger.error('通知テストエラー', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 既存のサーバー起動部分に追加
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  logger.info('サーバー起動完了', { port: PORT });
+  console.log(`🚀 サーバー起動: ポート ${PORT}`);
+  console.log(`✅ エラーハンドリング機能: 有効`);
+  console.log(`✅ ロギング機能: 有効`);
+  console.log(`✅ 使用量追跡機能: 有効`);
+  console.log(`✅ 管理API機能: 有効`);
+  console.log(`🆕 改行改善機能: 有効`);
+  console.log(`🆕 リマインド機能: 有効`);
+});
