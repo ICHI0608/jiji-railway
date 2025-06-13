@@ -61,7 +61,7 @@ class ConversationManager {
     this.conversations[userId].unshift({ role: 'system', content });
   }
 
-  // 🆕 リマインド関連のメッセージかチェック
+  // リマインド関連のメッセージかチェック
   isReminderRelated(message) {
     const reminderKeywords = [
       'ダイビング', '潜る', '海', 'ライセンス', '体験ダイビング',
@@ -82,7 +82,7 @@ class ConversationManager {
     return hasDivingKeyword && hasTimeKeyword;
   }
 
-  // 🆕 リマインダー管理コマンドかチェック
+  // リマインダー管理コマンドかチェック
   isReminderCommand(message) {
     const commands = [
       'リマインダー', 'リマインド', '予定確認', '予定一覧', 
@@ -92,7 +92,7 @@ class ConversationManager {
     return commands.some(command => message.includes(command));
   }
 
-  // 🆕 リマインダー処理
+  // リマインダー処理
   async handleReminder(message, userId) {
     try {
       // リマインダー管理コマンドの処理
@@ -120,7 +120,6 @@ class ConversationManager {
 
       // 予定削除の処理
       if (message.includes('予定削除')) {
-        // TODO: 削除機能の実装（対話式で削除対象を選択）
         return "予定削除機能は実装中です。しばらくお待ちください 🙏";
       }
 
@@ -195,10 +194,10 @@ class ConversationManager {
     return formatted;
   }
 
-  // 🚀 GPTにメッセージを送信（リマインド機能統合版）
+  // GPTにメッセージを送信（リマインド機能統合版）
   async sendMessageToGPT(message, userId) {
     try {
-      // 🆕 リマインド関連のメッセージかチェック
+      // リマインド関連のメッセージかチェック
       if (this.isReminderRelated(message) || this.isReminderCommand(message)) {
         const reminderResponse = await this.handleReminder(message, userId);
         if (reminderResponse) {
@@ -261,7 +260,7 @@ class ConversationManager {
       console.log('=== GPT応答（改行改善前） ===');
       console.log(response);
       
-      // 🆕 改行改善を適用
+      // 改行改善を適用
       response = this.formatJijiResponse(response);
       
       console.log('=== GPT応答（改行改善後） ===');
@@ -289,7 +288,7 @@ class ConversationManager {
     }
   }
 
-  // 🆕 定期的な通知チェック（外部から呼び出される）
+  // 定期的な通知チェック（外部から呼び出される）
   async checkAndSendNotifications() {
     try {
       const pendingNotifications = this.reminderManager.checkPendingNotifications();

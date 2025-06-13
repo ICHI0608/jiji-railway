@@ -738,7 +738,6 @@ app.get('/test-notification', async (req, res) => {
 });
 
 // 既存のサーバー起動部分に追加
-const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   logger.info('サーバー起動完了', { port: PORT });
   console.log(`🚀 サーバー起動: ポート ${PORT}`);
