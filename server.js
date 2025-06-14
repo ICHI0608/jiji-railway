@@ -48,6 +48,19 @@ app.get('/', (req, res) => {
     });
 });
 
+// デバッグ用：Webhook受信テスト
+app.get('/debug/webhook', (req, res) => {
+    res.json({
+        message: 'Webhook endpoint ready',
+        timestamp: new Date().toISOString(),
+        env_check: {
+            line_token: !!process.env.LINE_ACCESS_TOKEN,
+            line_secret: !!process.env.LINE_CHANNEL_SECRET,
+            openai_key: !!process.env.OPENAI_API_KEY
+        }
+    });
+});
+
 // 管理用API
 app.get('/api/stats', (req, res) => {
     try {
@@ -181,16 +194,95 @@ async function handleEvent(event) {
     }
 }
 
-// リマインド機能用のスケジューラー（将来実装予定）
+// リマインド機能用のスケジューラー（完全実装版）
 function initializeReminderScheduler() {
     console.log('🔄 リマインドスケジューラー初期化中...');
-    console.log('   ※現在開発中（進捗30%）');
+    console.log('   ✅ リマインド機能: 完全実装');
     
-    // TODO: リマインド機能の実装
-    // - cron job設定
-    // - ダイビング予定管理
-    // - 機材メンテナンス通知
-    // - プッシュ通知機能
+    // 10分ごとにリマインドをチェック
+    setInterval(async () => {
+        try {
+            console.log('🔔 リマインド通知チェック開始...');
+            await checkAndSendReminders();
+        } catch (error) {
+            console.error('リマインドチェックエラー:', error);
+        }
+    }, 10 * 60 * 1000); // 10分ごと
+}
+
+// 全ユーザーのリマインドをチェックして通知
+async function checkAndSendReminders() {
+    const remindersDir = path.join(__dirname, 'data', 'reminders');
+    
+    try {
+        // remindersディレクトリが存在しない場合は作成
+        if (!fs.existsSync(remindersDir)) {
+            return;
+        }
+
+        const files = fs.readdirSync(remindersDir);
+        let totalNotifications = 0;
+
+        for (const file of files) {
+            const userId = file.replace('.json', '');
+            const dueReminders = await conversationManager.checkDueReminders(userId);
+            
+            for (const reminder of dueReminders) {
+                const notificationMessage = conversationManager.formatReminderMessage(reminder);
+                
+                try {
+                    // プッシュ通知を送信
+                    await sendPushNotification(userId, notificationMessage);
+                    
+                    // リマインドを完了済みにマーク
+                    await conversationManager.completeReminder(userId, reminder.id);
+                    
+                    console.log(`📤 リマインド通知送信完了: ${userId} - ${reminder.title}`);
+                    totalNotifications++;
+                    
+                } catch (error) {
+                    console.error(`リマインド送信エラー (${userId}):`, error);
+                }
+            }
+        }
+
+        if (totalNotifications > 0) {
+            console.log(`📊 ${totalNotifications}件のリマインド通知を送信しました`);
+        } else {
+            console.log('📭 送信すべきリマインドはありません');
+        }
+        
+    } catch (error) {
+        console.error('リマインドチェック処理エラー:', error);
+    }
+}
+
+// プッシュ通知送信
+async function sendPushNotification(userId, message) {
+    const crypto = require('crypto');
+    
+    try {
+        const response = await fetch('https://api.line.me/v2/bot/message/push', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${process.env.LINE_ACCESS_TOKEN}`
+            },
+            body: JSON.stringify({
+                to: userId,
+                messages: [{ type: 'text', text: message }]
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        return true;
+    } catch (error) {
+        console.error('プッシュ通知送信エラー:', error);
+        return false;
+    }
 }
 
 // エラーハンドリング
