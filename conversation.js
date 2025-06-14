@@ -239,7 +239,7 @@ class ConversationManager {
         }
 
         // 機材メンテナンス
-     // 機材メンテナンス
+        // 機材メンテナンス
         const maintenanceKeywords = ['機材', '器材', 'メンテナンス'];
         if (maintenanceKeywords.some(keyword => message.includes(keyword))) {
             reminderType = 'maintenance';
@@ -256,6 +256,7 @@ class ConversationManager {
                 reminderDate.setDate(now.getDate() + 365); // 1年後
             }
         }
+
         const mainReminder = {
             id: this.generateReminderId(),
             type: reminderType,
@@ -362,9 +363,95 @@ class ConversationManager {
                `安全第一で楽しいダイビングをしてくださいね！`;
     }
 
-    // ========================
-    // メイン処理
-    // ========================
+    // 自動リマインド検出（会話の文脈から判断）
+    detectActivityFromContext(message) {
+        const tomorrow = message.includes('明日');
+        const today = message.includes('今日');
+        const future = /(\d{1,2})日後/.test(message) || /(\d{1,2})月(\d{1,2})日/.test(message);
+        
+        const divingKeywords = ['ダイビング', '潜る', '海', 'スキューバ', 'シュノーケル', '潜水'];
+        const activityKeywords = ['行く', '行きます', '予定', 'する', 'やる'];
+        
+        const hasDiving = divingKeywords.some(keyword => message.includes(keyword));
+        const hasActivity = activityKeywords.some(keyword => message.includes(keyword));
+        const hasTimeReference = tomorrow || today || future;
+        
+        if (hasDiving && hasActivity && hasTimeReference) {
+            return {
+                type: 'diving',
+                detected: true,
+                timeRef: tomorrow ? 'tomorrow' : today ? 'today' : 'future',
+                originalMessage: message
+            };
+        }
+        
+        return { detected: false };
+    }
+
+    // 自動リマインド提案
+    async suggestReminder(userId, activityInfo) {
+        const suggestion = `🤿 ダイビングの予定ですね！\n\n` +
+                          `リマインド機能で以下をお手伝いできます：\n\n` +
+                          `✅ 事前準備のリマインド\n` +
+                          `✅ ダイビング後の感想・体験談収集\n\n` +
+                          `自動でリマインドを設定しますか？\n` +
+                          `「はい」または「リマインド設定」と返信してください。`;
+        
+        // 提案を一時保存
+        const tempReminder = {
+            userId,
+            activityInfo,
+            suggested: true,
+            timestamp: new Date().toISOString()
+        };
+        
+        // 一時的にローカルストレージに保存（簡易実装）
+        this.pendingSuggestions = this.pendingSuggestions || {};
+        this.pendingSuggestions[userId] = tempReminder;
+        
+        return suggestion;
+    }
+
+    // リマインド設定の確認処理
+    async handleReminderConfirmation(userId, message) {
+        const confirmationKeywords = ['はい', 'yes', 'リマインド設定', 'お願い', 'する', 'yes'];
+        const isConfirmation = confirmationKeywords.some(keyword => 
+            message.toLowerCase().includes(keyword.toLowerCase())
+        );
+        
+        if (isConfirmation && this.pendingSuggestions && this.pendingSuggestions[userId]) {
+            const suggestion = this.pendingSuggestions[userId];
+            const reminderResult = this.parseReminderRequest(suggestion.activityInfo.originalMessage);
+            
+            if (reminderResult) {
+                await this.addReminder(userId, reminderResult);
+                delete this.pendingSuggestions[userId]; // 提案をクリア
+                
+                const mainReminder = reminderResult.mainReminder || reminderResult;
+                const dueDate = new Date(mainReminder.dueDate);
+                const dateStr = dueDate.toLocaleDateString('ja-JP') + ' ' + 
+                               dueDate.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
+
+                let response = `✅ リマインドを設定しました！\n\n` +
+                              `📝 ${mainReminder.title}\n` +
+                              `📅 ${dateStr}\n\n`;
+
+                if (reminderResult.followUpReminder) {
+                    const followUpDate = new Date(reminderResult.followUpReminder.dueDate);
+                    const followUpDateStr = followUpDate.toLocaleDateString('ja-JP') + ' ' + 
+                                           followUpDate.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
+                    
+                    response += `🎯 さらに、ダイビング後に体験談もお聞きします！\n` +
+                               `📅 ${followUpDateStr}頃\n\n`;
+                }
+
+                response += `安全で楽しいダイビングをお楽しみください！`;
+                return response;
+            }
+        }
+        
+        return null;
+    }
 
     trimConversationHistory(messages, maxMessages = 20) {
         if (messages.length <= maxMessages) {
@@ -478,11 +565,21 @@ class ConversationManager {
         try {
             const conversationHistory = await this.loadConversationHistory(userId);
             
-            // リマインド機能のチェック
+            // 1. 明示的なリマインド要求をチェック
             if (this.isReminderRequest(userMessage)) {
                 return await this.handleReminderRequest(userId, userMessage);
             }
 
+            // 2. リマインド確認の処理
+            const confirmationResponse = await this.handleReminderConfirmation(userId, userMessage);
+            if (confirmationResponse) {
+                return confirmationResponse;
+            }
+
+            // 3. 会話の文脈から活動を自動検出
+            const activityInfo = this.detectActivityFromContext(userMessage);
+            
+            // 通常のAI応答を生成
             const messages = [
                 { role: 'system', content: this.systemPrompt },
                 ...conversationHistory,
@@ -498,8 +595,14 @@ class ConversationManager {
                 temperature: 0.8
             });
 
-            const aiResponse = response.choices[0].message.content;
-            const formattedResponse = this.formatResponse(aiResponse);
+            let aiResponse = response.choices[0].message.content;
+            let formattedResponse = this.formatResponse(aiResponse);
+
+            // 4. 活動が検出された場合、リマインド提案を追加
+            if (activityInfo.detected) {
+                const reminderSuggestion = await this.suggestReminder(userId, activityInfo);
+                formattedResponse += '\n\n' + reminderSuggestion;
+            }
 
             const updatedHistory = [
                 ...conversationHistory,

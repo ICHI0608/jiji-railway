@@ -1,0 +1,25 @@
+{
+  "userId": "Ub3ed0f4765bac3c910aab3f13ca3cd67",
+  "lastUpdated": "2025-06-14T13:00:01.887Z",
+  "reminders": [
+    {
+      "id": "rem_1749906001886_uznmkhf9e",
+      "type": "diving",
+      "title": "明日ダイビング行くよ！",
+      "message": "明日ダイビング行くよ！",
+      "dueDate": "2025-06-15T08:00:00.000Z",
+      "createdAt": "2025-06-14T13:00:01.886Z",
+      "isCompleted": false
+    },
+    {
+      "id": "rem_1749906001886_982n33dce",
+      "type": "diving_followup",
+      "title": "明日ダイビング行くよ！の感想・体験談",
+      "message": "ダイビング後のフォローアップ",
+      "dueDate": "2025-06-15T20:00:00.000Z",
+      "createdAt": "2025-06-14T13:00:01.886Z",
+      "isCompleted": false,
+      "originalActivity": "明日ダイビング行くよ！"
+    }
+  ]
+}
