@@ -134,27 +134,21 @@ class ConversationManager {
     }
 
     parseReminderRequest(message) {
-        const reminderPatterns = [
-            // 日時指定パターン
-            /明日.*?(\d{1,2})時.*?(ダイビング|潜る|海)/i,
-            /(\d{1,2})月(\d{1,2})日.*?(ダイビング|潜る|海)/i,
-            /(\d{1,2})日後.*?(ダイビング|潜る|海)/i,
-            
-            // 一般的なリマインド
-            /(リマインド|思い出|忘れない|通知).*?(ダイビング|潜る|海|機材|メンテナンス)/i,
-            /(ダイビング|潜る|海|機材|メンテナンス).*?(リマインド|思い出|忘れない|通知)/i,
-            
-            // 機材メンテナンス
-            /(機材|器材|レギュレーター|BCD|ウェットスーツ).*?(メンテナンス|点検|チェック)/i,
-            
-            // 資格更新
-            /(ライセンス|資格|認定).*?(更新|期限)/i
-        ];
-
-        for (const pattern of reminderPatterns) {
-            if (pattern.test(message)) {
-                return this.extractReminderDetails(message);
-            }
+        // 日時指定パターンを文字列検索で実装
+        const hasTimePattern = /(\d{1,2})時/.test(message);
+        const hasDatePattern = /(\d{1,2})月(\d{1,2})日/.test(message);
+        const hasDaysPattern = /(\d{1,2})日後/.test(message);
+        const hasTomorrow = message.includes('明日');
+        
+        // 一般的なリマインドキーワード
+        const reminderKeywords = ['リマインド', '思い出', '忘れない', '通知'];
+        const activityKeywords = ['ダイビング', '潜る', '海', '機材', 'メンテナンス'];
+        
+        const hasReminderKeyword = reminderKeywords.some(keyword => message.includes(keyword));
+        const hasActivityKeyword = activityKeywords.some(keyword => message.includes(keyword));
+        
+        if (hasReminderKeyword && hasActivityKeyword || hasTomorrow || hasDatePattern || hasDaysPattern) {
+            return this.extractReminderDetails(message);
         }
         
         return null;
@@ -168,8 +162,8 @@ class ConversationManager {
         let followUpReminder = null;
 
         // ダイビング予定の検出
-        const divingKeywords = /(ダイビング|潜る|海|スキューバ|シュノーケル)/i;
-        const isDivingRelated = divingKeywords.test(message);
+        const divingKeywords = ['ダイビング', '潜る', '海', 'スキューバ', 'シュノーケル'];
+        const isDivingRelated = divingKeywords.some(keyword => message.includes(keyword));
 
         // 明日の指定
         if (/明日/i.test(message)) {
@@ -245,7 +239,9 @@ class ConversationManager {
         }
 
         // 機材メンテナンス
-        if /(機材|器材|メンテナンス)/i.test(message)) {
+     // 機材メンテナンス
+        const maintenanceKeywords = ['機材', '器材', 'メンテナンス'];
+        if (maintenanceKeywords.some(keyword => message.includes(keyword))) {
             reminderType = 'maintenance';
             if (reminderDate <= now) {
                 reminderDate.setDate(now.getDate() + 30); // 1ヶ月後
@@ -253,13 +249,13 @@ class ConversationManager {
         }
 
         // 資格更新
-        if /(ライセンス|資格|認定)/i.test(message)) {
+        const licenseKeywords = ['ライセンス', '資格', '認定'];
+        if (licenseKeywords.some(keyword => message.includes(keyword))) {
             reminderType = 'license';
             if (reminderDate <= now) {
                 reminderDate.setDate(now.getDate() + 365); // 1年後
             }
         }
-
         const mainReminder = {
             id: this.generateReminderId(),
             type: reminderType,
@@ -403,9 +399,12 @@ class ConversationManager {
 
     async handleReminderRequest(userId, message) {
         // リマインド一覧表示
-        if (/リマインド.*?(一覧|確認|表示)/i.test(message) || 
-            message.trim() === 'リマインド' || 
-            message.trim() === 'reminder') {
+        const listPatterns = ['リマインド一覧', 'リマインド確認', 'リマインド表示'];
+        const isListRequest = listPatterns.some(pattern => message.includes(pattern)) ||
+                             message.trim() === 'リマインド' || 
+                             message.trim() === 'reminder';
+        
+        if (isListRequest) {
             
             const reminders = await this.getUserReminders(userId);
             const activeReminders = reminders.filter(r => !r.isCompleted);
