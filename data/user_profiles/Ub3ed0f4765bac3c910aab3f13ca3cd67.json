@@ -1,0 +1,63 @@
+{
+  "userId": "Ub3ed0f4765bac3c910aab3f13ca3cd67",
+  "createdAt": "2025-06-14T13:48:30.165Z",
+  "lastUpdated": "2025-06-14T13:49:36.352Z",
+  "basic": {
+    "isNewUser": true,
+    "totalInteractions": 2,
+    "firstInteraction": "2025-06-14T13:48:30.165Z",
+    "lastInteraction": "2025-06-14T13:49:36.352Z"
+  },
+  "diving": {
+    "experienceLevel": "unknown",
+    "certifications": [],
+    "totalDives": null,
+    "divingSince": null,
+    "specialties": []
+  },
+  "preferences": {
+    "preferredLocations": [
+      "沖縄",
+      "宮古島"
+    ],
+    "preferredDiveTypes": [],
+    "buddyStyle": "unknown",
+    "seasonalPreferences": []
+  },
+  "equipment": {
+    "ownedEquipment": [],
+    "equipmentBrands": [],
+    "maintenanceHistory": [],
+    "needsAdvice": []
+  },
+  "interests": {
+    "currentGoals": [],
+    "interestedLocations": [],
+    "plannedActivities": [],
+    "learningTopics": []
+  },
+  "patterns": {
+    "messageFrequency": "unknown",
+    "preferredResponseStyle": "unknown",
+    "commonQuestionTypes": [],
+    "reminderPreferences": {
+      "enabledTypes": [
+        "diving",
+        "maintenance",
+        "learning"
+      ],
+      "preferredTiming": "default"
+    }
+  },
+  "learning": {
+    "profileCompleteness": 13,
+    "confidenceScores": {
+      "experienceLevel": 0,
+      "preferences": 0,
+      "equipment": 0,
+      "interests": 0
+    },
+    "lastAnalyzed": "2025-06-14T13:49:36.350Z",
+    "updateTriggers": []
+  }
+}
