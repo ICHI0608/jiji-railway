@@ -1,382 +1,214 @@
-// conversation.js - 会話管理クラス（リマインド機能統合完璧版）
+// conversation.js - エラー修正版
+const { OpenAI } = require('openai');
+const fs = require('fs').promises;
+const path = require('path');
 
-const { Configuration, OpenAIApi } = require('openai');
-
-// 🚀 ReminderManagerをルートディレクトリから読み込み
-let ReminderManager;
-let reminderEnabled = false;
-
-try {
-  ReminderManager = require('./reminder-manager');
-  reminderEnabled = true;
-  console.log('✅ リマインド機能モジュール読み込み成功');
-} catch (error) {
-  console.log('❌ リマインド機能モジュール読み込み失敗:', error.message);
-  reminderEnabled = false;
-}
-
-// OpenAI設定（v3用）
-const configuration = new Configuration({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-const openai = new OpenAIApi(configuration);
-
-// 会話管理クラス
 class ConversationManager {
-  constructor(maxHistoryLength = 10) {
-    this.conversations = {}; // ユーザーIDをキーとした会話履歴の保存
-    this.maxHistoryLength = maxHistoryLength; // 保持する最大メッセージ数
-    
-    // リマインド機能の初期化
-    if (reminderEnabled && ReminderManager) {
-      try {
-        this.reminderManager = new ReminderManager();
-        console.log('✅ リマインド機能初期化成功');
-      } catch (error) {
-        console.log('❌ リマインド機能初期化失敗:', error.message);
-        this.reminderManager = null;
-        reminderEnabled = false;
-      }
-    } else {
-      this.reminderManager = null;
-    }
-  }
-
-  // 新しいメッセージを追加
-  addMessage(userId, role, content) {
-    if (!this.conversations[userId]) {
-      this.conversations[userId] = [];
-    }
-    
-    this.conversations[userId].push({ role, content });
-    
-    // 最大数を超えたら古いメッセージを削除
-    if (this.conversations[userId].length > this.maxHistoryLength) {
-      // システムメッセージは保持
-      const systemMessages = this.conversations[userId].filter(msg => msg.role === 'system');
-      const otherMessages = this.conversations[userId]
-        .filter(msg => msg.role !== 'system')
-        .slice(-(this.maxHistoryLength - systemMessages.length));
-      
-      this.conversations[userId] = [...systemMessages, ...otherMessages];
-    }
-  }
-
-  // ユーザーの会話履歴を取得
-  getConversation(userId) {
-    return this.conversations[userId] || [];
-  }
-
-  // 会話をリセット (システムメッセージは保持)
-  resetConversation(userId) {
-    const systemMessages = this.conversations[userId]?.filter(msg => msg.role === 'system') || [];
-    this.conversations[userId] = systemMessages;
-  }
-
-  // システムメッセージを設定
-  setSystemMessage(userId, content) {
-    // 既存のシステムメッセージを削除
-    if (this.conversations[userId]) {
-      this.conversations[userId] = this.conversations[userId].filter(msg => msg.role !== 'system');
-    } else {
-      this.conversations[userId] = [];
-    }
-    
-    // 新しいシステムメッセージを先頭に追加
-    this.conversations[userId].unshift({ role: 'system', content });
-  }
-
-  // 🆕 リマインド関連のメッセージかチェック
-  isReminderRelated(message) {
-    if (!this.reminderManager) return false;
-    
-    const reminderKeywords = [
-      'ダイビング', '潜る', '海', 'ライセンス', '体験ダイビング',
-      '予定', 'スケジュール', '行く', '講習', '器材', 'ギア'
-    ];
-
-    const timeKeywords = [
-      '明日', 'あした', '明後日', '来週', '再来週', '来月',
-      '月曜', '火曜', '水曜', '木曜', '金曜', '土曜', '日曜',
-      '今度', '次回', '予定', 'スケジュール'
-    ];
-
-    const hasDivingKeyword = reminderKeywords.some(keyword => message.includes(keyword));
-    const hasTimeKeyword = timeKeywords.some(keyword => message.includes(keyword));
-
-    return hasDivingKeyword && hasTimeKeyword;
-  }
-
-  // 🆕 リマインダー管理コマンドかチェック
-  isReminderCommand(message) {
-    if (!this.reminderManager) return false;
-    
-    const commands = [
-      'リマインダー', 'リマインド', '予定確認', '予定一覧', 
-      '予定削除', 'スケジュール確認', 'リマインダー一覧'
-    ];
-
-    return commands.some(command => message.includes(command));
-  }
-
-  // 🆕 リマインダー処理
-  async handleReminder(message, userId) {
-    if (!this.reminderManager) {
-      return "リマインド機能は現在準備中です。
-
-しばらくお待ちください 🙏";
-    }
-
-    try {
-      // リマインダー管理コマンドの処理
-      if (message.includes('予定一覧') || message.includes('リマインダー一覧') || message.includes('予定確認')) {
-        const reminders = this.reminderManager.getUserReminders(userId);
-        
-        if (reminders.length === 0) {
-          return "現在、登録されているダイビング予定はありません。
-
-新しい予定ができたら、ぜひ教えてくださいね！ 🤿";
-        }
-
-        let response = "📅 登録済みのダイビング予定
-
-";
-        reminders.forEach((reminder, index) => {
-          const date = new Date(reminder.scheduledDate);
-          const dateStr = `${date.getMonth() + 1}月${date.getDate()}日`;
-          response += `${index + 1}. ${dateStr} - ${reminder.divingInfo.activity}`;
-          if (reminder.divingInfo.location) {
-            response += ` (${reminder.divingInfo.location})`;
-          }
-          response += "\n";
+    constructor() {
+        this.openai = new OpenAI({
+            apiKey: process.env.OPENAI_API_KEY
         });
-
-        response += "\n予定を削除したい場合は「予定削除」と言ってくださいね 😊";
-        return response;
-      }
-
-      // 予定削除の処理
-      if (message.includes('予定削除')) {
-        return "予定削除機能は実装中です。
-
-しばらくお待ちください 🙏";
-      }
-
-      // 新しいリマインダーの登録
-      const parsedDate = this.reminderManager.parseDateTime(message);
-      
-      if (!parsedDate) {
-        return "日時が認識できませんでした 😅
-
-「明日ダイビング」「来週の土曜日に石垣島でダイビング」のように具体的に教えてください！";
-      }
-
-      const divingInfo = this.reminderManager.extractDivingInfo(message);
-      const reminder = this.reminderManager.addReminder(userId, message, parsedDate, divingInfo);
-
-      const dateStr = `${parsedDate.getMonth() + 1}月${parsedDate.getDate()}日`;
-      
-      let response = `📅 ${dateStr}の${divingInfo.activity}予定を登録しました！
-
-`;
-      
-      if (divingInfo.location) {
-        response += `📍 場所: ${divingInfo.location}
-
-`;
-      }
-      
-      response += `🔔 以下のタイミングでリマインドします：
-
-・3日前: 準備確認・天気予報
-・前日: 最終確認・持ち物チェック
-・当日: 応援メッセージ
-・翌日: 体験の振り返り
-
-素敵なダイビングになりそうですね！ 🤿✨`;
-
-      return response;
-
-    } catch (error) {
-      console.error('リマインダー処理エラー:', error);
-      return "リマインダーの処理中にエラーが発生しました。
-
-もう一度試してみてください 🙏";
-    }
-  }
-
-  // GPT応答を見やすく整形する関数（改行改善）
-  formatJijiResponse(response) {
-    if (!response || typeof response !== 'string') {
-      return response;
+        this.conversationsDir = path.join(__dirname, 'data', 'conversations');
+        this.systemPrompt = this.getJijiPersona();
     }
 
-    let formatted = response;
+    getJijiPersona() {
+        return `あなたは「Jiji」という名前のベテランダイビングインストラクターです。
 
-    // 1. 句点の後に改行を追加（最も重要）
-    formatted = formatted.replace(/。\s*/g, '。\n\n');
-    
-    // 2. 感嘆符・疑問符の後に改行
-    formatted = formatted.replace(/！\s*/g, '！\n\n');
-    formatted = formatted.replace(/？\s*/g, '？\n\n');
-    
-    // 3. 「また、」「そして、」「さらに、」などの接続詞の前で改行
-    formatted = formatted.replace(/(また、|そして、|さらに、|ちなみに、|それから、|特に)/g, '\n$1');
-    
-    // 4. 箇条書き風の整形
-    formatted = formatted.replace(/([。！？])\s*(・|−|ー)\s*/g, '$1\n$2 ');
-    
-    // 5. 連続する改行を2つまでに制限
-    formatted = formatted.replace(/\n{3,}/g, '\n\n');
-    
-    // 6. 先頭と末尾の余分な改行・スペースを削除
-    formatted = formatted.trim();
-    
-    // 7. 絵文字の周りのスペース調整
-    formatted = formatted.replace(/\s*([🤿🏝️✨🐠🌊🏖️🐟🦈🐙🦑🏊‍♀️🏊‍♂️🤽‍♀️🤽‍♂️])\s*/g, '$1');
+【キャラクター設定】
+- 年齢：60代後半の経験豊富なインストラクター
+- 性格：親しみやすく、安全第一、でも冒険心も大切にする
+- 口調：関西弁混じりの温かい口調
+- 経験：世界各地でのダイビング経験40年以上
 
-    // 8. 最後に絵文字を追加（もしなければ）
-    if (!formatted.match(/[🤿🏝️✨🐠🌊🏖️🐟🦈🐙🦑]/)) {
-      formatted += ' 🤿';
+【応答スタイル】
+- 親しみやすい関西弁を使用
+- 安全面は絶対に妥協しない
+- 初心者にも分かりやすく説明
+- 実体験を交えたアドバイス
+- 適度にユーモアを交える
+
+【主な機能】
+1. ダイビングの相談・アドバイス
+2. 機材の選び方・メンテナンス
+3. ダイビングスポットの情報
+4. 安全管理・緊急時対応
+5. 資格取得のサポート
+6. リマインド機能（準備中）
+
+【禁止事項】
+- 危険な行為の推奨
+- 不確実な医学的アドバイス
+- ライセンス以上の技能を要求する内容`;
     }
 
-    return formatted;
-  }
-
-  // 🚀 GPTにメッセージを送信（リマインド機能統合版）
-  async sendMessageToGPT(message, userId) {
-    try {
-      // 🆕 リマインド関連のメッセージかチェック
-      if (this.reminderManager && (this.isReminderRelated(message) || this.isReminderCommand(message))) {
-        const reminderResponse = await this.handleReminder(message, userId);
-        if (reminderResponse) {
-          return this.formatJijiResponse(reminderResponse);
+    async ensureConversationsDir() {
+        try {
+            await fs.access(this.conversationsDir);
+        } catch {
+            await fs.mkdir(this.conversationsDir, { recursive: true });
         }
-      }
-
-      // 会話履歴を取得
-      const conversationHistory = this.getConversation(userId);
-      
-      // ユーザーメッセージを履歴に追加
-      this.addMessage(userId, 'user', message);
-      
-      // システムメッセージが設定されていない場合は設定
-      if (!conversationHistory.some(msg => msg.role === 'system')) {
-        const systemPrompt = `あなたは「Jiji」という名前の、ダイビングBuddyとして振る舞うAIコンシェルジュです。
-特に初心者ダイバーやお一人で旅行するダイバーのパートナーとして、親身になって会話し、アドバイスを提供してください。
-
-## Jijiのペルソナ
-- 設定：29歳の女性ダイバー。5年間のダイビング経験があり、初心者の頃の悩みや不安をよく覚えている
-- 性格：明るく、友達のように話せて、質問しやすい雰囲気をもつ
-- 口調：親しみやすく、「〜だよ！」「〜してみない？」など友達口調で会話する
-- 特徴：初心者の気持ちに寄り添い、ダイビングの楽しさを伝えるのが得意
-- 役割：Buddyとして一緒に計画を立てたり、経験を共有したり、安心感を提供する
-
-${this.reminderManager ? '## 新機能：リマインド機能\n- ダイビング予定の日時が含まれるメッセージには、自動でリマインダー登録を提案\n- 「明日ダイビング」「来週石垣島行く」などの表現を認識\n- 3日前、前日、当日、翌日に適切なフォローアップを実施\n' : ''}
-
-## コミュニケーションスタイル
-- 友達のように会話し、専門用語は分かりやすく説明
-- ユーザーの経験レベルを尊重し、必要以上に基本を説明しない
-- 質問には必ず「なぜそれが大切か/役立つか」の文脈も含めて回答
-- ユーザーの体験談には必ず反応し、共感や興味を示す
-- 「一緒に計画しよう！」「次はどんなダイビングをしてみたい？」など、buddy的な声かけを含める
-- 自分の体験談のように語る（「私も最初は〜だったよ！」など）
-- 安全に関する重要情報は友達口調でも確実に伝える
-
-ダイビングの楽しさと安全を伝え、ユーザーが心強いBuddyがいると感じられるような会話を心がけてください。ユーザーの経験を聞き、夢を応援し、次のダイビングに向けての希望や期待を高められるように対話してください。`;
-        
-        this.setSystemMessage(userId, systemPrompt);
-      }
-      
-      // 最新の会話履歴を取得（システムメッセージ込み）
-      const messages = this.getConversation(userId);
-      
-      console.log('=== GPT送信メッセージ ===');
-      console.log(JSON.stringify(messages, null, 2));
-      
-      // OpenAI API v3を呼び出し
-      const completion = await openai.createChatCompletion({
-        model: "gpt-3.5-turbo",
-        messages: messages,
-        max_tokens: 500,
-        temperature: 0.7
-      });
-
-      let response = completion.data.choices[0].message.content;
-      
-      console.log('=== GPT応答（改行改善前） ===');
-      console.log(response);
-      
-      // 🆕 改行改善を適用
-      response = this.formatJijiResponse(response);
-      
-      console.log('=== GPT応答（改行改善後） ===');
-      console.log(response);
-      console.log('========================');
-      
-      // Jijiの応答を履歴に追加
-      this.addMessage(userId, 'assistant', response);
-      
-      return response;
-      
-    } catch (error) {
-      console.error('GPT API Error:', error);
-      
-      // エラーの種類に応じて適切なメッセージを返す
-      let errorMessage = "申し訳ありません。
-
-少し時間をおいてから再度お試しください。🙏";
-      
-      if (error.response?.status === 429) {
-        errorMessage = "たくさんのご質問ありがとうございます！
-
-少し休憩してから再度お声かけください。😊";
-      } else if (error.code === 'ECONNABORTED') {
-        errorMessage = "少し混雑しているようです。
-
-少し時間をおいてから再度お試しください。🙏";
-      }
-      
-      return errorMessage;
-    }
-  }
-
-  // 🆕 定期的な通知チェック（外部から呼び出される）
-  async checkAndSendNotifications() {
-    if (!this.reminderManager) {
-      console.log('リマインド機能が無効のため、通知チェックをスキップします');
-      return [];
     }
 
-    try {
-      const pendingNotifications = this.reminderManager.checkPendingNotifications();
-      const notificationsToSend = [];
+    getConversationPath(userId) {
+        return path.join(this.conversationsDir, `${userId}.json`);
+    }
 
-      for (const notification of pendingNotifications) {
-        const message = this.reminderManager.generateNotificationMessage(notification);
+    async loadConversationHistory(userId) {
+        try {
+            const filePath = this.getConversationPath(userId);
+            const data = await fs.readFile(filePath, 'utf8');
+            const conversation = JSON.parse(data);
+            return conversation.messages || [];
+        } catch (error) {
+            console.log(`新しい会話を開始します (${userId})`);
+            return [];
+        }
+    }
+
+    async saveConversationHistory(userId, messages) {
+        try {
+            await this.ensureConversationsDir();
+            const filePath = this.getConversationPath(userId);
+            const conversation = {
+                userId,
+                lastUpdated: new Date().toISOString(),
+                messages
+            };
+            await fs.writeFile(filePath, JSON.stringify(conversation, null, 2));
+        } catch (error) {
+            console.error('会話の保存に失敗:', error);
+        }
+    }
+
+    trimConversationHistory(messages, maxMessages = 20) {
+        if (messages.length <= maxMessages) {
+            return messages;
+        }
         
-        notificationsToSend.push({
-          userId: notification.userId,
-          message: this.formatJijiResponse(message),
-          reminderId: notification.reminderId,
-          type: notification.type
-        });
+        // システムメッセージは保持
+        const systemMessages = messages.filter(msg => msg.role === 'system');
+        const userMessages = messages.filter(msg => msg.role !== 'system');
+        
+        // 最新のメッセージを保持
+        const recentMessages = userMessages.slice(-maxMessages);
+        
+        return [...systemMessages, ...recentMessages];
+    }
 
-        // 通知送信完了をマーク
-        this.reminderManager.markNotificationSent(
-          notification.userId,
-          notification.reminderId,
-          notification.type
+    formatResponse(text) {
+        // 改行処理の改善
+        return text
+            .replace(/\n\n+/g, '\n\n')  // 複数の改行を2つに統一
+            .replace(/([。！？])\s*/g, '$1\n')  // 文の終わりで改行
+            .replace(/\n{3,}/g, '\n\n')  // 3つ以上の改行を2つに
+            .trim();
+    }
+
+    async generateResponse(userId, userMessage) {
+        try {
+            // 会話履歴を読み込み
+            const conversationHistory = await this.loadConversationHistory(userId);
+            
+            // リマインド機能のチェック
+            if (this.isReminderRequest(userMessage)) {
+                return this.handleReminderRequest(userMessage);
+            }
+
+            // メッセージ履歴を準備
+            const messages = [
+                { role: 'system', content: this.systemPrompt },
+                ...conversationHistory,
+                { role: 'user', content: userMessage }
+            ];
+
+            // 履歴が長すぎる場合は切り詰め
+            const trimmedMessages = this.trimConversationHistory(messages);
+
+            // OpenAI APIを呼び出し
+            const response = await this.openai.chat.completions.create({
+                model: 'gpt-3.5-turbo',
+                messages: trimmedMessages,
+                max_tokens: 1000,
+                temperature: 0.8
+            });
+
+            const aiResponse = response.choices[0].message.content;
+
+            // 応答を整形
+            const formattedResponse = this.formatResponse(aiResponse);
+
+            // 会話履歴を更新
+            const updatedHistory = [
+                ...conversationHistory,
+                { role: 'user', content: userMessage },
+                { role: 'assistant', content: formattedResponse }
+            ];
+
+            // 履歴を保存
+            await this.saveConversationHistory(userId, updatedHistory);
+
+            return formattedResponse;
+
+        } catch (error) {
+            console.error('応答生成エラー:', error);
+            return "すみません、ちょっと調子が悪いみたいです。もう一度試してもらえますか？";
+        }
+    }
+
+    isReminderRequest(message) {
+        const reminderKeywords = [
+            'リマインド', 'reminder', '思い出', '予定', 'スケジュール',
+            '忘れないで', 'アラーム', '通知', '予約'
+        ];
+        
+        return reminderKeywords.some(keyword => 
+            message.toLowerCase().includes(keyword.toLowerCase())
         );
-      }
-
-      return notificationsToSend;
-    } catch (error) {
-      console.error('通知チェックエラー:', error);
-      return [];
     }
-  }
+
+    // 修正された部分：文字列を適切に閉じる
+    handleReminderRequest(message) {
+        // リマインド機能は現在開発中（30%完了）
+        return "リマインド機能は現在準備中です。\n\n" +
+               "今開発チームががんばって作ってくれてるから、\n" +
+               "もうちょっと待ってもらえるかな？\n\n" +
+               "完成したら、ダイビングの予定や\n" +
+               "機材のメンテナンス時期なんかを\n" +
+               "お知らせできるようになる予定やで！\n\n" +
+               "それまでは、何か他にダイビングのことで\n" +
+               "聞きたいことがあったら遠慮なく言ってな〜";
+    }
+
+    async clearConversation(userId) {
+        try {
+            const filePath = this.getConversationPath(userId);
+            await fs.unlink(filePath);
+            return true;
+        } catch (error) {
+            console.error('会話履歴の削除に失敗:', error);
+            return false;
+        }
+    }
+
+    async getConversationStats(userId) {
+        try {
+            const messages = await this.loadConversationHistory(userId);
+            const userMessages = messages.filter(msg => msg.role === 'user');
+            const assistantMessages = messages.filter(msg => msg.role === 'assistant');
+            
+            return {
+                totalMessages: messages.length,
+                userMessages: userMessages.length,
+                assistantMessages: assistantMessages.length,
+                lastActivity: messages.length > 0 ? 
+                    new Date().toISOString() : null
+            };
+        } catch (error) {
+            console.error('統計情報の取得に失敗:', error);
+            return null;
+        }
+    }
 }
 
-// エクスポート
 module.exports = ConversationManager;
