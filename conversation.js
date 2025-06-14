@@ -1,7 +1,8 @@
-// conversation.js - リマインド機能完成版
+// conversation.js - 学習機能統合版
 const { OpenAI } = require('openai');
 const fs = require('fs').promises;
 const path = require('path');
+const UserProfileManager = require('./user-profile-manager'); // 新規追加
 
 class ConversationManager {
     constructor() {
@@ -11,6 +12,7 @@ class ConversationManager {
         this.conversationsDir = path.join(__dirname, 'data', 'conversations');
         this.remindersDir = path.join(__dirname, 'data', 'reminders');
         this.systemPrompt = this.getJijiPersona();
+        this.profileManager = new UserProfileManager(); // 学習システム追加
         this.initializeDirectories();
     }
 
@@ -238,8 +240,7 @@ class ConversationManager {
             }
         }
 
-        // 機材メンテナンス
-        // 機材メンテナンス
+     // 機材メンテナンス
         const maintenanceKeywords = ['機材', '器材', 'メンテナンス'];
         if (maintenanceKeywords.some(keyword => message.includes(keyword))) {
             reminderType = 'maintenance';
@@ -254,6 +255,8 @@ class ConversationManager {
             reminderType = 'license';
             if (reminderDate <= now) {
                 reminderDate.setDate(now.getDate() + 365); // 1年後
+            }
+        }
             }
         }
 

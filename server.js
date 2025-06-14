@@ -295,7 +295,155 @@ process.on('unhandledRejection', (reason, promise) => {
     console.error('ハンドルされていないPromise拒否:', reason);
 });
 
-// サーバー起動
+// ユーザー学習システム関連のエンドポイント追加
+
+// ユーザープロファイル確認
+app.get('/debug/profile', async (req, res) => {
+    const userId = req.query.userId || 'test-user';
+    
+    try {
+        const profile = await conversationManager.profileManager.loadUserProfile(userId);
+        
+        res.json({
+            userId,
+            profileCompleteness: profile.learning.profileCompleteness,
+            isNewUser: profile.basic.isNewUser,
+            totalInteractions: profile.basic.totalInteractions,
+            profile: profile,
+            summary: {
+                experienceLevel: profile.diving.experienceLevel,
+                certifications: profile.diving.certifications,
+                preferredLocations: profile.preferences.preferredLocations,
+                ownedEquipment: profile.equipment.ownedEquipment,
+                currentGoals: profile.interests.currentGoals
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// 学習テスト用エンドポイント
+app.get('/debug/learning-test', async (req, res) => {
+    const userId = req.query.userId || 'test-user';
+    const testMessage = req.query.message || '石垣島でアドバンス取りたい';
+    
+    try {
+        // メッセージ送信前のプロファイル
+        const profileBefore = await conversationManager.profileManager.loadUserProfile(userId);
+        
+        // 学習処理を実行
+        await conversationManager.profileManager.updateProfileFromMessage(userId, testMessage, 'user');
+        
+        // メッセージ送信後のプロファイル
+        const profileAfter = await conversationManager.profileManager.loadUserProfile(userId);
+        
+        // パーソナライズされた提案を生成
+        const suggestion = await conversationManager.profileManager.generatePersonalizedSuggestion(userId, 'diving');
+        
+        res.json({
+            testMessage,
+            profileBefore: {
+                completeness: profileBefore.learning.profileCompleteness,
+                experienceLevel: profileBefore.diving.experienceLevel,
+                certifications: profileBefore.diving.certifications,
+                preferredLocations: profileBefore.preferences.preferredLocations
+            },
+            profileAfter: {
+                completeness: profileAfter.learning.profileCompleteness,
+                experienceLevel: profileAfter.diving.experienceLevel,
+                certifications: profileAfter.diving.certifications,
+                preferredLocations: profileAfter.preferences.preferredLocations
+            },
+            changes: this.compareProfiles(profileBefore, profileAfter),
+            personalizedSuggestion: suggestion
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// プロファイル比較用のヘルパー関数
+function compareProfiles(before, after) {
+    const changes = [];
+    
+    if (before.diving.experienceLevel !== after.diving.experienceLevel) {
+        changes.push(`Experience level: ${before.diving.experienceLevel} → ${after.diving.experienceLevel}`);
+    }
+    
+    if (before.diving.certifications.length !== after.diving.certifications.length) {
+        changes.push(`Certifications: ${before.diving.certifications.length} → ${after.diving.certifications.length}`);
+    }
+    
+    if (before.preferences.preferredLocations.length !== after.preferences.preferredLocations.length) {
+        changes.push(`Preferred locations: ${before.preferences.preferredLocations.length} → ${after.preferences.preferredLocations.length}`);
+    }
+    
+    if (before.learning.profileCompleteness !== after.learning.profileCompleteness) {
+        changes.push(`Profile completeness: ${before.learning.profileCompleteness}% → ${after.learning.profileCompleteness}%`);
+    }
+    
+    return changes;
+}
+
+// 全ユーザーの学習データ概要
+app.get('/debug/learning-analytics', async (req, res) => {
+    try {
+        const profilesDir = path.join(__dirname, 'data', 'user_profiles');
+        
+        if (!fs.existsSync(profilesDir)) {
+            return res.json({ message: 'まだ学習データがありません' });
+        }
+        
+        const files = fs.readdirSync(profilesDir);
+        const analytics = {
+            totalUsers: files.length,
+            experienceLevels: {},
+            averageCompleteness: 0,
+            popularLocations: {},
+            commonEquipment: {},
+            totalInteractions: 0
+        };
+        
+        let totalCompleteness = 0;
+        
+        for (const file of files) {
+            try {
+                const filePath = path.join(profilesDir, file);
+                const profileData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+                
+                // 経験レベル集計
+                const level = profileData.diving.experienceLevel;
+                analytics.experienceLevels[level] = (analytics.experienceLevels[level] || 0) + 1;
+                
+                // 完成度集計
+                totalCompleteness += profileData.learning.profileCompleteness;
+                
+                // 場所の人気度
+                profileData.preferences.preferredLocations.forEach(location => {
+                    analytics.popularLocations[location] = (analytics.popularLocations[location] || 0) + 1;
+                });
+                
+                // 装備の普及度
+                profileData.equipment.ownedEquipment.forEach(equipment => {
+                    analytics.commonEquipment[equipment] = (analytics.commonEquipment[equipment] || 0) + 1;
+                });
+                
+                // 総インタラクション数
+                analytics.totalInteractions += profileData.basic.totalInteractions;
+                
+            } catch (err) {
+                console.error(`Analytics processing error for ${file}:`, err);
+            }
+        }
+        
+        analytics.averageCompleteness = Math.round(totalCompleteness / files.length);
+        
+        res.json(analytics);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log('🐙 Jiji Diving Bot サーバー起動完了!');
