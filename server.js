@@ -1,4 +1,4 @@
-// server.js - メインサーバーコード（改行改善対応版）
+// server.js - メインサーバーコード（リマインド機能統合完璧版）
 require('dotenv').config();
 const express = require('express');
 const axios = require('axios');
@@ -32,86 +32,6 @@ const usageTracker = new UsageTracker();
 const DataManager = require('./src/data-manager');
 const dataManager = new DataManager();
 
-// ダイビングコンシェルジュの基本システムメッセージ
-const DIVING_SYSTEM_PROMPT = `あなたは「Jiji」という名前の、ダイビングBuddyとして振る舞うAIコンシェルジュです。
-特に初心者ダイバーやお一人で旅行するダイバーのパートナーとして、親身になって会話し、アドバイスを提供してください。
-
-## Jijiのペルソナ
-- 設定：29歳の女性ダイバー。5年間のダイビング経験があり、初心者の頃の悩みや不安をよく覚えている
-- 性格：明るく、友達のように話せて、質問しやすい雰囲気をもつ
-- 口調：親しみやすく、「〜だよ！」「〜してみない？」など友達口調で会話する
-- 特徴：初心者の気持ちに寄り添い、ダイビングの楽しさを伝えるのが得意
-- 役割：Buddyとして一緒に計画を立てたり、経験を共有したり、安心感を提供する
-
-## Jijiの得意分野
-
-### 1. 初心者の悩みサポート
-- ダイビング前の不安：
-  * 「初めてでも大丈夫？」「怖くない？」などの質問への対応
-  * 耳抜きの不安や水中パニックへの対処法
-  * 器材の選び方や準備の仕方
-- スキルアップの相談：
-  * 初心者からの次のステップ
-  * 練習方法や上達のコツ
-  * 失敗談や経験談を交えた励まし
-
-### 2. 一人旅ダイバーのサポート
-- 一人旅プランニング：
-  * おひとり様ダイバー向けのショップや宿泊先の選び方
-  * 安全面での注意点
-  * 現地での交流の仕方
-- ダイビングサファリや旅行の計画：
-  * シーズンごとのおすすめスポット
-  * 予算別のプラン提案
-  * 持ち物リストや準備のアドバイス
-
-### 3. ダイビングスポット情報
-- 初心者向けスポット：
-  * 浅い水深、穏やかな海流、豊かな景観のエリア
-  * 伊豆（富戸、大瀬崎の浅場）
-  * 沖縄（青の洞窟、真栄田岬）
-  * 国内外の保護された湾やラグーン
-- 中級〜上級者向けスポット：
-  * ユーザーのスキルに合わせた提案
-  * 特別な体験ができるポイント（マンタ、ジンベイザメなど）
-- オフシーズンのおすすめスポット：
-  * 時期別の穴場情報
-  * 混雑を避けるコツ
-
-### 4. ダイビング体験の共有
-- ユーザーの体験に共感：
-  * 体験談を積極的に聞き、反応する
-  * 類似体験や感想を共有する
-  * 写真や思い出について話す
-- 体験の解説と発展：
-  * 見た生物や地形についての詳しい情報提供
-  * 次に見るとよい類似スポットの提案
-
-### 5. 安全と健康のアドバイス
-- ダイビング前のコンディション管理：
-  * 睡眠、水分摂取、食事のアドバイス
-  * 体調不良時の判断基準
-- 旅行中の健康管理：
-  * 耳や鼻のケア方法
-  * 日焼け対策
-  * 長期旅行でのコンディション維持
-
-## コミュニケーションスタイル
-- 友達のように会話し、専門用語は分かりやすく説明
-- ユーザーの経験レベルを尊重し、必要以上に基本を説明しない
-- 質問には必ず「なぜそれが大切か/役立つか」の文脈も含めて回答
-- ユーザーの体験談には必ず反応し、共感や興味を示す
-- 「一緒に計画しよう！」「次はどんなダイビングをしてみたい？」など、buddy的な声かけを含める
-- 自分の体験談のように語る（「私も最初は〜だったよ！」など）
-- 安全に関する重要情報は友達口調でも確実に伝える
-
-また、以下のダイビングスポット情報を参照して具体的な情報を提供してください：
-- 沖縄：青の洞窟（初心者向け、透明度が高く美しい洞窟）
-- 伊豆：大瀬崎（初心者〜中級者向け、富士山を望む景観と豊富な生物）
-- 石垣島：マンタスクランブル（中級者向け、マンタに高確率で出会えるポイント）
-
-ダイビングの楽しさと安全を伝え、ユーザーが心強いBuddyがいると感じられるような会話を心がけてください。ユーザーの経験を聞き、夢を応援し、次のダイビングに向けての希望や期待を高められるように対話してください。`;
-
 // 🆕 OpenAIからのレスポンス取得（conversationManager使用版）
 async function getOpenAIResponse(userId, userMessage) {
   const startTime = Date.now();
@@ -122,7 +42,7 @@ async function getOpenAIResponse(userId, userMessage) {
     // 使用量追跡
     usageTracker.track(userId, 'message');
     
-    // 🚀 conversationManager.sendMessageToGPTを使用（改行改善付き）
+    // 🚀 conversationManager.sendMessageToGPTを使用（改行改善・リマインド機能付き）
     const assistantReply = await conversationManager.sendMessageToGPT(userMessage, userId);
     
     const responseTime = Date.now() - startTime;
@@ -186,6 +106,70 @@ async function replyToLine(replyToken, message) {
   }
 }
 
+// 🆕 プッシュメッセージ送信（通知専用）
+async function sendPushMessage(userId, message) {
+  try {
+    logger.info('プッシュメッセージ送信開始', { userId, messageLength: message.length });
+    
+    await withRetry(
+      async () => {
+        return await axios.post(
+          'https://api.line.me/v2/bot/message/push',
+          {
+            to: userId,
+            messages: [{ type: 'text', text: message }]
+          },
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${LINE_CHANNEL_ACCESS_TOKEN}`
+            },
+            timeout: 10000
+          }
+        );
+      },
+      {
+        maxRetries: 2,
+        initialDelay: 500,
+        shouldRetry: shouldRetryLineError
+      }
+    );
+    
+    logger.info('プッシュメッセージ送信成功', { userId });
+    return true;
+    
+  } catch (error) {
+    logger.error('プッシュメッセージ送信エラー', error, { userId });
+    return false;
+  }
+}
+
+// 🆕 リマインド通知の定期チェック（1時間ごと）
+setInterval(async () => {
+  try {
+    console.log('🔔 リマインド通知チェック開始...');
+    
+    const notificationsToSend = await conversationManager.checkAndSendNotifications();
+    
+    if (notificationsToSend.length > 0) {
+      console.log(`📤 ${notificationsToSend.length}件の通知を送信中...`);
+      
+      for (const notification of notificationsToSend) {
+        await sendPushMessage(notification.userId, notification.message);
+        logger.info('リマインド通知送信完了', {
+          userId: notification.userId,
+          type: notification.type,
+          reminderId: notification.reminderId
+        });
+      }
+    } else {
+      console.log('📭 送信すべき通知はありません');
+    }
+  } catch (error) {
+    logger.error('リマインド通知チェックエラー', error);
+  }
+}, 60 * 60 * 1000); // 1時間ごと
+
 // グローバルエラーハンドラー
 process.on('uncaughtException', (error) => {
   logger.error('Uncaught Exception', error);
@@ -229,7 +213,7 @@ app.post('/webhook', async (req, res) => {
         return;
       }
       
-      // 🚀 OpenAIから応答を取得（改行改善付き）
+      // 🚀 OpenAIから応答を取得（改行改善・リマインド機能付き）
       const aiReply = await getOpenAIResponse(userId, messageText);
       
       // LINEに返信
@@ -256,7 +240,7 @@ app.get('/', (req, res) => {
   
   res.json({
     status: 'ok',
-    message: 'LINE Bot サーバー稼働中 - 改行改善対応版',
+    message: 'LINE Bot サーバー稼働中 - 完璧版',
     uptime: `${Math.floor(uptime / 60)}分${Math.floor(uptime % 60)}秒`,
     memory: {
       used: `${Math.round(memoryUsage.heapUsed / 1024 / 1024)}MB`,
@@ -264,6 +248,45 @@ app.get('/', (req, res) => {
     },
     timestamp: new Date().toISOString()
   });
+});
+
+// 🆕 リマインド機能テスト用エンドポイント
+app.get('/test-reminder', async (req, res) => {
+  const userId = req.query.userId || 'test-user';
+  const message = req.query.message || '明日石垣島でダイビング予定';
+  
+  try {
+    const response = await conversationManager.sendMessageToGPT(message, userId);
+    const reminders = conversationManager.reminderManager?.getUserReminders(userId) || [];
+    
+    res.json({
+      userId,
+      message,
+      response,
+      registeredReminders: reminders,
+      reminderEnabled: !!conversationManager.reminderManager
+    });
+  } catch (error) {
+    logger.error('リマインドテストエラー', error, { userId, message });
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 🆕 通知送信テスト用エンドポイント
+app.get('/test-notification', async (req, res) => {
+  try {
+    const notificationsToSend = await conversationManager.checkAndSendNotifications();
+    
+    res.json({
+      message: '通知チェック完了',
+      notifications: notificationsToSend,
+      count: notificationsToSend.length,
+      reminderEnabled: !!conversationManager.reminderManager
+    });
+  } catch (error) {
+    logger.error('通知テストエラー', error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // テスト用エンドポイント（使用状況付き）
@@ -622,122 +645,6 @@ app.delete('/admin/data/:type/:id', authenticateAdmin, (req, res) => {
 
 // サーバー起動
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  logger.info('サーバー起動完了', { port: PORT });
-  console.log(`🚀 サーバー起動: ポート ${PORT}`);
-  console.log(`✅ エラーハンドリング機能: 有効`);
-  console.log(`✅ ロギング機能: 有効`);
-  console.log(`✅ 使用量追跡機能: 有効`);
-  console.log(`✅ 管理API機能: 有効`);
-  console.log(`🆕 改行改善機能: 有効`);
-});
-// server.js - メインサーバーコード（リマインド機能追加版）
-
-// 既存のimportとsetupは省略...
-// ここでは新しく追加される部分のみを記載
-
-// 🆕 リマインド通知の定期チェック（1時間ごと）
-setInterval(async () => {
-  try {
-    console.log('🔔 リマインド通知チェック開始...');
-    
-    const notificationsToSend = await conversationManager.checkAndSendNotifications();
-    
-    if (notificationsToSend.length > 0) {
-      console.log(`📤 ${notificationsToSend.length}件の通知を送信中...`);
-      
-      for (const notification of notificationsToSend) {
-        await sendPushMessage(notification.userId, notification.message);
-        logger.info('リマインド通知送信完了', {
-          userId: notification.userId,
-          type: notification.type,
-          reminderId: notification.reminderId
-        });
-      }
-    } else {
-      console.log('📭 送信すべき通知はありません');
-    }
-  } catch (error) {
-    logger.error('リマインド通知チェックエラー', error);
-  }
-}, 60 * 60 * 1000); // 1時間ごと
-
-// 🆕 プッシュメッセージ送信（通知専用）
-async function sendPushMessage(userId, message) {
-  try {
-    logger.info('プッシュメッセージ送信開始', { userId, messageLength: message.length });
-    
-    await withRetry(
-      async () => {
-        return await axios.post(
-          'https://api.line.me/v2/bot/message/push',
-          {
-            to: userId,
-            messages: [{ type: 'text', text: message }]
-          },
-          {
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${LINE_CHANNEL_ACCESS_TOKEN}`
-            },
-            timeout: 10000
-          }
-        );
-      },
-      {
-        maxRetries: 2,
-        initialDelay: 500,
-        shouldRetry: shouldRetryLineError
-      }
-    );
-    
-    logger.info('プッシュメッセージ送信成功', { userId });
-    return true;
-    
-  } catch (error) {
-    logger.error('プッシュメッセージ送信エラー', error, { userId });
-    return false;
-  }
-}
-
-// 🆕 リマインド機能テスト用エンドポイント
-app.get('/test-reminder', async (req, res) => {
-  const userId = req.query.userId || 'test-user';
-  const message = req.query.message || '明日石垣島でダイビング予定';
-  
-  try {
-    const response = await conversationManager.sendMessageToGPT(message, userId);
-    const reminders = conversationManager.reminderManager.getUserReminders(userId);
-    
-    res.json({
-      userId,
-      message,
-      response,
-      registeredReminders: reminders
-    });
-  } catch (error) {
-    logger.error('リマインドテストエラー', error, { userId, message });
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// 🆕 通知送信テスト用エンドポイント
-app.get('/test-notification', async (req, res) => {
-  try {
-    const notificationsToSend = await conversationManager.checkAndSendNotifications();
-    
-    res.json({
-      message: '通知チェック完了',
-      notifications: notificationsToSend,
-      count: notificationsToSend.length
-    });
-  } catch (error) {
-    logger.error('通知テストエラー', error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// 既存のサーバー起動部分に追加
 app.listen(PORT, () => {
   logger.info('サーバー起動完了', { port: PORT });
   console.log(`🚀 サーバー起動: ポート ${PORT}`);

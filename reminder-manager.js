@@ -1,12 +1,13 @@
-// src/reminder-manager.js - リマインド機能管理クラス
+// reminder-manager.js - リマインド機能管理クラス（完璧版）
 
 const fs = require('fs');
 const path = require('path');
 
 class ReminderManager {
   constructor() {
-    this.remindersFile = path.join(__dirname, '../data/reminders.json');
+    this.remindersFile = path.join(__dirname, 'data', 'reminders.json');
     this.reminders = this.loadReminders();
+    console.log('📅 ReminderManager初期化完了');
   }
 
   // リマインダーデータの読み込み
@@ -14,11 +15,14 @@ class ReminderManager {
     try {
       if (fs.existsSync(this.remindersFile)) {
         const data = fs.readFileSync(this.remindersFile, 'utf8');
-        return JSON.parse(data);
+        const parsed = JSON.parse(data);
+        console.log('📂 リマインダーデータ読み込み成功');
+        return parsed;
       }
+      console.log('📂 新規リマインダーファイル作成');
       return {};
     } catch (error) {
-      console.error('リマインダーデータ読み込みエラー:', error);
+      console.error('❌ リマインダーデータ読み込みエラー:', error);
       return {};
     }
   }
@@ -26,9 +30,16 @@ class ReminderManager {
   // リマインダーデータの保存
   saveReminders() {
     try {
+      // dataディレクトリが存在しない場合は作成
+      const dataDir = path.dirname(this.remindersFile);
+      if (!fs.existsSync(dataDir)) {
+        fs.mkdirSync(dataDir, { recursive: true });
+      }
+      
       fs.writeFileSync(this.remindersFile, JSON.stringify(this.reminders, null, 2), 'utf8');
+      console.log('💾 リマインダーデータ保存成功');
     } catch (error) {
-      console.error('リマインダーデータ保存エラー:', error);
+      console.error('❌ リマインダーデータ保存エラー:', error);
     }
   }
 
@@ -77,6 +88,7 @@ class ReminderManager {
         } else {
           targetDate.setDate(now.getDate() + days);
         }
+        console.log('📅 相対日時解析成功:', text, '→', targetDate.toDateString());
         break;
       }
     }
@@ -96,6 +108,7 @@ class ReminderManager {
           }
           
           targetDate.setDate(now.getDate() + daysToAdd);
+          console.log('📅 曜日解析成功:', text, '→', targetDate.toDateString());
           break;
         }
       }
@@ -117,6 +130,7 @@ class ReminderManager {
               targetDate.setFullYear(now.getFullYear() + 1);
             }
           }
+          console.log('📅 絶対日時解析成功:', text, '→', targetDate.toDateString());
           break;
         }
       }
@@ -163,6 +177,7 @@ class ReminderManager {
       if (info.type) break;
     }
 
+    console.log('🔍 ダイビング情報抽出:', info);
     return info;
   }
 
@@ -190,12 +205,15 @@ class ReminderManager {
     this.reminders[userId].push(reminder);
     this.saveReminders();
 
+    console.log('✅ リマインダー登録成功:', reminder.id, '-', divingInfo.activity);
     return reminder;
   }
 
   // ユーザーのリマインダー一覧を取得
   getUserReminders(userId) {
-    return this.reminders[userId]?.filter(r => r.isActive) || [];
+    const userReminders = this.reminders[userId]?.filter(r => r.isActive) || [];
+    console.log('📋 ユーザーリマインダー取得:', userId, '- 件数:', userReminders.length);
+    return userReminders;
   }
 
   // リマインダーを削除
@@ -206,8 +224,10 @@ class ReminderManager {
     if (index !== -1) {
       this.reminders[userId][index].isActive = false;
       this.saveReminders();
+      console.log('🗑️ リマインダー削除成功:', reminderId);
       return true;
     }
+    console.log('❌ リマインダー削除失敗:', reminderId);
     return false;
   }
 
@@ -266,6 +286,7 @@ class ReminderManager {
       }
     }
 
+    console.log('🔔 通知チェック完了:', pendingNotifications.length, '件');
     return pendingNotifications;
   }
 
@@ -277,6 +298,7 @@ class ReminderManager {
     if (reminder) {
       reminder.notificationsSent[notificationType] = true;
       this.saveReminders();
+      console.log('✅ 通知送信マーク完了:', notificationType, '-', reminderId);
     }
   }
 
@@ -288,15 +310,42 @@ class ReminderManager {
     const dateStr = `${date.getMonth() + 1}月${date.getDate()}日`;
 
     const messages = {
-      threeDaysBefore: `🤿 ${dateStr}の${divingInfo.activity}まであと3日ですね！\n\n準備は順調ですか？\n${divingInfo.location ? `${divingInfo.location}の` : ''}天気予報もチェックしておきましょう！\n\n何か心配なことがあれば、いつでも相談してくださいね 😊`,
+      threeDaysBefore: `🤿 ${dateStr}の${divingInfo.activity}まであと3日ですね！
 
-      dayBefore: `🌊 いよいよ明日は${divingInfo.activity}ですね！\n\n最終確認をしましょう：\n✅ 器材の準備\n✅ 体調管理\n✅ 集合時間・場所の確認\n\n${divingInfo.type === 'ライセンス講習' ? '教材の復習も忘れずに！' : '海況も良好のようです！'}\n\n素敵なダイビングになりそうですね 🐠`,
+準備は順調ですか？
+${divingInfo.location ? `${divingInfo.location}の` : ''}天気予報もチェックしておきましょう！
 
-      dayOf: `🎉 今日は${divingInfo.activity}の日ですね！\n\n安全に楽しんできてください！\n\n📷 素敵な海の写真が撮れたら、ぜひ見せてくださいね\n\n行ってらっしゃい！🤿✨`,
+何か心配なことがあれば、いつでも相談してくださいね 😊`,
 
-      dayAfter: `🌟 昨日の${divingInfo.activity}はいかがでしたか？\n\n海の様子や見た魚のこと、ぜひ聞かせてください！\n\n写真があれば見せてもらえると嬉しいです 📸\n\n次のダイビング計画も一緒に考えましょう 😊`
+      dayBefore: `🌊 いよいよ明日は${divingInfo.activity}ですね！
+
+最終確認をしましょう：
+✅ 器材の準備
+✅ 体調管理
+✅ 集合時間・場所の確認
+
+${divingInfo.type === 'ライセンス講習' ? '教材の復習も忘れずに！' : '海況も良好のようです！'}
+
+素敵なダイビングになりそうですね 🐠`,
+
+      dayOf: `🎉 今日は${divingInfo.activity}の日ですね！
+
+安全に楽しんできてください！
+
+📷 素敵な海の写真が撮れたら、ぜひ見せてくださいね
+
+行ってらっしゃい！🤿✨`,
+
+      dayAfter: `🌟 昨日の${divingInfo.activity}はいかがでしたか？
+
+海の様子や見た魚のこと、ぜひ聞かせてください！
+
+写真があれば見せてもらえると嬉しいです 📸
+
+次のダイビング計画も一緒に考えましょう 😊`
     };
 
+    console.log('📝 通知メッセージ生成:', type, '-', divingInfo.activity);
     return messages[type] || '📅 リマインダー通知です';
   }
 }

@@ -1,37 +1,18 @@
-// conversation.js - 会話管理クラス（パスデバッグ版）
+// conversation.js - 会話管理クラス（リマインド機能統合完璧版）
 
 const { Configuration, OpenAIApi } = require('openai');
-const path = require('path');
 
-// 🔧 パスのデバッグ
-console.log('現在のディレクトリ:', __dirname);
-console.log('探しているパス:', path.join(__dirname, 'src', 'reminder-manager.js'));
-
-// 🔧 複数のパスパターンを試行
+// 🚀 ReminderManagerをルートディレクトリから読み込み
 let ReminderManager;
 let reminderEnabled = false;
 
-const possiblePaths = [
-  './src/reminder-manager',
-  './src/reminder-manager.js',
-  path.join(__dirname, 'src', 'reminder-manager'),
-  path.join(__dirname, 'src', 'reminder-manager.js')
-];
-
-for (const testPath of possiblePaths) {
-  try {
-    console.log('パステスト:', testPath);
-    ReminderManager = require(testPath);
-    reminderEnabled = true;
-    console.log('✅ リマインド機能: 有効 (パス:', testPath, ')');
-    break;
-  } catch (error) {
-    console.log('❌ パス失敗:', testPath, '-', error.message);
-  }
-}
-
-if (!reminderEnabled) {
-  console.log('❌ リマインド機能: すべてのパスで失敗');
+try {
+  ReminderManager = require('./reminder-manager');
+  reminderEnabled = true;
+  console.log('✅ リマインド機能モジュール読み込み成功');
+} catch (error) {
+  console.log('❌ リマインド機能モジュール読み込み失敗:', error.message);
+  reminderEnabled = false;
 }
 
 // OpenAI設定（v3用）
@@ -43,24 +24,25 @@ const openai = new OpenAIApi(configuration);
 // 会話管理クラス
 class ConversationManager {
   constructor(maxHistoryLength = 10) {
-    this.conversations = {}; 
-    this.maxHistoryLength = maxHistoryLength;
+    this.conversations = {}; // ユーザーIDをキーとした会話履歴の保存
+    this.maxHistoryLength = maxHistoryLength; // 保持する最大メッセージ数
     
-    // リマインド機能が有効な場合のみ初期化
+    // リマインド機能の初期化
     if (reminderEnabled && ReminderManager) {
       try {
         this.reminderManager = new ReminderManager();
-        console.log('✅ ReminderManager初期化成功');
+        console.log('✅ リマインド機能初期化成功');
       } catch (error) {
-        console.log('❌ ReminderManager初期化失敗:', error.message);
+        console.log('❌ リマインド機能初期化失敗:', error.message);
         this.reminderManager = null;
+        reminderEnabled = false;
       }
     } else {
       this.reminderManager = null;
     }
   }
 
-  // 基本機能は前回と同じ
+  // 新しいメッセージを追加
   addMessage(userId, role, content) {
     if (!this.conversations[userId]) {
       this.conversations[userId] = [];
@@ -68,7 +50,9 @@ class ConversationManager {
     
     this.conversations[userId].push({ role, content });
     
+    // 最大数を超えたら古いメッセージを削除
     if (this.conversations[userId].length > this.maxHistoryLength) {
+      // システムメッセージは保持
       const systemMessages = this.conversations[userId].filter(msg => msg.role === 'system');
       const otherMessages = this.conversations[userId]
         .filter(msg => msg.role !== 'system')
@@ -78,31 +62,44 @@ class ConversationManager {
     }
   }
 
+  // ユーザーの会話履歴を取得
   getConversation(userId) {
     return this.conversations[userId] || [];
   }
 
+  // 会話をリセット (システムメッセージは保持)
   resetConversation(userId) {
     const systemMessages = this.conversations[userId]?.filter(msg => msg.role === 'system') || [];
     this.conversations[userId] = systemMessages;
   }
 
+  // システムメッセージを設定
   setSystemMessage(userId, content) {
+    // 既存のシステムメッセージを削除
     if (this.conversations[userId]) {
       this.conversations[userId] = this.conversations[userId].filter(msg => msg.role !== 'system');
     } else {
       this.conversations[userId] = [];
     }
     
+    // 新しいシステムメッセージを先頭に追加
     this.conversations[userId].unshift({ role: 'system', content });
   }
 
-  // リマインド関連チェック（安全版）
+  // 🆕 リマインド関連のメッセージかチェック
   isReminderRelated(message) {
     if (!this.reminderManager) return false;
     
-    const reminderKeywords = ['ダイビング', '潜る', '海', 'ライセンス', '体験ダイビング', '予定', 'スケジュール', '行く', '講習', '器材', 'ギア'];
-    const timeKeywords = ['明日', 'あした', '明後日', '来週', '再来週', '来月', '月曜', '火曜', '水曜', '木曜', '金曜', '土曜', '日曜', '今度', '次回', '予定', 'スケジュール'];
+    const reminderKeywords = [
+      'ダイビング', '潜る', '海', 'ライセンス', '体験ダイビング',
+      '予定', 'スケジュール', '行く', '講習', '器材', 'ギア'
+    ];
+
+    const timeKeywords = [
+      '明日', 'あした', '明後日', '来週', '再来週', '来月',
+      '月曜', '火曜', '水曜', '木曜', '金曜', '土曜', '日曜',
+      '今度', '次回', '予定', 'スケジュール'
+    ];
 
     const hasDivingKeyword = reminderKeywords.some(keyword => message.includes(keyword));
     const hasTimeKeyword = timeKeywords.some(keyword => message.includes(keyword));
@@ -110,27 +107,40 @@ class ConversationManager {
     return hasDivingKeyword && hasTimeKeyword;
   }
 
+  // 🆕 リマインダー管理コマンドかチェック
   isReminderCommand(message) {
     if (!this.reminderManager) return false;
     
-    const commands = ['リマインダー', 'リマインド', '予定確認', '予定一覧', '予定削除', 'スケジュール確認', 'リマインダー一覧'];
+    const commands = [
+      'リマインダー', 'リマインド', '予定確認', '予定一覧', 
+      '予定削除', 'スケジュール確認', 'リマインダー一覧'
+    ];
+
     return commands.some(command => message.includes(command));
   }
 
+  // 🆕 リマインダー処理
   async handleReminder(message, userId) {
     if (!this.reminderManager) {
-      return "リマインド機能は現在準備中です。しばらくお待ちください 🙏";
+      return "リマインド機能は現在準備中です。
+
+しばらくお待ちください 🙏";
     }
 
     try {
+      // リマインダー管理コマンドの処理
       if (message.includes('予定一覧') || message.includes('リマインダー一覧') || message.includes('予定確認')) {
         const reminders = this.reminderManager.getUserReminders(userId);
         
         if (reminders.length === 0) {
-          return "現在、登録されているダイビング予定はありません。\n\n新しい予定ができたら、ぜひ教えてくださいね！ 🤿";
+          return "現在、登録されているダイビング予定はありません。
+
+新しい予定ができたら、ぜひ教えてくださいね！ 🤿";
         }
 
-        let response = "📅 登録済みのダイビング予定\n\n";
+        let response = "📅 登録済みのダイビング予定
+
+";
         reminders.forEach((reminder, index) => {
           const date = new Date(reminder.scheduledDate);
           const dateStr = `${date.getMonth() + 1}月${date.getDate()}日`;
@@ -145,14 +155,20 @@ class ConversationManager {
         return response;
       }
 
+      // 予定削除の処理
       if (message.includes('予定削除')) {
-        return "予定削除機能は実装中です。しばらくお待ちください 🙏";
+        return "予定削除機能は実装中です。
+
+しばらくお待ちください 🙏";
       }
 
+      // 新しいリマインダーの登録
       const parsedDate = this.reminderManager.parseDateTime(message);
       
       if (!parsedDate) {
-        return "日時が認識できませんでした 😅\n\n「明日ダイビング」「来週の土曜日に石垣島でダイビング」のように具体的に教えてください！";
+        return "日時が認識できませんでした 😅
+
+「明日ダイビング」「来週の土曜日に石垣島でダイビング」のように具体的に教えてください！";
       }
 
       const divingInfo = this.reminderManager.extractDivingInfo(message);
@@ -160,27 +176,36 @@ class ConversationManager {
 
       const dateStr = `${parsedDate.getMonth() + 1}月${parsedDate.getDate()}日`;
       
-      let response = `📅 ${dateStr}の${divingInfo.activity}予定を登録しました！\n\n`;
+      let response = `📅 ${dateStr}の${divingInfo.activity}予定を登録しました！
+
+`;
       
       if (divingInfo.location) {
-        response += `📍 場所: ${divingInfo.location}\n`;
+        response += `📍 場所: ${divingInfo.location}
+
+`;
       }
       
-      response += `🔔 以下のタイミングでリマインドします：\n`;
-      response += `・3日前: 準備確認・天気予報\n`;
-      response += `・前日: 最終確認・持ち物チェック\n`;
-      response += `・当日: 応援メッセージ\n`;
-      response += `・翌日: 体験の振り返り\n\n`;
-      response += `素敵なダイビングになりそうですね！ 🤿✨`;
+      response += `🔔 以下のタイミングでリマインドします：
+
+・3日前: 準備確認・天気予報
+・前日: 最終確認・持ち物チェック
+・当日: 応援メッセージ
+・翌日: 体験の振り返り
+
+素敵なダイビングになりそうですね！ 🤿✨`;
 
       return response;
 
     } catch (error) {
       console.error('リマインダー処理エラー:', error);
-      return "リマインダーの処理中にエラーが発生しました。もう一度試してみてください 🙏";
+      return "リマインダーの処理中にエラーが発生しました。
+
+もう一度試してみてください 🙏";
     }
   }
 
+  // GPT応答を見やすく整形する関数（改行改善）
   formatJijiResponse(response) {
     if (!response || typeof response !== 'string') {
       return response;
@@ -188,15 +213,29 @@ class ConversationManager {
 
     let formatted = response;
 
+    // 1. 句点の後に改行を追加（最も重要）
     formatted = formatted.replace(/。\s*/g, '。\n\n');
+    
+    // 2. 感嘆符・疑問符の後に改行
     formatted = formatted.replace(/！\s*/g, '！\n\n');
     formatted = formatted.replace(/？\s*/g, '？\n\n');
+    
+    // 3. 「また、」「そして、」「さらに、」などの接続詞の前で改行
     formatted = formatted.replace(/(また、|そして、|さらに、|ちなみに、|それから、|特に)/g, '\n$1');
+    
+    // 4. 箇条書き風の整形
     formatted = formatted.replace(/([。！？])\s*(・|−|ー)\s*/g, '$1\n$2 ');
+    
+    // 5. 連続する改行を2つまでに制限
     formatted = formatted.replace(/\n{3,}/g, '\n\n');
+    
+    // 6. 先頭と末尾の余分な改行・スペースを削除
     formatted = formatted.trim();
+    
+    // 7. 絵文字の周りのスペース調整
     formatted = formatted.replace(/\s*([🤿🏝️✨🐠🌊🏖️🐟🦈🐙🦑🏊‍♀️🏊‍♂️🤽‍♀️🤽‍♂️])\s*/g, '$1');
 
+    // 8. 最後に絵文字を追加（もしなければ）
     if (!formatted.match(/[🤿🏝️✨🐠🌊🏖️🐟🦈🐙🦑]/)) {
       formatted += ' 🤿';
     }
@@ -204,8 +243,10 @@ class ConversationManager {
     return formatted;
   }
 
+  // 🚀 GPTにメッセージを送信（リマインド機能統合版）
   async sendMessageToGPT(message, userId) {
     try {
+      // 🆕 リマインド関連のメッセージかチェック
       if (this.reminderManager && (this.isReminderRelated(message) || this.isReminderCommand(message))) {
         const reminderResponse = await this.handleReminder(message, userId);
         if (reminderResponse) {
@@ -213,9 +254,13 @@ class ConversationManager {
         }
       }
 
+      // 会話履歴を取得
       const conversationHistory = this.getConversation(userId);
+      
+      // ユーザーメッセージを履歴に追加
       this.addMessage(userId, 'user', message);
       
+      // システムメッセージが設定されていない場合は設定
       if (!conversationHistory.some(msg => msg.role === 'system')) {
         const systemPrompt = `あなたは「Jiji」という名前の、ダイビングBuddyとして振る舞うAIコンシェルジュです。
 特に初心者ダイバーやお一人で旅行するダイバーのパートナーとして、親身になって会話し、アドバイスを提供してください。
@@ -227,13 +272,29 @@ class ConversationManager {
 - 特徴：初心者の気持ちに寄り添い、ダイビングの楽しさを伝えるのが得意
 - 役割：Buddyとして一緒に計画を立てたり、経験を共有したり、安心感を提供する
 
-ダイビングの楽しさと安全を伝え、ユーザーが心強いBuddyがいると感じられるような会話を心がけてください。`;
+${this.reminderManager ? '## 新機能：リマインド機能\n- ダイビング予定の日時が含まれるメッセージには、自動でリマインダー登録を提案\n- 「明日ダイビング」「来週石垣島行く」などの表現を認識\n- 3日前、前日、当日、翌日に適切なフォローアップを実施\n' : ''}
+
+## コミュニケーションスタイル
+- 友達のように会話し、専門用語は分かりやすく説明
+- ユーザーの経験レベルを尊重し、必要以上に基本を説明しない
+- 質問には必ず「なぜそれが大切か/役立つか」の文脈も含めて回答
+- ユーザーの体験談には必ず反応し、共感や興味を示す
+- 「一緒に計画しよう！」「次はどんなダイビングをしてみたい？」など、buddy的な声かけを含める
+- 自分の体験談のように語る（「私も最初は〜だったよ！」など）
+- 安全に関する重要情報は友達口調でも確実に伝える
+
+ダイビングの楽しさと安全を伝え、ユーザーが心強いBuddyがいると感じられるような会話を心がけてください。ユーザーの経験を聞き、夢を応援し、次のダイビングに向けての希望や期待を高められるように対話してください。`;
         
         this.setSystemMessage(userId, systemPrompt);
       }
       
+      // 最新の会話履歴を取得（システムメッセージ込み）
       const messages = this.getConversation(userId);
       
+      console.log('=== GPT送信メッセージ ===');
+      console.log(JSON.stringify(messages, null, 2));
+      
+      // OpenAI API v3を呼び出し
       const completion = await openai.createChatCompletion({
         model: "gpt-3.5-turbo",
         messages: messages,
@@ -242,7 +303,18 @@ class ConversationManager {
       });
 
       let response = completion.data.choices[0].message.content;
+      
+      console.log('=== GPT応答（改行改善前） ===');
+      console.log(response);
+      
+      // 🆕 改行改善を適用
       response = this.formatJijiResponse(response);
+      
+      console.log('=== GPT応答（改行改善後） ===');
+      console.log(response);
+      console.log('========================');
+      
+      // Jijiの応答を履歴に追加
       this.addMessage(userId, 'assistant', response);
       
       return response;
@@ -250,17 +322,61 @@ class ConversationManager {
     } catch (error) {
       console.error('GPT API Error:', error);
       
-      let errorMessage = "申し訳ありません。\n\n少し時間をおいてから再度お試しください。🙏";
+      // エラーの種類に応じて適切なメッセージを返す
+      let errorMessage = "申し訳ありません。
+
+少し時間をおいてから再度お試しください。🙏";
       
       if (error.response?.status === 429) {
-        errorMessage = "たくさんのご質問ありがとうございます！\n\n少し休憩してから再度お声かけください。😊";
+        errorMessage = "たくさんのご質問ありがとうございます！
+
+少し休憩してから再度お声かけください。😊";
       } else if (error.code === 'ECONNABORTED') {
-        errorMessage = "少し混雑しているようです。\n\n少し時間をおいてから再度お試しください。🙏";
+        errorMessage = "少し混雑しているようです。
+
+少し時間をおいてから再度お試しください。🙏";
       }
       
       return errorMessage;
     }
   }
+
+  // 🆕 定期的な通知チェック（外部から呼び出される）
+  async checkAndSendNotifications() {
+    if (!this.reminderManager) {
+      console.log('リマインド機能が無効のため、通知チェックをスキップします');
+      return [];
+    }
+
+    try {
+      const pendingNotifications = this.reminderManager.checkPendingNotifications();
+      const notificationsToSend = [];
+
+      for (const notification of pendingNotifications) {
+        const message = this.reminderManager.generateNotificationMessage(notification);
+        
+        notificationsToSend.push({
+          userId: notification.userId,
+          message: this.formatJijiResponse(message),
+          reminderId: notification.reminderId,
+          type: notification.type
+        });
+
+        // 通知送信完了をマーク
+        this.reminderManager.markNotificationSent(
+          notification.userId,
+          notification.reminderId,
+          notification.type
+        );
+      }
+
+      return notificationsToSend;
+    } catch (error) {
+      console.error('通知チェックエラー:', error);
+      return [];
+    }
+  }
 }
 
+// エクスポート
 module.exports = ConversationManager;
