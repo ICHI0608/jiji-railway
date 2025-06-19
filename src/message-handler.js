@@ -193,17 +193,21 @@ async function getOrCreateUserProfile(lineUserId) {
 
 function formatMessagesForAI(userProfile, conversationHistory, currentMessage) {
     const systemPrompt = generateSystemPrompt(userProfile, conversationHistory);
-    const formattedHistory = conversationHistory.map(msg => ({
-        role: msg.role === 'user' ? 'user' : 'assistant', // DBのroleをAIのroleにマッピング
-        content: msg.content,
-    }));
+    
+    // 配列チェックを追加
+    const formattedHistory = Array.isArray(conversationHistory.data) 
+        ? conversationHistory.data.map(msg => ({
+            role: msg.message_type === 'user' ? 'user' : 'assistant', // message_typeを使用
+            content: msg.message_content, // message_contentを使用
+        }))
+        : [];
+    
     return [
         { role: "system", content: systemPrompt },
         ...formattedHistory,
         { role: "user", content: currentMessage },
     ];
 }
-
 module.exports = {
     processUserMessage
 };
