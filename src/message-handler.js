@@ -4,7 +4,10 @@
  */
 
 const OpenAI = require('openai');
-const { generateSystemPrompt } = require('./src/jiji-persona.js');
+
+// 一時的にコメントアウト - モジュール読み込みエラー回避
+// const { generateSystemPrompt } = require('./jiji-persona.js');
+
 const {
     createUserProfile,
     getUserProfile,
@@ -13,6 +16,18 @@ const {
     getConversationHistory,
     userExists
 } = require('./database.js');
+
+// 一時的な代替関数
+function generateSystemPrompt(userProfile, conversationHistory, pastExperiences, divingPlans) {
+    return `あなたは「Jiji」という沖縄ダイビングの専門ガイドです。
+沖縄の海を知り尽くした親しみやすいダイビングバディとして、
+ユーザーの質問に答えてください。
+
+石垣島・宮古島・沖縄本島・久米島・西表島・与那国島の
+全ポイントに詳しく、安全で楽しいダイビング体験を提案します。
+
+適度に絵文字を使い（🐠🌊🏝️🤿✨）、親しみやすく応答してください。`;
+}
 
 // OpenAI設定
 const openai = new OpenAI({

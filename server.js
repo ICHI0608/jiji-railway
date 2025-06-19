@@ -5,8 +5,13 @@ require('dotenv').config();
 // 分割されたモジュールをインポート
 const { processUserMessage } = require('./src/message-handler.js');
 const { testDatabaseConnection } = require('./src/database.js');
-const { JIJI_PERSONA_CONFIG } = require('./src/jiji-persona.js');
+// const { JIJI_PERSONA_CONFIG } = require('./src/jiji-persona.js');  // 一時的にコメントアウト
 
+// 一時的な代替設定
+const JIJI_PERSONA_CONFIG = {
+    coverage_areas: ["石垣島", "宮古島", "沖縄本島", "久米島", "西表島", "与那国島"],
+    personalities: ["相談相手", "コンシェルジュ", "理解者"]
+};
 // LINE設定
 const config = {
     channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN,
