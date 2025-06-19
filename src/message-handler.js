@@ -3,12 +3,18 @@
  * ユーザーメッセージの処理とAI応答生成
  */
 
-const OpenAI = require('openai');
+// src/message-handler.js
 
-// 一時的にコメントアウト - モジュール読み込みエラー回避
-// const { generateSystemPrompt } = require('./jiji-persona.js');
+const OpenAI = require('openai');
+const {
+    // jiji-persona.jsから、プロンプト生成関数と知識ベース関数をインポート
+    generateSystemPrompt,
+    getRecommendedSpots,
+    getMarineLifeInfo
+} = require('./jiji-persona.js');
 
 const {
+    // database.jsから、データベース操作関数をインポート
     createUserProfile,
     getUserProfile,
     updateUserProfile,
@@ -17,339 +23,187 @@ const {
     userExists
 } = require('./database.js');
 
-// 一時的な代替関数
-function generateSystemPrompt(userProfile, conversationHistory, pastExperiences, divingPlans) {
-    return `あなたは「Jiji」という沖縄ダイビングの専門ガイドです。
-沖縄の海を知り尽くした親しみやすいダイビングバディとして、
-ユーザーの質問に答えてください。
-
-石垣島・宮古島・沖縄本島・久米島・西表島・与那国島の
-全ポイントに詳しく、安全で楽しいダイビング体験を提案します。
-
-適度に絵文字を使い（🐠🌊🏝️🤿✨）、親しみやすく応答してください。`;
-}
-
-// OpenAI設定
+// OpenAIクライアントを初期化
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
 });
 
-/**
- * ユーザーメッセージを処理してAI応答を生成
- * @param {string} lineUserId - LINEユーザーID
- * @param {string} messageText - ユーザーのメッセージ
- * @param {string} sessionId - セッションID（オプション）
- * @returns {string} AI応答
- */
-async function processUserMessage(lineUserId, messageText, sessionId) {
-    sessionId = sessionId || null;
-    
-    try {
-        console.log(`📨 メッセージ受信: ${lineUserId} - ${messageText}`);
+// === AIに利用させるツール（関数）の定義 ===
+const tools = [
+    {
+        type: "function",
+        function: {
+            name: "update_user_profile_in_db",
+            description: "ユーザーのダイビング経験、Cカードランク、名前、興味のあるエリアなどのプロフィール情報をデータベースに保存または更新する。",
+            parameters: {
+                type: "object",
+                properties: {
+                    name: { type: "string", description: "ユーザーの名前。例: 田中" },
+                    diving_experience: { type: "string", enum: ["beginner", "open_water", "advanced", "pro"], description: "ユーザーのダイビング経験レベル。" },
+                    license_type: { type: "string", enum: ["OWD", "AOW", "RED", "DM"], description: "ユーザーが保持しているCカードのランク。" },
+                    interested_areas: { type: "array", items: { type: "string" }, description: "ユーザーが興味を示している沖縄のダイビングエリア。例: ['石垣島', '慶良間']" }
+                },
+                required: [],
+            },
+        },
+    },
+    {
+        type: "function",
+        function: {
+            name: "get_diving_spot_recommendation",
+            description: "ユーザーの経験レベルや興味のあるエリアに基づいて、おすすめのダイビングスポット情報を検索して返す。",
+            parameters: {
+                type: "object",
+                properties: {
+                    level: { type: "string", enum: ["beginner", "intermediate", "advanced"], description: "ダイビングの経験レベル" },
+                    area: { type: "string", description: "興味のある特定のエリア名。例: 石垣島" }
+                },
+                required: ["level"],
+            },
+        },
+    },
+    {
+        type: "function",
+        function: {
+            name: "get_marine_life_information",
+            description: "特定の海洋生物（マンタ、ウミガメなど）に関する情報（見られる場所、ベストシーズンなど）を検索して返す。",
+            parameters: {
+                type: "object",
+                properties: {
+                    life_form_name: { type: "string", description: "情報を知りたい海洋生物の名前。例: マンタ" }
+                },
+                required: ["life_form_name"],
+            },
+        },
+    }
+];
 
-        // 1. ユーザー存在確認・新規登録
-        const exists = await userExists(lineUserId);
-        if (!exists) {
-            console.log(`🆕 新規ユーザー登録: ${lineUserId}`);
-            await createUserProfile(lineUserId, {
-                name: null,
-                diving_experience: null,
-                license_type: null,
-                preferences: {}
-            });
+/**
+ * ユーザーメッセージのメイン処理関数
+ */
+async function processUserMessage(lineUserId, messageText) {
+    try {
+        console.log(`📨 メッセージ処理開始: ${lineUserId} - "${messageText}"`);
+
+        // 1. ユーザープロファイルと会話履歴を取得（なければ新規作成）
+        const userProfile = await getOrCreateUserProfile(lineUserId);
+        const conversationHistory = await getConversationHistory(lineUserId, 10);
+        await saveConversation(lineUserId, 'user', messageText, null); // ユーザーのメッセージを先に保存
+
+        // 2. AIに渡すためのメッセージ履歴をフォーマット
+        const messages = formatMessagesForAI(userProfile, conversationHistory, messageText);
+        
+        // 3. OpenAI APIを呼び出し（ツール使用を許可）
+        const response = await openai.chat.completions.create({
+            model: "gpt-4o",
+            messages: messages,
+            tools: tools,
+            tool_choice: "auto",
+        });
+
+        const responseMessage = response.choices[0].message;
+
+        // 4. AIがツールの使用を決定したか確認
+        if (responseMessage.tool_calls) {
+            // ツール実行結果を含めて、再度AIに最終応答を生成させる
+            const finalResponse = await handleToolCalls(lineUserId, messages, responseMessage.tool_calls);
+            await saveConversation(lineUserId, 'assistant', finalResponse, null);
+            return finalResponse;
         }
 
-        // 2. ユーザーメッセージをデータベースに保存
-        await saveConversation(lineUserId, 'user', messageText, sessionId);
-
-        // 3. ユーザープロファイル取得
-        const profileResult = await getUserProfile(lineUserId);
-        const userProfile = profileResult.success ? profileResult.data : null;
-
-        // 4. 会話履歴取得と分析（最新20件）
-        const historyResult = await getConversationHistory(lineUserId, 20);
-        const conversationHistory = historyResult.success ? historyResult.data : [];
-        
-        // 過去体験の抽出
-        const pastExperiences = extractPastExperiences(conversationHistory);
-        const divingPlans = extractDivingPlans(conversationHistory);
-
-        // 5. プロファイル情報の自動更新チェック
-        const updatedProfile = await checkAndUpdateProfile(lineUserId, messageText, userProfile);
-
-        // 6. AI応答生成（過去体験と予定を含む）
-        const aiResponse = await generateAIResponse(
-            messageText, 
-            updatedProfile || userProfile, 
-            conversationHistory, 
-            pastExperiences, 
-            divingPlans
-        );
-
-        // 7. AI応答をデータベースに保存
-        await saveConversation(lineUserId, 'assistant', aiResponse, sessionId);
-
+        // 5. 通常のテキスト応答を保存して返す
+        const aiResponseText = responseMessage.content;
+        await saveConversation(lineUserId, 'assistant', aiResponseText, null);
         console.log(`🤖 AI応答生成完了: ${lineUserId}`);
-        return aiResponse;
+        return aiResponseText;
 
     } catch (error) {
-        console.error('❌ メッセージ処理エラー:', error);
+        console.error('❌ メッセージ処理全体のエラー:', error);
         return 'すみません、一時的にエラーが発生しました。もう一度お試しください。🙏';
     }
 }
 
 /**
- * 過去のダイビング体験を抽出
- * @param {Array} conversationHistory - 会話履歴
- * @returns {Array} 体験情報
+ * AIからのツール呼び出し要求を処理する
  */
-function extractPastExperiences(conversationHistory) {
-    const experiences = [];
-    const divingKeywords = [
-        'ダイビング', '潜っ', '青の洞窟', 'ケラマ', '慶良間', '万座', '真栄田岬',
-        '石垣島', '宮古島', '与那国', '久米島', '西表島',
-        'マンタ', 'ウミガメ', 'ジンベエザメ', 'ハンマーヘッド',
-        '川平石崎', 'マンタスクランブル', '下地島', '八重干瀬'
-    ];
-    
-    conversationHistory.forEach(conv => {
-        if (conv.message_type === 'user') {
-            const hasExperience = divingKeywords.some(keyword => 
-                conv.message_content.includes(keyword)
-            );
-            
-            if (hasExperience) {
-                experiences.push({
-                    content: conv.message_content,
-                    timestamp: conv.timestamp
-                });
-            }
-        }
-    });
-    
-    return experiences.slice(-5); // 最新5件
-}
+async function handleToolCalls(lineUserId, messages, toolCalls) {
+    // 実行したツールの結果を格納する配列
+    const toolResponses = [];
 
-/**
- * ダイビング予定を検知
- * @param {Array} conversationHistory - 会話履歴
- * @returns {Array} 予定情報
- */
-function extractDivingPlans(conversationHistory) {
-    const plans = [];
-    const planKeywords = [
-        '明日', '来週', '今度', '予約', '行く予定', '行きます',
-        '計画', 'プラン', '旅行', 'ツアー', '予定'
-    ];
-    const divingKeywords = ['ダイビング', '沖縄', '石垣', '宮古', '潜り'];
-    
-    conversationHistory.forEach(conv => {
-        if (conv.message_type === 'user') {
-            const hasPlan = planKeywords.some(keyword => 
-                conv.message_content.includes(keyword)
-            );
-            const hasDiving = divingKeywords.some(keyword => 
-                conv.message_content.includes(keyword)
-            );
-            
-            if (hasPlan && hasDiving) {
-                plans.push({
-                    content: conv.message_content,
-                    timestamp: conv.timestamp
-                });
-            }
-        }
-    });
-    
-    return plans.slice(-3); // 最新3件
-}
+    for (const toolCall of toolCalls) {
+        const functionName = toolCall.function.name;
+        const functionArgs = JSON.parse(toolCall.function.arguments);
+        let functionResponse;
 
-/**
- * メッセージからプロファイル情報を自動更新
- * @param {string} lineUserId - LINEユーザーID  
- * @param {string} messageText - メッセージテキスト
- * @param {Object} currentProfile - 現在のプロファイル
- * @returns {Object|null} 更新されたプロファイル（更新があった場合）
- */
-async function checkAndUpdateProfile(lineUserId, messageText, currentProfile) {
-    if (!currentProfile) return null;
+        console.log(`🔄 AIがツール「${functionName}」を実行します。引数:`, functionArgs);
 
-    const updates = {};
-    let hasUpdates = false;
-
-    // 経験レベルの自動検知
-    if (!currentProfile.diving_experience) {
-        if (messageText.includes('初心者') || messageText.includes('体験ダイビング')) {
-            updates.diving_experience = 'beginner';
-            hasUpdates = true;
-        } else if (messageText.includes('アドバンス') || messageText.includes('AOW')) {
-            updates.diving_experience = 'advanced';
-            hasUpdates = true;
-        } else if (messageText.includes('オープンウォーター') || messageText.includes('OWD')) {
-            updates.diving_experience = 'open_water';
-            hasUpdates = true;
-        }
-    }
-
-    // ライセンス情報の自動検知
-    if (!currentProfile.license_type) {
-        if (messageText.includes('オープンウォーター') || messageText.includes('OWD')) {
-            updates.license_type = 'OWD';
-            hasUpdates = true;
-        } else if (messageText.includes('アドバンス') || messageText.includes('AOW')) {
-            updates.license_type = 'AOW';
-            hasUpdates = true;
-        } else if (messageText.includes('レスキュー') || messageText.includes('RED')) {
-            updates.license_type = 'RED';
-            hasUpdates = true;
-        }
-    }
-
-    // 名前の自動検知（簡単なパターン）
-    if (!currentProfile.name) {
-        const namePatterns = [
-            /私は(.+?)です/,
-            /(.+?)と申します/,
-            /名前は(.+?)です/,
-            /(.+?)と言います/
-        ];
-        
-        for (const pattern of namePatterns) {
-            const match = messageText.match(pattern);
-            if (match && match[1]) {
-                updates.name = match[1].trim();
-                hasUpdates = true;
+        // 関数名に応じて、実際に定義した関数を実行
+        switch (functionName) {
+            case "update_user_profile_in_db":
+                await updateUserProfile(lineUserId, functionArgs);
+                functionResponse = { success: true, message: "プロフィールを更新しました。" };
                 break;
-            }
+            case "get_diving_spot_recommendation":
+                functionResponse = getRecommendedSpots(functionArgs.level, functionArgs.area);
+                break;
+            case "get_marine_life_information":
+                functionResponse = getMarineLifeInfo(functionArgs.life_form_name);
+                break;
+            default:
+                functionResponse = { error: "Unknown function" };
         }
+        
+        // ツール実行結果を整形して配列に追加
+        toolResponses.push({
+            tool_call_id: toolCall.id,
+            role: "tool",
+            name: functionName,
+            content: JSON.stringify(functionResponse), // 結果をJSON文字列として渡す
+        });
     }
 
-    // 好みエリアの自動検知
-    const areas = ['石垣島', '宮古島', '沖縄本島', '慶良間', '久米島', '西表島', '与那国島'];
-    const preferences = currentProfile.preferences || {};
-    const interestedAreas = preferences.interested_areas || [];
-    
-    areas.forEach(area => {
-        if (messageText.includes(area) && !interestedAreas.includes(area)) {
-            if (!updates.preferences) updates.preferences = { ...preferences };
-            if (!updates.preferences.interested_areas) updates.preferences.interested_areas = [...interestedAreas];
-            updates.preferences.interested_areas.push(area);
-            hasUpdates = true;
-        }
+    // 元の会話履歴に、AIの思考（tool_calls）とツールの実行結果を追加
+    const newMessages = [
+        ...messages,
+        ...toolCalls.map(toolCall => ({ role: 'assistant', tool_calls: [toolCall] })), // AIの思考を履歴に追加
+        ...toolResponses // ツールの実行結果を履歴に追加
+    ];
+
+    // 更新された会話履歴で、再度AIに最終的な自然言語の応答を生成させる
+    const secondResponse = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: newMessages,
     });
 
-    // 更新があった場合のみデータベース更新
-    if (hasUpdates) {
-        console.log(`🔄 プロファイル自動更新: ${lineUserId}`, updates);
-        const result = await updateUserProfile(lineUserId, updates);
-        return result.success ? result.data : null;
-    }
-
-    return null;
+    return secondResponse.choices[0].message.content;
 }
 
-/**
- * OpenAI GPTを使ってAI応答を生成
- * @param {string} currentMessage - 現在のメッセージ
- * @param {Object} userProfile - ユーザープロファイル
- * @param {Array} conversationHistory - 会話履歴
- * @param {Array} pastExperiences - 過去のダイビング体験
- * @param {Array} divingPlans - ダイビング予定
- * @returns {string} AI応答
- */
-async function generateAIResponse(currentMessage, userProfile, conversationHistory, pastExperiences, divingPlans) {
-    try {
-        // システムプロンプト生成
-        const systemPrompt = generateSystemPrompt(userProfile, conversationHistory, pastExperiences, divingPlans);
+// --------------------------------
+// ヘルパー関数
+// --------------------------------
 
-        const response = await openai.chat.completions.create({
-            model: "gpt-4o",
-            messages: [
-                { role: "system", content: systemPrompt },
-                { role: "user", content: currentMessage }
-            ],
-            max_tokens: 1000,
-            temperature: 0.8
-        });
-
-        return response.choices[0].message.content;
-
-    } catch (error) {
-        console.error('❌ OpenAI API エラー:', error);
-        
-        // エラータイプに応じた対応
-        if (error.code === 'rate_limit_exceeded') {
-            return 'すみません、現在多くのご利用をいただいており、少し時間をおいてからもう一度お試しください。🙏';
-        } else if (error.code === 'insufficient_quota') {
-            return 'すみません、AIサービスの利用上限に達しました。少し時間をおいてからもう一度お試しください。🙏';
-        } else {
-            return 'すみません、ただいまAIサービスに接続できません。少し時間をおいてからもう一度お試しください。🙏';
-        }
+async function getOrCreateUserProfile(lineUserId) {
+    if (!(await userExists(lineUserId))) {
+        console.log(`🆕 新規ユーザー登録: ${lineUserId}`);
+        await createUserProfile(lineUserId, {});
     }
+    const profileResult = await getUserProfile(lineUserId);
+    return profileResult.data;
 }
 
-/**
- * メッセージタイプを判定
- * @param {string} messageText - メッセージテキスト
- * @returns {string} メッセージタイプ
- */
-function detectMessageType(messageText) {
-    // 挨拶
-    if (/こんにちは|はじめまして|よろしく/.test(messageText)) {
-        return 'greeting';
-    }
-    
-    // 質問
-    if (/\?|？|教えて|どう|いつ|どこ|何/.test(messageText)) {
-        return 'question';
-    }
-    
-    // 予定・計画
-    if (/明日|来週|今度|予約|行く予定|計画/.test(messageText)) {
-        return 'plan';
-    }
-    
-    // 体験談
-    if (/行った|潜った|見た|楽しかった|良かった/.test(messageText)) {
-        return 'experience';
-    }
-    
-    return 'general';
-}
-
-/**
- * リマインダー設定が必要かチェック
- * @param {string} messageText - メッセージテキスト
- * @returns {Object|null} リマインダー情報
- */
-function checkReminderNeeded(messageText) {
-    const reminderKeywords = [
-        '明日ダイビング', '来週ダイビング', '今度ダイビング',
-        '明日潜る', '来週潜る', '今度潜る',
-        '予約した', '予約取った', '行く予定'
+function formatMessagesForAI(userProfile, conversationHistory, currentMessage) {
+    const systemPrompt = generateSystemPrompt(userProfile, conversationHistory);
+    const formattedHistory = conversationHistory.map(msg => ({
+        role: msg.role === 'user' ? 'user' : 'assistant', // DBのroleをAIのroleにマッピング
+        content: msg.content,
+    }));
+    return [
+        { role: "system", content: systemPrompt },
+        ...formattedHistory,
+        { role: "user", content: currentMessage },
     ];
-    
-    const hasReminderKeyword = reminderKeywords.some(keyword => 
-        messageText.includes(keyword)
-    );
-    
-    if (hasReminderKeyword) {
-        return {
-            type: 'diving_preparation',
-            message: messageText,
-            detected_keywords: reminderKeywords.filter(k => messageText.includes(k))
-        };
-    }
-    
-    return null;
 }
 
 module.exports = {
-    processUserMessage,
-    extractPastExperiences,
-    extractDivingPlans,
-    checkAndUpdateProfile,
-    generateAIResponse,
-    detectMessageType,
-    checkReminderNeeded
+    processUserMessage
 };
