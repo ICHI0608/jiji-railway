@@ -221,10 +221,11 @@ function generateSystemPrompt(userProfile, conversationHistory, pastExperiences,
 ` : 'ユーザー情報: 初回利用者';
 
     // 会話履歴を文字列化（最新8件のみ）
-    const recentHistory = conversationHistory.slice(-8).map(conv => 
+    const recentHistory = Array.isArray(conversationHistory) 
+    ? conversationHistory.slice(-8).map(conv => 
         `${conv.message_type}: ${conv.message_content}`
-    ).join('\n');
-
+      ).join('\n')
+    : '';
     // 過去体験の情報
     const experienceInfo = pastExperiences.length > 0 ? `
 過去のダイビング体験:
