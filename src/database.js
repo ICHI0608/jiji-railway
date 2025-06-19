@@ -1,6 +1,5 @@
 const { createClient } = require('@supabase/supabase-js');
 const { createClient: createRedisClient } = require('redis');
-require('dotenv').config();
 
 // Supabase クライアント設定
 const supabase = createClient(
@@ -38,7 +37,9 @@ async function ensureRedisConnection() {
  * @param {Object} userData - ユーザーデータ
  * @returns {Object} 作成結果
  */
-async function createUserProfile(lineUserId, userData = {}) {
+async function createUserProfile(lineUserId, userData) {
+    userData = userData || {};
+    
     try {
         const profileData = {
             line_user_id: lineUserId,
@@ -166,7 +167,10 @@ async function updateUserProfile(lineUserId, updates) {
  * @param {Object} metadata - 追加情報（オプション）
  * @returns {Object} 保存結果
  */
-async function saveConversation(lineUserId, messageType, content, sessionId = null, metadata = {}) {
+async function saveConversation(lineUserId, messageType, content, sessionId, metadata) {
+    sessionId = sessionId || null;
+    metadata = metadata || {};
+    
     try {
         const conversationData = {
             line_user_id: lineUserId,
@@ -204,7 +208,10 @@ async function saveConversation(lineUserId, messageType, content, sessionId = nu
  * @param {string} sessionId - 特定セッションのみ取得（オプション）
  * @returns {Object} 会話履歴
  */
-async function getConversationHistory(lineUserId, limit = 50, sessionId = null) {
+async function getConversationHistory(lineUserId, limit, sessionId) {
+    limit = limit || 50;
+    sessionId = sessionId || null;
+    
     try {
         let query = supabase
             .from('conversations')
@@ -256,7 +263,7 @@ async function userExists(lineUserId) {
     return result.success && result.error !== 'USER_NOT_FOUND';
 }
 
-// ===== データベース接続テスト（既存） =====
+// ===== データベース接続テスト =====
 
 async function testDatabaseConnection() {
     try {
@@ -287,9 +294,6 @@ async function testDatabaseConnection() {
         }
     }
 }
-
-// データベース接続テストを実行（コメントアウトして関数実行を無効化）
-// testDatabaseConnection();
 
 module.exports = {
     supabase,

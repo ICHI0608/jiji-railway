@@ -1,10 +1,10 @@
 /**
- * Jiji沖縄ダイビングバディ - メッセージ処理ハンドラー
+ * Jiji沖縄ダイビングバディ - メッセージ処理ハンドラー（Glitch対応版）
  * ユーザーメッセージの処理とAI応答生成
  */
 
 const OpenAI = require('openai');
-const { generateSystemPrompt } = require('./jiji-persona.js');
+const { generateSystemPrompt } = require('./src/jiji-persona.js');
 const {
     createUserProfile,
     getUserProfile,
@@ -12,7 +12,7 @@ const {
     saveConversation,
     getConversationHistory,
     userExists
-} = require('./database');
+} = require('./database.js');
 
 // OpenAI設定
 const openai = new OpenAI({
@@ -26,7 +26,9 @@ const openai = new OpenAI({
  * @param {string} sessionId - セッションID（オプション）
  * @returns {string} AI応答
  */
-async function processUserMessage(lineUserId, messageText, sessionId = null) {
+async function processUserMessage(lineUserId, messageText, sessionId) {
+    sessionId = sessionId || null;
+    
     try {
         console.log(`📨 メッセージ受信: ${lineUserId} - ${messageText}`);
 

@@ -1,5 +1,5 @@
 /**
- * Jiji沖縄ダイビングバディ - ペルソナ設定（最新仕様版）
+ * Jiji沖縄ダイビングバディ - ペルソナ設定（Glitch対応版）
  * パーソナルAIダイビングバディとしての詳細設定
  */
 
@@ -203,15 +203,21 @@ const JIJI_PERSONA = `
  * @returns {string} システムプロンプト
  */
 function generateSystemPrompt(userProfile, conversationHistory, pastExperiences, divingPlans) {
+    // デフォルト値設定
+    userProfile = userProfile || {};
+    conversationHistory = conversationHistory || [];
+    pastExperiences = pastExperiences || [];
+    divingPlans = divingPlans || [];
+    
     // プロファイル情報を文字列化
     const profileInfo = userProfile ? `
 ユーザー情報:
 - 名前: ${userProfile.name || '未設定'}
 - ダイビング経験: ${userProfile.diving_experience || '未設定'}
 - ライセンス: ${userProfile.license_type || '未設定'}
-- プロファイル完成度: ${userProfile.profile_completion_rate}%
-- 好みエリア: ${userProfile.preferences?.interested_areas?.join('、') || '未設定'}
-- 好みスタイル: ${userProfile.preferences?.diving_styles?.join('、') || '未設定'}
+- プロファイル完成度: ${userProfile.profile_completion_rate || 0}%
+- 好みエリア: ${(userProfile.preferences && userProfile.preferences.interested_areas) ? userProfile.preferences.interested_areas.join('、') : '未設定'}
+- 好みスタイル: ${(userProfile.preferences && userProfile.preferences.diving_styles) ? userProfile.preferences.diving_styles.join('、') : '未設定'}
 ` : 'ユーザー情報: 初回利用者';
 
     // 会話履歴を文字列化（最新8件のみ）
@@ -279,7 +285,8 @@ function getCurrentSeasonInfo(month) {
  * @param {string} area - エリア（オプション）
  * @returns {Array} おすすめポイント
  */
-function getRecommendedSpots(level, area = null) {
+function getRecommendedSpots(level, area) {
+    area = area || null;
     const allSpots = [];
     
     // 指定エリアまたは全エリアのポイントを取得
