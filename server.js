@@ -3,9 +3,9 @@ const line = require('@line/bot-sdk');
 require('dotenv').config();
 
 // 分割されたモジュールをインポート
-const { processUserMessage } = require('./src/message-handler');
-const { testDatabaseConnection } = require('./src/database');
-const { JIJI_PERSONA_CONFIG } = require('./src/jiji-persona');
+const { processUserMessage } = require('./src/message-handler.js');
+const { testDatabaseConnection } = require('./src/database.js');
+const { JIJI_PERSONA_CONFIG } = require('./src/jiji-persona.js');
 
 // LINE設定
 const config = {
@@ -268,8 +268,8 @@ async function startServer() {
         console.log('🚀 Jiji沖縄ダイビングバディ起動完了！');
         console.log('🤖 Database統合版 v2.0.0');
         console.log('=====================================');
-        console.log(`📡 サーバー: http://localhost:${PORT}`);
-        console.log(`🤖 Webhook: http://localhost:${PORT}/webhook`);
+        console.log(`📡 サーバー: https://buddys-bot.glitch.me`);
+        console.log(`🤖 Webhook: https://buddys-bot.glitch.me/webhook`);
         console.log(`💾 データベース: PostgreSQL + Redis`);
         console.log(`🏝️ 対応エリア: ${JIJI_PERSONA_CONFIG.coverage_areas.join('、')}`);
         console.log('=====================================🎉\n');

@@ -4,7 +4,7 @@
  */
 
 const OpenAI = require('openai');
-const { generateSystemPrompt } = require('./jiji-persona');
+const { generateSystemPrompt } = require('./jiji-persona.js');
 const {
     createUserProfile,
     getUserProfile,
