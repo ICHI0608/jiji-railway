@@ -66,7 +66,7 @@ class SessionManager {
 // 古いセッションのクリーンアップ（1時間ごと）
 setInterval(() => {
   SessionManager.clearOldSessions();
-  console.log(\`セッション数: \${userSessions.size}\`);
+ 　console.log(`セッション数: ${userSessions.size}`);
 }, 60 * 60 * 1000);
 
 // ========== Express設定 ==========
@@ -100,8 +100,8 @@ app.post('/webhook', middleware(config), (req, res) => {
 
 // ========== サーバー起動 ==========
 app.listen(PORT, () => {
-  console.log(\`🌊 Jiji LINE Bot Server起動\`);
-  console.log(\`📍 Port: \${PORT}\`);
-  console.log(\`💾 Session: Memory-based (Redis無効化)\`);
-  console.log(\`🚀 Environment: Railway Production\`);
+  console.log(`🌊 Jiji LINE Bot Server起動`);
+  console.log(`📍 Port: ${PORT}`);
+  console.log(`💾 Session: Memory-based (Redis無効化)`);
+  console.log(`🚀 Environment: Railway Production`);
 });
