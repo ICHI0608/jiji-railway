@@ -1,3 +1,21 @@
 .glitchdotcom.json
 .node-gyp
 node_modules
+.glitchdotcom.json
+.node-gyp
+node_modules
+
+# Environment variables
+.env
+.env.local
+.env.production
+.env.development
+
+# Logs
+*.log
+npm-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
