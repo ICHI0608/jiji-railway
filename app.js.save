@@ -1,0 +1,256 @@
+const express = require('express');
+const line = require('@line/bot-sdk');
+const OpenAI = require('openai');
+require('dotenv').config();
+
+// データベース関数をインポート
+const {
+    createUserProfile,
+    getUserProfile,
+    updateUserProfile,
+    saveConversation,
+    getConversationHistory,
+    userExists
+} = require('./src/database');
+
+// OpenAI設定
+const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+});
+
+// LINE設定
+const config = {
+    channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN,
+    channelSecret: process.env.LINE_CHANNEL_SECRET,
+};
+
+const client = new line.Client(config);
+const app = express();
+
+// Jijiのペルソナ設定
+const JIJI_PERSONA = `
+あなたは「Jiji（ダイビングバディ）」という沖縄ダイビングの専門パーソナルAIです。
+
+【存在意義：3つの顔】
+1. **相談相手** - ダイビングの悩みや不安を聞き、的確なアドバイス
+2. **コンシェルジュ** - 最適なポイント・ショップ・日程の提案
+3. **理解者** - ユーザーの体験や成長を記憶し、共に喜ぶパートナー
+
+【キャラクター設定】
+- 沖縄在住のベテランダイビングガイド（20年以上の経験）
+- 明るく親しみやすい性格で、沖縄の海を心から愛している
+- 一人一人のダイバーの成長を記憶し、寄り添うパーソナルバディ
+- 沖縄の文化や方言も交えながら話す
+- ユーザーとの過去の会話や体験を常に覚えている
+
+【学習・記憶システム】
+- **経験本数**: ユーザーのダイビング回数を把握
+- **資格・スキル**: ライセンスレベルと得意分野
+- **好み**: 好きなポイント、生物、ダイビングスタイル
+- **過去体験**: 以前のダイビング体験談、感想、写真
+- **反応パターン**: ユーザーの性格や反応の傾向
+
+【会話スタイル】
+- **継続性重視**: 「前回の青の洞窟どうでした？」「先月のケラマは楽しめましたか？」
+- **成長記録**: 「初回の時より上達しましたね！」「50本記念おめでとう！」
+- **個別提案**: 過去の好みと経験を基にした具体的な提案
+- **共感表現**: 体験を一緒に喜び、不安を共に解決
+- **自然な記憶参照**: 過去の会話を自然に織り交ぜる
+
+【専門知識】
+- 沖縄本島・離島の全ダイビングポイント（100箇所以上）
+- 季節ごとの海況・生物情報・ベストタイミング
+- ダイビングライセンス・技術指導・スキルアップ
+- ダイビングショップ・宿泊施設・交通情報
+- 天候・潮汐・透明度・流れなどの海況判断
+
+【話し方の特徴】
+- フレンドリーで親しみやすい沖縄弁も交える
+- 安全を最優先に考える責任感
+- 具体的で実用的なアドバイス（日時・場所・料金含む）
+- 沖縄の海の魅力を熱く語る情熱
+- 適度な絵文字使用（🐠🌊🏝️🤿✨）
+
+【重要な行動原則】
+1. **記憶の活用**: 過去の会話や体験を必ず参照して応答
+2. **安全第一**: 海況や技術レベルを考慮した安全な提案
+3. **成長サポート**: ユーザーのスキルアップを積極的に応援
+4. **感情共有**: 喜びも不安も一緒に感じる相棒として振る舞う
+5. **継続関係**: 一度きりではなく、長期的な関係を築く
+
+【リマインド検知キーワード】
+- 「明日/来週/今度ダイビング」「予約した」「行く予定」
+- 自動で事前準備リマインドと事後フォローアップを提案
+`;
+
+// ===== メッセージ処理関数 =====
+
+/**
+ * ユーザーメッセージを処理してAI応答を生成
+ * @param {string} lineUserId - LINEユーザーID
+ * @param {string} messageText - ユーザーのメッセージ
+ * @returns {string} AI応答
+ */
+async function processUserMessage(lineUserId, messageText) {
+    try {
+        console.log(`📨 メッセージ受信: ${lineUserId} - ${messageText}`);
+
+        // 1. ユーザー存在確認・新規登録
+        const exists = await userExists(lineUserId);
+        if (!exists) {
+            console.log(`🆕 新規ユーザー登録: ${lineUserId}`);
+            await createUserProfile(lineUserId, {
+                name: null,
+                diving_experience: null,
+                license_type: null,
+                preferences: {}
+            });
+        }
+
+        // 2. ユーザーメッセージをデータベースに保存
+        await saveConversation(lineUserId, 'user', messageText);
+
+        // 3. ユーザープロファイル取得
+        const profileResult = await getUserProfile(lineUserId);
+        const userProfile = profileResult.success ? profileResult.data : null;
+
+        // 4. 会話履歴取得（最新10件）
+        const historyResult = await getConversationHistory(lineUserId, 10);
+        const conversationHistory = historyResult.success ? historyResult.data : [];
+
+        // 5. AI応答生成
+        const aiResponse = await generateAIResponse(messageText, userProfile, conversationHistory);
+
+        // 6. AI応答をデータベースに保存
+        await saveConversation(lineUserId, 'assistant', aiResponse);
+
+        console.log(`🤖 AI応答生成完了: ${lineUserId}`);
+        return aiResponse;
+
+    } catch (error) {
+        console.error('❌ メッセージ処理エラー:', error);
+        return 'すみません、一時的にエラーが発生しました。もう一度お試しください。🙏';
+    }
+}
+
+/**
+ * OpenAI GPTを使ってAI応答を生成
+ * @param {string} currentMessage - 現在のメッセージ
+ * @param {Object} userProfile - ユーザープロファイル
+ * @param {Array} conversationHistory - 会話履歴
+ * @returns {string} AI応答
+ */
+async function generateAIResponse(currentMessage, userProfile, conversationHistory) {
+    try {
+        // プロファイル情報を文字列化
+        const profileInfo = userProfile ? `
+ユーザー情報:
+- 名前: ${userProfile.name || '未設定'}
+- ダイビング経験: ${userProfile.diving_experience || '未設定'}
+- ライセンス: ${userProfile.license_type || '未設定'}
+- プロファイル完成度: ${userProfile.profile_completion_rate}%
+` : 'ユーザー情報: 初回利用者';
+
+        // 会話履歴を文字列化（最新5件のみ）
+        const recentHistory = conversationHistory.slice(-5).map(conv => 
+            `${conv.message_type}: ${conv.message_content}`
+        ).join('\n');
+
+        const systemPrompt = `${JIJI_PERSONA}
+
+${profileInfo}
+
+最近の会話履歴:
+${recentHistory}
+
+上記の情報を参考に、ユーザーの質問に適切に回答してください。
+プロファイル情報が不足している場合は、自然な会話の流れで情報収集を行ってください。`;
+
+        const response = await openai.chat.completions.create({
+            model: "gpt-4o",
+            messages: [
+                { role: "system", content: systemPrompt },
+                { role: "user", content: currentMessage }
+            ],
+            max_tokens: 1000,
+            temperature: 0.8
+        });
+
+        return response.choices[0].message.content;
+
+    } catch (error) {
+        console.error('❌ OpenAI API エラー:', error);
+        return 'すみません、ただいまAIサービスに接続できません。少し時間をおいてからもう一度お試しください。🙏';
+    }
+}
+
+// ===== LINE Webhook処理 =====
+
+app.post('/webhook', line.middleware(config), async (req, res) => {
+    try {
+        const events = req.body.events;
+        console.log(`📥 Webhook受信: ${events.length}件のイベント`);
+
+        const promises = events.map(async (event) => {
+            if (event.type === 'message' && event.message.type === 'text') {
+                const lineUserId = event.source.userId;
+                const messageText = event.message.text;
+
+                // メッセージ処理とAI応答生成
+                const aiResponse = await processUserMessage(lineUserId, messageText);
+
+                // LINE応答送信
+                return client.replyMessage(event.replyToken, {
+                    type: 'text',
+                    text: aiResponse
+                });
+            }
+        });
+
+        await Promise.all(promises);
+        res.status(200).end();
+
+    } catch (error) {
+        console.error('❌ Webhook処理エラー:', error);
+        res.status(500).end();
+    }
+});
+
+// ===== ヘルスチェック =====
+
+app.get('/', (req, res) => {
+    res.json({
+        status: 'ok',
+        message: 'Jiji沖縄ダイビングバディ - データベース統合版',
+        timestamp: new Date().toISOString()
+    });
+});
+
+app.get('/health', async (req, res) => {
+    try {
+        // データベース接続確認
+        const testProfile = await getUserProfile('health_check_user');
+        
+        res.json({
+            status: 'healthy',
+            database: 'connected',
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        res.status(500).json({
+            status: 'error',
+            database: 'disconnected',
+            error: error.message
+        });
+    }
+});
+
+// ===== サーバー起動 =====
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`🚀 Jiji沖縄ダイビングバディ起動完了！`);
+    console.log(`📡 サーバー: http://localhost:${PORT}`);
+    console.log(`🤖 Webhook: http://localhost:${PORT}/webhook`);
+    console.log(`💾 データベース統合版`);
+}

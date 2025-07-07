@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jiji沖縄ダイビングバディ - 初心者から始める沖縄の海</title>
+    <meta name="description" content="沖縄ダイビングの魅力を発見しよう！初心者でも安心して楽しめるダイビング体験をJijiがサポート。石垣島・宮古島・沖縄本島の美しい海があなたを待っています。">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- ヘッダー -->
+    <header class="header">
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="nav-logo">
+                    <h1>🌊 Jiji</h1>
+                    <span>沖縄ダイビングバディ</span>
+                </div>
+                <ul class="nav-menu">
+                    <li><a href="#hero">ホーム</a></li>
+                    <li><a href="#sea-conditions">海況情報</a></li>
+                    <li><a href="#shop-search">ショップ検索</a></li>
+                    <li><a href="#experiences">体験談</a></li>
+                    <li><a href="#about-jiji">Jijiについて</a></li>
+                </ul>
+                <div class="nav-buttons">
+                    <button class="btn-secondary" onclick="openLINE()">
+                        <i class="fab fa-line"></i> LINE相談
+                    </button>
+                    <button class="btn-primary" onclick="startPlanning()">
+                        ダイビング計画を始める
+                    </button>
+                </div>
+                <div class="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- メインヒーローセクション -->
+    <section id="hero" class="hero">
+        <div class="hero-video-container">
+            <div class="hero-gradient"></div>
+            <div class="hero-content">
+                <div class="hero-text">
+                    <h1 class="hero-title">
+                        <span class="small-text">初心者の</span>
+                        <span class="large-text">「できない」を</span>
+                        <span class="large-text highlight">「できる」に</span>
+                        <span class="small-text">変える魔法</span>
+                    </h1>
+                    <p class="hero-subtitle">
+                        沖縄の透明度30mの海で、あなたの人生が変わる瞬間が待っています。<br>
+                        Jijiと一緒に、不安を安心に、憧れを現実に変えましょう。
+                    </p>
+                    <div class="hero-stats">
+                        <div class="stat">
+                            <span class="stat-number">79</span>
+                            <span class="stat-label">厳選ショップ</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-number">95%</span>
+                            <span class="stat-label">満足度</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-number">6</span>
+                            <span class="stat-label">対応エリア</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="hero-actions">
+                    <button class="btn-hero-primary" onclick="startJourney()">
+                        <i class="fas fa-heart"></i>
+                        無料でダイビング相談を始める
+                    </button>
+                    <button class="btn-hero-secondary" onclick="watchVideo()">
+                        <i class="fas fa-play"></i>
+                        沖縄の海を見てみる
+                    </button>
+                </div>
+            </div>
+            <div class="hero-image">
+                <div class="floating-card jiji-card">
+                    <div class="jiji-avatar">🤿</div>
+                    <div class="jiji-message">
+                        <p>はいさい！僕もビビリでした😅<br>でも今では沖縄の海が大好き✨</p>
+                        <span class="message-tail"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 静的な装飾要素 -->
+        <div class="hero-decorations">
+            <div class="decoration-circle circle-1"></div>
+            <div class="decoration-circle circle-2"></div>
+            <div class="decoration-circle circle-3"></div>
+        </div>
+    </section>
+
+    <!-- リアルタイム海況ダッシュボード -->
+    <section id="sea-conditions" class="sea-conditions">
+        <div class="container">
+            <div class="section-header">
+                <h2>🌊 リアルタイム海況情報</h2>
+                <p>今日の沖縄、どのエリアがベストコンディション？</p>
+            </div>
+            
+            <div class="weather-grid">
+                <div class="weather-card ishigaki">
+                    <div class="weather-header">
+                        <h3>石垣島</h3>
+                        <div class="weather-icon">☀️</div>
+                    </div>
+                    <div class="weather-details">
+                        <div class="temperature">28°C</div>
+                        <div class="weather-info">
+                            <div class="info-item">
+                                <span class="label">風向・風速</span>
+                                <span class="value">北東 3m/s</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">波高</span>
+                                <span class="value">1.0m</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">透明度予想</span>
+                                <span class="value good">25-30m期待</span>
+                            </div>
+                        </div>
+                        <div class="jiji-comment">
+                            <div class="jiji-avatar-small">🤿</div>
+                            <p>こんな穏やかな日は、マンタスクランブルも期待できそう！</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="weather-card miyako">
+                    <div class="weather-header">
+                        <h3>宮古島</h3>
+                        <div class="weather-icon">⛅</div>
+                    </div>
+                    <div class="weather-details">
+                        <div class="temperature">27°C</div>
+                        <div class="weather-info">
+                            <div class="info-item">
+                                <span class="label">風向・風速</span>
+                                <span class="value">東 4m/s</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">波高</span>
+                                <span class="value">1.5m</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">透明度予想</span>
+                                <span class="value excellent">30m+期待</span>
+                            </div>
+                        </div>
+                        <div class="jiji-comment">
+                            <div class="jiji-avatar-small">🤿</div>
+                            <p>下地島の青の洞窟、今日は特に神秘的かも✨</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="weather-card okinawa">
+                    <div class="weather-header">
+                        <h3>沖縄本島</h3>
+                        <div class="weather-icon">🌤️</div>
+                    </div>
+                    <div class="weather-details">
+                        <div class="temperature">26°C</div>
+                        <div class="weather-info">
+                            <div class="info-item">
+                                <span class="label">風向・風速</span>
+                                <span class="value">北 2m/s</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">波高</span>
+                                <span class="value">0.5m</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">透明度予想</span>
+                                <span class="value good">20-25m期待</span>
+                            </div>
+                        </div>
+                        <div class="jiji-comment">
+                            <div class="jiji-avatar-small">🤿</div>
+                            <p>慶良間諸島への船も快適そう！初心者にも優しいコンディション</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sea-conditions-cta">
+                <button class="btn-primary" onclick="checkDetailedWeather()">
+                    詳細な海況予報を確認
+                </button>
+                <button class="btn-secondary" onclick="askJijiWeather()">
+                    Jijiに海況を相談
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- 不安解消セクション -->
+    <section class="anxiety-relief">
+        <div class="container">
+            <div class="section-header">
+                <h2>😰 こんな不安、ありませんか？</h2>
+                <p>大丈夫、Jijiも最初は同じでした</p>
+            </div>
+            
+            <div class="anxiety-grid">
+                <div class="anxiety-card">
+                    <div class="anxiety-icon">😨</div>
+                    <h3>「スキルが不安...」</h3>
+                    <div class="anxiety-content">
+                        <p class="problem">中性浮力ができるか心配<br>器材の使い方がわからない</p>
+                        <div class="solution">
+                            <div class="jiji-response">
+                                <div class="jiji-avatar-small">🤿</div>
+                                <p>僕も最初は同じでした！でも初心者専門のS級ショップなら、一人ひとりのペースに合わせて丁寧に教えてくれます</p>
+                            </div>
+                            <div class="solution-points">
+                                <div class="point">✅ 事前の丁寧な講習</div>
+                                <div class="point">✅ 1対1での個別指導</div>
+                                <div class="point">✅ 浅い場所での練習時間</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="anxiety-card">
+                    <div class="anxiety-icon">🏪</div>
+                    <h3>「ショップ選びがわからない...」</h3>
+                    <div class="anxiety-content">
+                        <p class="problem">どこがいいのかわからない<br>高いお金払って失敗したくない</p>
+                        <div class="solution">
+                            <div class="jiji-response">
+                                <div class="jiji-avatar-small">🤿</div>
+                                <p>79店舗から厳選したS級認定ショップだけをご紹介。実際の体験談も豊富なので安心です</p>
+                            </div>
+                            <div class="solution-points">
+                                <div class="point">✅ Jiji認定S級ショップのみ</div>
+                                <div class="point">✅ 実際の体験談で判断</div>
+                                <div class="point">✅ 初心者対応実績豊富</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="anxiety-card">
+                    <div class="anxiety-icon">💰</div>
+                    <h3>「予算が心配...」</h3>
+                    <div class="anxiety-content">
+                        <p class="problem">思ったより高くつきそう<br>追加料金とかありそうで不安</p>
+                        <div class="solution">
+                            <div class="jiji-response">
+                                <div class="jiji-avatar-small">🤿</div>
+                                <p>僕も学生時代はコスパ重視でした！予算に合わせた最適プランと節約テクニックをお教えします</p>
+                            </div>
+                            <div class="solution-points">
+                                <div class="point">✅ 予算最適化エンジン</div>
+                                <div class="point">✅ 隠れた節約テクニック</div>
+                                <div class="point">✅ 明確な料金表示</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="anxiety-card">
+                    <div class="anxiety-icon">👥</div>
+                    <h3>「一人参加が不安...」</h3>
+                    <div class="anxiety-content">
+                        <p class="problem">一人で参加しても大丈夫？<br>浮いてしまわないか心配</p>
+                        <div class="solution">
+                            <div class="jiji-response">
+                                <div class="jiji-avatar-small">🤿</div>
+                                <p>一人参加って勇気いりますよね。でも一人参加大歓迎のショップを厳選してご紹介。同じような方もたくさんいます</p>
+                            </div>
+                            <div class="solution-points">
+                                <div class="point">✅ 一人参加歓迎ショップ</div>
+                                <div class="point">✅ 同レベル参加者とのマッチング</div>
+                                <div class="point">✅ アットホームな雰囲気</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="anxiety-cta">
+                <button class="btn-primary" onclick="consultJiji()">
+                    <i class="fas fa-heart"></i>
+                    Jijiに不安を相談してみる
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ショップ検索セクション -->
+    <section id="shop-search" class="shop-search">
+        <div class="container">
+            <div class="section-header">
+                <h2>🏪 あなたにピッタリのショップを見つける</h2>
+                <p>79店舗から、あなたの不安や希望に合わせて最適なショップをマッチング</p>
+            </div>
+
+            <div class="search-container">
+                <div class="search-filters">
+                    <div class="filter-group">
+                        <label>エリア</label>
+                        <select id="area-filter">
+                            <option value="">すべてのエリア</option>
+                            <option value="ishigaki">石垣島</option>
+                            <option value="miyako">宮古島</option>
+                            <option value="okinawa">沖縄本島</option>
+                            <option value="kerama">慶良間諸島</option>
+                            <option value="kumejima">久米島</option>
+                            <option value="iriomote">西表島</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>スキルレベル</label>
+                        <select id="skill-filter">
+                            <option value="">選択してください</option>
+                            <option value="trial">体験ダイビング</option>
+                            <option value="owd">オープンウォーター</option>
+                            <option value="aow">アドバンス</option>
+                            <option value="rescue">レスキュー以上</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>参加スタイル</label>
+                        <select id="style-filter">
+                            <option value="">選択してください</option>
+                            <option value="solo">一人参加</option>
+                            <option value="couple">カップル・友達</option>
+                            <option value="family">家族</option>
+                            <option value="group">グループ</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>予算（2本）</label>
+                        <select id="budget-filter">
+                            <option value="">選択してください</option>
+                            <option value="low">¥10,000以下</option>
+                            <option value="medium">¥10,000-15,000</option>
+                            <option value="high">¥15,000以上</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="search-actions">
+                    <button class="btn-primary" onclick="searchShops()">
+                        <i class="fas fa-search"></i>
+                        ショップを検索
+                    </button>
+                    <button class="btn-secondary" onclick="askJijiRecommendation()">
+                        <i class="fas fa-magic"></i>
+                        Jijiにおすすめを聞く
+                    </button>
+                </div>
+            </div>
+
+            <div class="shop-results" id="shop-results">
+                <div class="shop-card featured">
+                    <div class="shop-badge">S級認定</div>
+                    <div class="shop-header">
+                        <h3>石垣島マリンサービス</h3>
+                        <div class="shop-rating">
+                            <span class="stars">★★★★★</span>
+                            <span class="rating-score">4.9</span>
+                        </div>
+                    </div>
+                    <div class="shop-details">
+                        <div class="shop-tags">
+                            <span class="tag">初心者専門</span>
+                            <span class="tag">一人参加歓迎</span>
+                            <span class="tag">少人数制</span>
+                        </div>
+                        <div class="shop-price">¥13,500/2本</div>
+                        <div class="shop-features">
+                            <div class="feature">🤿 1対1指導可能</div>
+                            <div class="feature">📸 写真撮影無料</div>
+                            <div class="feature">🚗 ホテル送迎あり</div>
+                        </div>
+                        <div class="jiji-recommendation">
+                            <div class="jiji-avatar-small">🤿</div>
+                            <p>一人参加の方に特におすすめ！スタッフの田中さんは元々ビビリだったから、初心者の気持ちを本当によく分かってくれます</p>
+                        </div>
+                        <div class="experience-preview">
+                            <strong>最新の体験談：</strong>
+                            <p>「初ダイビングで不安でしたが、スタッフの方が『大丈夫、一緒にゆっくりやりましょう』と声をかけてくれて安心できました」</p>
+                        </div>
+                    </div>
+                    <div class="shop-actions">
+                        <button class="btn-primary" onclick="viewShopDetails('ishigaki-marine')">
+                            詳細を見る
+                        </button>
+                        <button class="btn-secondary" onclick="consultAboutShop('ishigaki-marine')">
+                            Jijiに相談
+                        </button>
+                    </div>
+                </div>
+
+                <div class="shop-card">
+                    <div class="shop-badge">A級認定</div>
+                    <div class="shop-header">
+                        <h3>宮古島ブルーダイビング</h3>
+                        <div class="shop-rating">
+                            <span class="stars">★★★★☆</span>
+                            <span class="rating-score">4.7</span>
+                        </div>
+                    </div>
+                    <div class="shop-details">
+                        <div class="shop-tags">
+                            <span class="tag">青の洞窟専門</span>
+                            <span class="tag">女性スタッフ在籍</span>
+                            <span class="tag">カップル人気</span>
+                        </div>
+                        <div class="shop-price">¥12,800/2本</div>
+                        <div class="shop-features">
+                            <div class="feature">💙 青の洞窟ガイド</div>
+                            <div class="feature">👩‍🎓 女性インストラクター</div>
+                            <div class="feature">🎥 動画撮影サービス</div>
+                        </div>
+                        <div class="jiji-recommendation">
+                            <div class="jiji-avatar-small">🤿</div>
+                            <p>宮古島の青の洞窟なら絶対ここ！神秘的な光のカーテンに、きっと感動すること間違いなしです</p>
+                        </div>
+                    </div>
+                    <div class="shop-actions">
+                        <button class="btn-primary" onclick="viewShopDetails('miyako-blue')">
+                            詳細を見る
+                        </button>
+                        <button class="btn-secondary" onclick="consultAboutShop('miyako-blue')">
+                            Jijiに相談
+                        </button>
+                    </div>
+                </div>
+
+                <div class="shop-card">
+                    <div class="shop-badge">S級認定</div>
+                    <div class="shop-header">
+                        <h3>慶良間アイランドダイビング</h3>
+                        <div class="shop-rating">
+                            <span class="stars">★★★★★</span>
+                            <span class="rating-score">4.8</span>
+                        </div>
+                    </div>
+                    <div class="shop-details">
+                        <div class="shop-tags">
+                            <span class="tag">ウミガメ遭遇率95%</span>
+                            <span class="tag">ファミリー歓迎</span>
+                            <span class="tag">安全第一</span>
+                        </div>
+                        <div class="shop-price">¥14,200/2本</div>
+                        <div class="shop-features">
+                            <div class="feature">🐢 ウミガメガイド</div>
+                            <div class="feature">🆘 AED・酸素完備</div>
+                            <div class="feature">🥽 器材無料レンタル</div>
+                        </div>
+                        <div class="jiji-recommendation">
+                            <div class="jiji-avatar-small">🤿</div>
+                            <p>ウミガメに会いたいならここ！95%の遭遇率は本当にすごい。安全管理も徹底してるから家族連れにも安心です</p>
+                        </div>
+                    </div>
+                    <div class="shop-actions">
+                        <button class="btn-primary" onclick="viewShopDetails('kerama-island')">
+                            詳細を見る
+                        </button>
+                        <button class="btn-secondary" onclick="consultAboutShop('kerama-island')">
+                            Jijiに相談
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="search-bottom-cta">
+                <p>もっと詳しく相談したい？</p>
+                <button class="btn-large-primary" onclick="startDetailedConsultation()">
+                    <i class="fas fa-comments"></i>
+                    Jijiと詳しく相談する
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- 体験談セクション -->
+    <section id="experiences" class="experiences">
+        <div class="container">
+            <div class="section-header">
+                <h2>💬 リアルな体験談</h2>
+                <p>同じように不安だった方々の、素直な感想をお聞きください</p>
+            </div>
+
+            <div class="experiences-grid">
+                <div class="experience-story">
+                    <div class="story-header">
+                        <div class="story-avatar">👩</div>
+                        <div class="story-profile">
+                            <h4>田中 美咲さん (28歳)</h4>
+                            <span>体験ダイビング → OWD取得</span>
+                        </div>
+                    </div>
+                    <div class="story-content">
+                        <div class="story-before">
+                            <strong>ダイビング前：</strong>
+                            <p>「海が怖くて、泳ぎも得意じゃない。本当に私にできるの？って不安でした」</p>
+                        </div>
+                        <div class="story-after">
+                            <strong>Jiji体験後：</strong>
+                            <p>「Jijiが紹介してくれたショップの スタッフさんが本当に優しくて、『大丈夫、みんな最初は怖いんだよ』って言葉に救われました。今では月1でダイビングしてます！」</p>
+                        </div>
+                        <div class="story-highlight">
+                            <div class="jiji-avatar-small">🤿</div>
+                            <p>美咲さんのような方、実は多いんです。海への恐怖心も、一歩ずつ克服していけば必ず楽しめるようになります</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="experience-story">
+                    <div class="story-header">
+                        <div class="story-avatar">👨</div>
+                        <div class="story-profile">
+                            <h4>佐藤 健一さん (35歳)</h4>
+                            <span>一人参加 → リピーター</span>
+                        </div>
+                    </div>
+                    <div class="story-content">
+                        <div class="story-before">
+                            <strong>ダイビング前：</strong>
+                            <p>「一人で参加して浮かないかな...友達はみんな忙しいし、でもダイビングはずっと憧れでした」</p>
+                        </div>
+                        <div class="story-after">
+                            <strong>Jiji体験後：</strong>
+                            <p>「Jijiが『一人参加大歓迎』のショップを見つけてくれて、実際に行ってみたら同じような一人参加の方もいて安心しました。今では ダイビング仲間もできて、人生が豊かになりました」</p>
+                        </div>
+                        <div class="story-highlight">
+                            <div class="jiji-avatar-small">🤿</div>
+                            <p>一人参加の勇気、僕もすごく分かります。でも一歩踏み出すと、新しい世界と仲間が待ってるんです</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="experience-story">
+                    <div class="story-header">
+                        <div class="story-avatar">👫</div>
+                        <div class="story-profile">
+                            <h4>山田 カップル (24歳・26歳)</h4>
+                            <span>初心者カップル → AOW取得</span>
+                        </div>
+                    </div>
+                    <div class="story-content">
+                        <div class="story-before">
+                            <strong>ダイビング前：</strong>
+                            <p>「2人とも初心者で、お金もそんなにかけられない...でも沖縄旅行でダイビングしてみたくて」</p>
+                        </div>
+                        <div class="story-after">
+                            <strong>Jiji体験後：</strong>
+                            <p>「Jijiが予算に合わせたプランと節約テクニックを教えてくれて、思ったより安く済みました！2人とも ダイビングにハマって、今度は石垣島に行く予定です」</p>
+                        </div>
+                        <div class="story-highlight">
+                            <div class="jiji-avatar-small">🤿</div>
+                            <p>予算の心配、僕も学生時代は同じでした。でも工夫次第で、お得に素敵な体験ができるんです</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="experiences-stats">
+                <div class="stat-card">
+                    <div class="stat-number">95%</div>
+                    <div class="stat-label">「不安が解消された」</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">89%</div>
+                    <div class="stat-label">「期待以上だった」</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">92%</div>
+                    <div class="stat-label">「また利用したい」</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">87%</div>
+                    <div class="stat-label">「友人に勧めたい」</div>
+                </div>
+            </div>
+
+            <div class="experiences-cta">
+                <p>あなたの体験談も聞かせてください</p>
+                <button class="btn-primary" onclick="shareExperience()">
+                    体験談を投稿する（150ポイント獲得）
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Jijiについてセクション -->
+    <section id="about-jiji" class="about-jiji">
+        <div class="container">
+            <div class="about-content">
+                <div class="about-text">
+                    <div class="section-header">
+                        <h2>🤿 Jijiってどんな存在？</h2>
+                        <p>ビビリだった僕だからこそ、あなたの気持ちがわかります</p>
+                    </div>
+                    
+                    <div class="jiji-personality">
+                        <div class="personality-card">
+                            <div class="personality-icon">😅</div>
+                            <h4>元々超ビビリ</h4>
+                            <p>僕も最初は海が怖くて、「呼吸ができなくなったらどうしよう」「器材が壊れたら...」って心配ばかりでした</p>
+                        </div>
+                        <div class="personality-card">
+                            <div class="personality-icon">🤗</div>
+                            <h4>面倒見の良い先輩</h4>
+                            <p>25-30歳の親しみやすい先輩として、失敗経験も含めて正直にお話しします</p>
+                        </div>
+                        <div class="personality-card">
+                            <div class="personality-icon">💰</div>
+                            <h4>コスト意識高め</h4>
+                            <p>学生時代はお金に困ってたから、予算を抑える裏技もたくさん知ってます</p>
+                        </div>
+                    </div>
+
+                    <div class="jiji-promise">
+                        <h3>Jijiの3つの約束</h3>
+                        <div class="promise-list">
+                            <div class="promise-item">
+                                <div class="promise-icon">🤿</div>
+                                <div class="promise-content">
+                                    <h4>相談相手として</h4>
+                                    <p>不安や悩みに共感し、具体的な解決策を一緒に考えます</p>
+                                </div>
+                            </div>
+                            <div class="promise-item">
+                                <div class="promise-icon">🏨</div>
+                                <div class="promise-content">
+                                    <h4>コンシェルジュとして</h4>
+                                    <p>プロレベルの詳細情報と手配サポートを提供します</p>
+                                </div>
+                            </div>
+                            <div class="promise-item">
+                                <div class="promise-icon">❤️</div>
+                                <div class="promise-content">
+                                    <h4>理解者として</h4>
+                                    <p>あなたのダイビングへの想いを深く理解し、寄り添います</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="jiji-memory">
+                        <h3>🧠 僕の記憶について</h3>
+                        <div class="memory-content">
+                            <p>僕はあなたのダイビング人生を全部覚えています。初めて潜った時の緊張も、ウミガメに初遭遇した時の感動も、天候で潜れなかった時のがっかりも。</p>
+                            <p>全部覚えているからこそ、次はもっと良い体験を提案できるんです。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="about-visual">
+                    <div class="jiji-character">
+                        <div class="jiji-avatar-large">🤿</div>
+                        <div class="character-speech">
+                            <p>「はいさい！僕と一緒に、あなたの『できない』を『できる』に変えましょう！」</p>
+                        </div>
+                    </div>
+                    
+                    <div class="jiji-stats">
+                        <div class="stat">
+                            <span class="number">79</span>
+                            <span class="label">厳選ショップ</span>
+                        </div>
+                        <div class="stat">
+                            <span class="number">6</span>
+                            <span class="label">対応エリア</span>
+                        </div>
+                        <div class="stat">
+                            <span class="number">34</span>
+                            <span class="label">分析項目</span>
+                        </div>
+                        <div class="stat">
+                            <span class="number">24/7</span>
+                            <span class="label">対応時間</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 行動喚起セクション -->
+    <section class="final-cta">
+        <div class="container">
+            <div class="cta-content">
+                <h2>🌊 今日があなたのダイビング人生のスタート</h2>
+                <p>一歩踏み出すその勇気が、きっとあなたの人生を変えます</p>
+                
+                <div class="cta-options">
+                    <div class="cta-option primary">
+                        <div class="option-header">
+                            <h3>🆓 無料で始める</h3>
+                            <span class="option-badge">おすすめ</span>
+                        </div>
+                        <div class="option-content">
+                            <p>LINEで気軽に相談開始<br>今なら200ポイント + 特典PDF付き</p>
+                            <button class="btn-cta-primary" onclick="startWithLINE()">
+                                <i class="fab fa-line"></i>
+                                LINE相談を始める
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="cta-option secondary">
+                        <div class="option-header">
+                            <h3>🌐 詳しく検討する</h3>
+                        </div>
+                        <div class="option-content">
+                            <p>WEBで詳細情報を確認<br>海況・ショップ・プラン詳細</p>
+                            <button class="btn-cta-secondary" onclick="exploreWeb()">
+                                <i class="fas fa-compass"></i>
+                                詳細ページを見る
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cta-benefits">
+                    <div class="benefit">
+                        <div class="benefit-icon">🎁</div>
+                        <span>初回特典200ポイント</span>
+                    </div>
+                    <div class="benefit">
+                        <div class="benefit-icon">📖</div>
+                        <span>石垣島おすすめスポット38選PDF</span>
+                    </div>
+                    <div class="benefit">
+                        <div class="benefit-icon">🤿</div>
+                        <span>24時間いつでも相談OK</span>
+                    </div>
+                    <div class="benefit">
+                        <div class="benefit-icon">💰</div>
+                        <span>完全無料・追加料金なし</span>
+                    </div>
+                </div>
+
+                <div class="cta-testimonial">
+                    <p>「Jijiと出会って、本当に人生が変わりました。今では海なしでは生きられません！」</p>
+                    <span>- 3ヶ月でOWDからAOWになった田中さん</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- フッター -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>🌊 Jiji沖縄ダイビングバディ</h3>
+                    <p>初心者ダイバーの「できない」を「できる」に変える魔法の存在</p>
+                    <div class="footer-social">
+                        <a href="#" class="social-link"><i class="fab fa-line"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+                    </div>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>サービス</h4>
+                    <ul>
+                        <li><a href="#shop-search">ショップ検索</a></li>
+                        <li><a href="#sea-conditions">海況情報</a></li>
+                        <li><a href="#">旅行プラン作成</a></li>
+                        <li><a href="#">ポイント交換</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>対応エリア</h4>
+                    <ul>
+                        <li><a href="#">石垣島</a></li>
+                        <li><a href="#">宮古島</a></li>
+                        <li><a href="#">沖縄本島</a></li>
+                        <li><a href="#">慶良間諸島</a></li>
+                        <li><a href="#">久米島</a></li>
+                        <li><a href="#">西表島</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>サポート</h4>
+                    <ul>
+                        <li><a href="#">よくある質問</a></li>
+                        <li><a href="#">利用規約</a></li>
+                        <li><a href="#">プライバシーポリシー</a></li>
+                        <li><a href="#">お問い合わせ</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2024 Jiji沖縄ダイビングバディ. All rights reserved.</p>
+                <p>あなたのダイビング人生を、一生サポートします。</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScriptファイル -->
+    <script src="script.js"></script>
+</body>
+</html>

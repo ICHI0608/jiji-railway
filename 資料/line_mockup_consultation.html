@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LINEチャット - Jiji初回相談</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8f9fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .phone-container {
+            width: 375px;
+            height: 812px;
+            background: #000;
+            border-radius: 25px;
+            padding: 3px;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .phone-screen {
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            border-radius: 22px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .status-bar {
+            height: 44px;
+            background: #06c755;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .time {
+            font-size: 16px;
+        }
+        
+        .battery {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .chat-header {
+            height: 60px;
+            background: #06c755;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .chat-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            margin-right: 12px;
+        }
+        
+        .chat-name {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            padding: 20px 15px;
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+        
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-end;
+        }
+        
+        .message.user {
+            justify-content: flex-end;
+        }
+        
+        .message.bot {
+            justify-content: flex-start;
+        }
+        
+        .message-bubble {
+            max-width: 280px;
+            padding: 12px 16px;
+            border-radius: 18px;
+            font-size: 14px;
+            line-height: 1.4;
+            position: relative;
+        }
+        
+        .message.user .message-bubble {
+            background: #06c755;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+        
+        .message.bot .message-bubble {
+            background: white;
+            color: #333;
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .message-time {
+            font-size: 11px;
+            color: #999;
+            margin: 0 8px;
+        }
+        
+        .quick-replies {
+            padding: 15px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .quick-reply-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .quick-reply-btn {
+            background: #f0f0f0;
+            border: 1px solid #06c755;
+            color: #06c755;
+            padding: 8px 12px;
+            border-radius: 15px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .quick-reply-btn:hover {
+            background: #06c755;
+            color: white;
+        }
+        
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            color: #999;
+            font-size: 12px;
+            margin-left: 12px;
+        }
+        
+        .typing-dots {
+            display: flex;
+            gap: 2px;
+        }
+        
+        .typing-dot {
+            width: 4px;
+            height: 4px;
+            background: #999;
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+        
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-8px); }
+        }
+        
+        .input-area {
+            height: 60px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            gap: 10px;
+        }
+        
+        .input-field {
+            flex: 1;
+            height: 36px;
+            border: 1px solid #e0e0e0;
+            border-radius: 18px;
+            padding: 0 15px;
+            font-size: 14px;
+            outline: none;
+        }
+        
+        .send-btn {
+            width: 36px;
+            height: 36px;
+            background: #06c755;
+            border: none;
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-container">
+        <div class="phone-screen">
+            <!-- Status Bar -->
+            <div class="status-bar">
+                <div class="time">14:23</div>
+                <div class="battery">
+                    <span>📶</span>
+                    <span>📱</span>
+                    <span>100%</span>
+                </div>
+            </div>
+            
+            <!-- Chat Header -->
+            <div class="chat-header">
+                <div class="chat-avatar">🤿</div>
+                <div class="chat-name">Jiji - ダイビングバディ</div>
+            </div>
+            
+            <!-- Messages -->
+            <div class="chat-messages">
+                <div class="message user">
+                    <div class="message-time">14:20</div>
+                    <div class="message-bubble">
+                        沖縄でダイビングしてみたいんですが、何から始めればいいかわからなくて...😅
+                    </div>
+                </div>
+                
+                <div class="message bot">
+                    <div class="message-bubble">
+                        こんにちは！沖縄ダイビングに興味を持ってくださってありがとうございます！🌊<br><br>
+                        僕はJiji、あなたのダイビングバディです😊<br><br>
+                        沖縄の海、素晴らしいですよ！でも「何から始めれば...」って気持ち、すごくよく分かります。僕も最初は同じでした💦
+                    </div>
+                    <div class="message-time">14:21</div>
+                </div>
+                
+                <div class="message bot">
+                    <div class="message-bubble">
+                        まずは基本的なことを教えてください！一緒に計画を立てましょう✨<br><br>
+                        📋 ダイビングライセンスはお持ちですか？
+                    </div>
+                    <div class="message-time">14:21</div>
+                </div>
+                
+                <div class="message user">
+                    <div class="message-time">14:22</div>
+                    <div class="message-bubble">
+                        はい！先月OWDを取得しました！<br>でも海洋実習は伊豆だけで、沖縄は初めてで不安です😰
+                    </div>
+                </div>
+                
+                <div class="message bot">
+                    <div class="message-bubble">
+                        OWD取得おめでとうございます！🎉<br><br>
+                        伊豆で海洋実習されたんですね。実は伊豆の海の方が条件は厳しいんです。沖縄の海は透明度も高くて、温かくて、伊豆で潜れたなら絶対大丈夫ですよ！<br><br>
+                        不安な気持ち、本当によく分かります。僕も初めての沖縄の時はドキドキでした💓
+                    </div>
+                    <div class="message-time">14:22</div>
+                </div>
+                
+                <div class="message bot">
+                    <div class="message-bubble">
+                        詳しくお聞きして、あなたにピッタリのプランを一緒に作りましょう！<br><br>
+                        🏝️ どちらの島に興味がありますか？<br>
+                        📅 いつ頃のご予定ですか？<br>
+                        💰 予算の目安はありますか？<br>
+                        👥 お一人ですか？お友達と？
+                    </div>
+                    <div class="message-time">14:23</div>
+                </div>
+                
+                <div class="typing-indicator">
+                    <span>Jijiが入力中</span>
+                    <div class="typing-dots">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Replies -->
+            <div class="quick-replies">
+                <div class="quick-reply-buttons">
+                    <button class="quick-reply-btn">🏝️ 石垣島</button>
+                    <button class="quick-reply-btn">🏝️ 宮古島</button>
+                    <button class="quick-reply-btn">🏝️ 沖縄本島</button>
+                    <button class="quick-reply-btn">🤔 まだ迷ってる</button>
+                </div>
+            </div>
+            
+            <!-- Input Area -->
+            <div class="input-area">
+                <input type="text" class="input-field" placeholder="メッセージを入力">
+                <button class="send-btn">➤</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

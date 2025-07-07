@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LINEチャット - Jijiリマインド</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8f9fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .phone-container {
+            width: 375px;
+            height: 812px;
+            background: #000;
+            border-radius: 25px;
+            padding: 3px;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .phone-screen {
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            border-radius: 22px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .status-bar {
+            height: 44px;
+            background: #06c755;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .time {
+            font-size: 16px;
+        }
+        
+        .battery {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .chat-header {
+            height: 60px;
+            background: #06c755;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .chat-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            margin-right: 12px;
+        }
+        
+        .chat-name {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            padding: 20px 15px;
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+        
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-end;
+        }
+        
+        .message.user {
+            justify-content: flex-end;
+        }
+        
+        .message.bot {
+            justify-content: flex-start;
+        }
+        
+        .message-bubble {
+            max-width: 280px;
+            padding: 12px 16px;
+            border-radius: 18px;
+            font-size: 14px;
+            line-height: 1.4;
+            position: relative;
+        }
+        
+        .message.user .message-bubble {
+            background: #06c755;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+        
+        .message.bot .message-bubble {
+            background: white;
+            color: #333;
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .message-time {
+            font-size: 11px;
+            color: #999;
+            margin: 0 8px;
+        }
+        
+        .reminder-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 16px;
+            border-radius: 12px;
+            margin: 8px 0;
+        }
+        
+        .reminder-title {
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .checklist {
+            background: rgba(255,255,255,0.1);
+            padding: 12px;
+            border-radius: 8px;
+            margin: 8px 0;
+        }
+        
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 6px 0;
+            font-size: 13px;
+        }
+        
+        .weather-info {
+            background: rgba(255,255,255,0.1);
+            padding: 12px;
+            border-radius: 8px;
+            margin: 8px 0;
+        }
+        
+        .weather-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 4px 0;
+            font-size: 13px;
+        }
+        
+        .followup-card {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            color: #333;
+            padding: 16px;
+            border-radius: 12px;
+            margin: 8px 0;
+        }
+        
+        .point-highlight {
+            background: #06c755;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            display: inline-block;
+            margin: 4px 0;
+        }
+        
+        .quick-replies {
+            padding: 15px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .quick-reply-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .quick-reply-btn {
+            background: #f0f0f0;
+            border: 1px solid #06c755;
+            color: #06c755;
+            padding: 8px 12px;
+            border-radius: 15px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .quick-reply-btn:hover {
+            background: #06c755;
+            color: white;
+        }
+        
+        .input-area {
+            height: 60px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            gap: 10px;
+        }
+        
+        .input-field {
+            flex: 1;
+            height: 36px;
+            border: 1px solid #e0e0e0;
+            border-radius: 18px;
+            padding: 0 15px;
+            font-size: 14px;
+            outline: none;
+        }
+        
+        .send-btn {
+            width: 36px;
+            height: 36px;
+            background: #06c755;
+            border: none;
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .push-notification {
+            position: absolute;
+            top: 60px;
+            left: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.85);
+            color: white;
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 14px;
+            z-index: 100;
+            animation: slideDown 0.3s ease-out;
+        }
+        
+        @keyframes slideDown {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .notification-icon {
+            width: 24px;
+            height: 24px;
+            background: #06c755;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 8px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-container">
+        <div class="phone-screen">
+            <!-- Push Notification -->
+            <div class="push-notification">
+                <div style="display: flex; align-items: center;">
+                    <div class="notification-icon">🤿</div>
+                    <div>
+                        <div style="font-weight: bold;">Jiji - ダイビングバディ</div>
+                        <div style="font-size: 12px;">明日はいよいよダイビング当日です！</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Status Bar -->
+            <div class="status-bar">
+                <div class="time">19:30</div>
+                <div class="battery">
+                    <span>📶</span>
+                    <span>📱</span>
+                    <span>85%</span>
+                </div>
+            </div>
+            
+            <!-- Chat Header -->
+            <div class="chat-header">
+                <div class="chat-avatar">🤿</div>
+                <div class="chat-name">Jiji - ダイビングバディ</div>
+            </div>
+            
+            <!-- Messages -->
+            <div class="chat-messages">
+                <div class="message bot">
+                    <div class="message-bubble">
+                        🌅 おはようございます！<br><br>
+                        明日はいよいよ石垣島ダイビング当日ですね！準備は順調ですか？🤿
+                        
+                        <div class="reminder-card">
+                            <div class="reminder-title">
+                                📋 最終確認チェックリスト
+                            </div>
+                            <div class="checklist">
+                                <div class="checklist-item">
+                                    <span>☐</span> ダイビングライセンス
+                                </div>
+                                <div class="checklist-item">
+                                    <span>☐</span> 水着・ラッシュガード
+                                </div>
+                                <div class="checklist-item">
+                                    <span>☐</span> 日焼け止め（SPF50+推奨）
+                                </div>
+                                <div class="checklist-item">
+                                    <span>☐</span> 水中カメラ・防水ケース
+                                </div>
+                                <div class="checklist-item">
+                                    <span>☐</span> タオル・着替え
+                                </div>
+                                <div class="checklist-item">
+                                    <span>☐</span> 常備薬（酔い止め等）
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="message-time">19:28</div>
+                </div>
+                
+                <div class="message bot">
+                    <div class="message-bubble">
+                        🌊 明日の海況も確認しました！
+                        
+                        <div class="weather-info">
+                            <div class="weather-row">
+                                <span>🌤️ 天候</span>
+                                <span>晴れ時々曇り</span>
+                            </div>
+                            <div class="weather-row">
+                                <span>💨 風速</span>
+                                <span>南東 3m/s</span>
+                            </div>
+                            <div class="weather-row">
+                                <span>🌊 波高</span>
+                                <span>1.2m</span>
+                            </div>
+                            <div class="weather-row">
+                                <span>🌡️ 気温</span>
+                                <span>29°C</span>
+                            </div>
+                        </div>
+                        
+                        とても良いコンディションです！透明度も期待できそう✨<br><br>
+                        
+                        📍 集合場所: 石垣島マリンサービス<br>
+                        🕐 集合時間: 8:30<br>
+                        📱 緊急連絡先: 0980-XX-XXXX
+                    </div>
+                    <div class="message-time">19:30</div>
+                </div>
+                
+                <div class="message user">
+                    <div class="message-time">19:32</div>
+                    <div class="message-bubble">
+                        チェックリストありがとう！ほとんど準備できてる😊<br>
+                        でもやっぱり少し緊張してます💦
+                    </div>
+                </div>
+                
+                <div class="message bot">
+                    <div class="message-bubble">
+                        緊張するの、当然です！僕も毎回ドキドキしますよ😅<br><br>
+                        でも大丈夫！石垣島マリンサービスは初心者への対応がとても丁寧で、あなたと同じような方が<br><br>
+                        『最初は不安でしたが、スタッフの方が優しくて、一つずつ丁寧に教えてもらえて安心できました』<br><br>
+                        って言ってました✨<br><br>
+                        早めに休んで、明日は最高の海を楽しみましょう！🐠🐢
+                    </div>
+                    <div class="message-time">19:33</div>
+                </div>
+                
+                <div style="margin: 20px 0; text-align: center; color: #999; font-size: 12px;">
+                    ▼ 翌日 ダイビング終了後 ▼
+                </div>
+                
+                <div class="message bot">
+                    <div class="message-bubble">
+                        🎉 お疲れさまでした！<br><br>
+                        初めての石垣島ダイビング、いかがでしたか？<br>
+                        
+                        <div class="followup-card">
+                            <div style="font-weight: bold; margin-bottom: 8px;">
+                                📝 体験を教えてください！
+                            </div>
+                            <div style="font-size: 13px;">
+                                あなたの感想は、同じような初心者の方への貴重な情報になります✨
+                            </div>
+                            <div class="point-highlight">
+                                +150ポイント獲得チャンス！💎
+                            </div>
+                        </div>
+                        
+                        • どんな生物に出会えましたか？🐠<br>
+                        • スタッフの対応はいかがでしたか？<br>
+                        • 一番印象に残ったことは？<br>
+                        • 初心者の友達におすすめしたいですか？
+                    </div>
+                    <div class="message-time">15:45</div>
+                </div>
+                
+                <div class="message user">
+                    <div class="message-time">16:20</div>
+                    <div class="message-bubble">
+                        すごく良かったです！😍<br>
+                        ウミガメを3匹も見れて感動しました🐢<br>
+                        スタッフさんも本当に親切で、写真もたくさん撮ってもらえました📸
+                    </div>
+                </div>
+                
+                <div class="message bot">
+                    <div class="message-bubble">
+                        ウミガメ3匹！！すごいですね！😍<br>
+                        初回でそんなに出会えるなんて、本当にラッキーでした🍀<br><br>
+                        
+                        🎊 体験投稿で150ポイント獲得！<br>
+                        現在の保有ポイント: 650P<br><br>
+                        
+                        次回のダイビング、もう企画しませんか？<br>
+                        今度は宮古島の青の洞窟なんていかがでしょう？✨
+                    </div>
+                    <div class="message-time">16:22</div>
+                </div>
+            </div>
+            
+            <!-- Quick Replies -->
+            <div class="quick-replies">
+                <div class="quick-reply-buttons">
+                    <button class="quick-reply-btn">📸 写真を投稿</button>
+                    <button class="quick-reply-btn">🏝️ 次回プラン相談</button>
+                    <button class="quick-reply-btn">💎 ポイント確認</button>
+                    <button class="quick-reply-btn">⭐ 満足度評価</button>
+                </div>
+            </div>
+            
+            <!-- Input Area -->
+            <div class="input-area">
+                <input type="text" class="input-field" placeholder="メッセージを入力">
+                <button class="send-btn">➤</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
