@@ -1,31 +1,38 @@
 {
   "name": "jiji-diving-bot",
-  "version": "1.2.0",
-  "description": "AI Diving Buddy Bot - ダイビングの相談ができるAIチャットボット",
-  "main": "server.js",
+  "version": "4.0.0",
+  "description": "🌊 Jiji AI Diving Buddy - Phase 4-A Railway Production Ready",
+  "main": "api-server-railway.js",
   "scripts": {
-    "start": "node api-server.js",
-    "dev": "nodemon api-server.js",
-    "test": "node debug-tool.js",
-    "syntax-check": "node -c conversation.js && node -c server.js",
-    "lint": "eslint *.js",
-    "debug": "node --inspect api-server.js",
-    "setup-auth": "node setup-google-auth.js",
-    "setup-sheets": "node migrate-csv-data-mock.js",
-    "test-sheets": "node test-sheets-connection.js",
-    "test-matching": "node test-emotional-matching-with-real-data.js"
+    "start": "node api-server-railway.js",
+    "dev": "nodemon api-server-railway.js",
+    "test": "node test-phase4a-complete.js",
+    "test:api": "node test-railway-api.js",
+    "test:db": "node test-supabase-integration.js",
+    "test:ai": "node test-openai-integration.js",
+    "migrate": "node migrate-to-supabase.js",
+    "lint": "eslint *.js src/*.js",
+    "debug": "node --inspect api-server-railway.js",
+    "rich-menu:setup": "node setup-rich-menu.js setup",
+    "rich-menu:remove": "node setup-rich-menu.js remove",
+    "rich-menu:list": "node setup-rich-menu.js list"
   },
   "keywords": [
     "diving",
     "chatbot",
     "line-bot",
     "ai",
-    "openai"
+    "openai",
+    "emotion-analysis",
+    "jiji",
+    "okinawa",
+    "railway",
+    "supabase"
   ],
-  "author": "Diving Team",
+  "author": "Jiji Development Team",
   "license": "MIT",
   "dependencies": {
-    "@line/bot-sdk": "^7.5.2",
+    "@line/bot-sdk": "^10.0.0",
     "@supabase/supabase-js": "^2.39.7",
     "axios": "^1.10.0",
     "cors": "^2.8.5",
@@ -51,5 +58,13 @@
   "bugs": {
     "url": "https://github.com/your-repo/jiji-diving-bot/issues"
   },
-  "homepage": "https://github.com/your-repo/jiji-diving-bot#readme"
+  "homepage": "https://github.com/your-repo/jiji-diving-bot#readme",
+  "railway": {
+    "build": {
+      "command": "npm install"
+    },
+    "start": {
+      "command": "npm start"
+    }
+  }
 }
