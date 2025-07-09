@@ -121,10 +121,23 @@ class JijiRailwayAPIServer {
         this.app.use(cors());
         
         // Special raw body parsing for LINE webhook
-        this.app.use('/webhook', express.raw({
-            type: 'application/json',
-            limit: '10mb'
-        }));
+        this.app.use('/webhook', (req, res, next) => {
+            let data = '';
+            req.setEncoding('utf8');
+            req.on('data', chunk => {
+                data += chunk;
+            });
+            req.on('end', () => {
+                req.rawBody = data;
+                try {
+                    req.body = JSON.parse(data);
+                } catch (err) {
+                    console.error('❌ JSON parse error:', err);
+                    req.body = {};
+                }
+                next();
+            });
+        });
         
         // Regular JSON parsing for other endpoints
         this.app.use(express.json({ limit: '10mb' }));
@@ -152,6 +165,16 @@ class JijiRailwayAPIServer {
         this.app.use(express.static(path.join(__dirname), { 
             index: false
         }));
+    }
+
+    // LINE signature validation function
+    validateSignature(signature, body, secret) {
+        const crypto = require('crypto');
+        const expectedSignature = crypto
+            .createHmac('sha256', secret)
+            .update(body, 'utf8')  // 文字列として処理
+            .digest('base64');
+        return signature === expectedSignature;
     }
 
     setupRoutes() {
@@ -607,24 +630,32 @@ class JijiRailwayAPIServer {
             this.app.post('/webhook', (req, res) => {
                 // Manual signature verification to handle Railway body parsing
                 const signature = req.headers['x-line-signature'];
-                const body = req.body; // Now this is a Buffer from raw middleware
+                const rawBody = req.rawBody; // 文字列として取得
                 
                 if (!signature) {
                     console.error('❌ Missing signature header');
                     return res.status(401).json({ error: 'Missing signature' });
                 }
 
+                if (!rawBody) {
+                    console.error('❌ Missing raw body');
+                    return res.status(400).json({ error: 'Missing raw body' });
+                }
+
                 try {
-                    const crypto = require('crypto');
-                    const hash = crypto.createHmac('sha256', this.lineConfig.channelSecret).update(body).digest('base64');
-                    
-                    if (hash !== signature) {
+                    // 署名検証を新しい関数で実行
+                    if (!this.validateSignature(signature, rawBody, this.lineConfig.channelSecret)) {
                         console.error('❌ Invalid signature');
                         return res.status(401).json({ error: 'Invalid signature' });
                     }
                     
-                    // Parse the body as JSON after signature verification
-                    const events = JSON.parse(body.toString());
+                    // req.body は既にJSON parseされている
+                    const events = req.body;
+                    
+                    if (!events || !events.events) {
+                        console.error('❌ Invalid events format');
+                        return res.status(400).json({ error: 'Invalid events format' });
+                    }
                     
                     Promise
                         .all(events.events.map(this.handleEvent.bind(this)))
