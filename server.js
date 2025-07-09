@@ -596,7 +596,29 @@ class JijiRailwayAPIServer {
         // LINE Bot Webhook Handler
         if (this.lineActive) {
             // Full webhook with LINE SDK middleware when credentials available
-            this.app.post('/webhook', middleware(this.lineConfig), (req, res) => {
+            this.app.post('/webhook', (req, res) => {
+                // Manual signature verification to handle Railway body parsing
+                const signature = req.headers['x-line-signature'];
+                const body = JSON.stringify(req.body);
+                
+                if (!signature) {
+                    console.error('❌ Missing signature header');
+                    return res.status(401).json({ error: 'Missing signature' });
+                }
+
+                try {
+                    const crypto = require('crypto');
+                    const hash = crypto.createHmac('sha256', this.lineConfig.channelSecret).update(body).digest('base64');
+                    
+                    if (hash !== signature) {
+                        console.error('❌ Invalid signature');
+                        return res.status(401).json({ error: 'Invalid signature' });
+                    }
+                } catch (err) {
+                    console.error('❌ Signature verification error:', err);
+                    return res.status(500).json({ error: 'Signature verification failed' });
+                }
+
                 Promise
                     .all(req.body.events.map(this.handleEvent.bind(this)))
                     .then((result) => res.json(result))
