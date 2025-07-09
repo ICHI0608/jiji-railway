@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+console.log('🔥 FIXED SERVER.JS STARTING - WITH MANUAL SIGNATURE VERIFICATION');
+
 /**
  * Jiji Diving Bot API Server - Railway Production Environment
  * Phase 4-A: Backend API Migration - 8 Core Endpoints Implementation
