@@ -20,7 +20,7 @@ const cors = require('cors');
 const path = require('path');
 const { createClient } = require('@supabase/supabase-js');
 const OpenAI = require('openai');
-const { Client, middleware } = require('@line/bot-sdk');
+const { Client } = require('@line/bot-sdk');
 require('dotenv').config();
 
 // Import our modules
@@ -626,7 +626,7 @@ class JijiRailwayAPIServer {
 
         // LINE Bot Webhook Handler
         if (this.lineActive) {
-            // Full webhook with LINE SDK middleware when credentials available
+            // Full webhook with manual signature verification when credentials available
             this.app.post('/webhook', (req, res) => {
                 // Manual signature verification to handle Railway body parsing
                 const signature = req.headers['x-line-signature'];
