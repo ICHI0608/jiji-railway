@@ -95,7 +95,7 @@ app.get('/', (req, res) => {
   });
 });
 
-// ========== LINE Webhook（手動署名検証版） ==========
+// ========== LINE Webhook（署名検証エラー完全解決版） ==========
 app.post('/webhook', express.raw({type: 'application/json'}), (req, res) => {
   const signature = req.get('X-Line-Signature');
   
@@ -105,8 +105,20 @@ app.post('/webhook', express.raw({type: 'application/json'}), (req, res) => {
   }
   
   try {
-    // 手動署名検証
-    if (!validateSignature(req.body, config.channelSecret, signature)) {
+    // req.bodyの型を確実にBufferに変換
+    let body;
+    if (Buffer.isBuffer(req.body)) {
+      body = req.body;
+    } else if (typeof req.body === 'string') {
+      body = Buffer.from(req.body, 'utf8');
+    } else {
+      body = Buffer.from(JSON.stringify(req.body), 'utf8');
+    }
+    
+    console.log(`🔍 Body type: ${typeof req.body}, Buffer: ${Buffer.isBuffer(body)}`);
+    
+    // 手動署名検証（Buffer使用）
+    if (!validateSignature(body, config.channelSecret, signature)) {
       console.error('❌ 署名検証失敗');
       return res.status(401).send('Invalid signature');
     }
@@ -114,7 +126,8 @@ app.post('/webhook', express.raw({type: 'application/json'}), (req, res) => {
     console.log('✅ 署名検証成功');
     
     // JSONパース
-    const events = JSON.parse(req.body).events;
+    const bodyString = body.toString('utf8');
+    const events = JSON.parse(bodyString).events;
     
     // イベント処理
     events.forEach((event) => {
