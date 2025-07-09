@@ -119,6 +119,14 @@ class JijiRailwayAPIServer {
     setupMiddleware() {
         // Basic middleware
         this.app.use(cors());
+        
+        // Special raw body parsing for LINE webhook
+        this.app.use('/webhook', express.raw({
+            type: 'application/json',
+            limit: '10mb'
+        }));
+        
+        // Regular JSON parsing for other endpoints
         this.app.use(express.json({ limit: '10mb' }));
         this.app.use(express.urlencoded({ extended: true }));
         
@@ -599,7 +607,7 @@ class JijiRailwayAPIServer {
             this.app.post('/webhook', (req, res) => {
                 // Manual signature verification to handle Railway body parsing
                 const signature = req.headers['x-line-signature'];
-                const body = JSON.stringify(req.body);
+                const body = req.body; // Now this is a Buffer from raw middleware
                 
                 if (!signature) {
                     console.error('❌ Missing signature header');
@@ -614,18 +622,21 @@ class JijiRailwayAPIServer {
                         console.error('❌ Invalid signature');
                         return res.status(401).json({ error: 'Invalid signature' });
                     }
+                    
+                    // Parse the body as JSON after signature verification
+                    const events = JSON.parse(body.toString());
+                    
+                    Promise
+                        .all(events.events.map(this.handleEvent.bind(this)))
+                        .then((result) => res.json(result))
+                        .catch((err) => {
+                            console.error('❌ Webhook error:', err);
+                            res.status(500).end();
+                        });
                 } catch (err) {
                     console.error('❌ Signature verification error:', err);
                     return res.status(500).json({ error: 'Signature verification failed' });
                 }
-
-                Promise
-                    .all(req.body.events.map(this.handleEvent.bind(this)))
-                    .then((result) => res.json(result))
-                    .catch((err) => {
-                        console.error('❌ Webhook error:', err);
-                        res.status(500).end();
-                    });
             });
         } else {
             // Basic webhook endpoint for testing when credentials not available
