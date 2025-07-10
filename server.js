@@ -163,10 +163,8 @@ class JijiRailwayAPIServer {
             }
         });
         
-        // Serve static files
-        this.app.use(express.static(path.join(__dirname), { 
-            index: false
-        }));
+        // Serve static files from public directory
+        this.app.use(express.static(path.join(__dirname, 'public')));
     }
 
     // LINE signature validation function
@@ -180,6 +178,11 @@ class JijiRailwayAPIServer {
     }
 
     setupRoutes() {
+        // Root route for Web Application
+        this.app.get('/', (req, res) => {
+            res.sendFile(path.join(__dirname, 'public', 'index.html'));
+        });
+
         // 1. GET /api/health - ヘルスチェック
         this.app.get('/api/health', (req, res) => {
             const healthStatus = {

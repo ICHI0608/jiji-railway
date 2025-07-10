@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jiji沖縄ダイビングバディ - AI感情マッチングシステム</title>
+    <meta name="description" content="沖縄ダイビングの魅力を発見しよう！AI感情分析であなたにぴったりのダイビングショップをマッチング。石垣島・宮古島の美しい海があなたを待っています。">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* API統合用追加スタイル */
+        .jiji-chat-container {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 60px 20px;
+            margin: 40px 0;
+            border-radius: 20px;
+            color: white;
+        }
+
+        .chat-interface {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .jiji-avatar {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #ff6b6b, #ffd93d);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            margin: 0 auto 20px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .message-input-container {
+            margin: 20px 0;
+        }
+
+        .message-input {
+            width: 100%;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            background: rgba(255,255,255,0.9);
+            color: #333;
+            outline: none;
+            resize: vertical;
+            min-height: 80px;
+            font-family: 'Noto Sans JP', sans-serif;
+        }
+
+        .area-selector {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+
+        .area-btn {
+            padding: 8px 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            background: transparent;
+            color: white;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .area-btn:hover, .area-btn.active {
+            background: rgba(255,255,255,0.2);
+            border-color: rgba(255,255,255,0.6);
+        }
+
+        .match-button {
+            background: linear-gradient(135deg, #ff6b6b, #ffd93d);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .match-button:hover {
+            transform: translateY(-2px);
+        }
+
+        .match-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .results-container {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .emotional-analysis {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .concern-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            padding: 5px 0;
+        }
+
+        .shop-card {
+            background: rgba(255,255,255,0.95);
+            color: #333;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 15px 0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .shop-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .shop-rank {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            float: left;
+            margin-right: 15px;
+        }
+
+        .shop-info {
+            overflow: hidden;
+        }
+
+        .shop-name {
+            font-size: 20px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .shop-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .detail-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .jiji-message {
+            background: linear-gradient(135deg, #ff6b6b, #ffd93d);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .jiji-message::before {
+            content: "🐠";
+            position: absolute;
+            top: -10px;
+            left: 20px;
+            background: inherit;
+            padding: 5px 10px;
+            border-radius: 10px;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .stats-section {
+            background: #f8f9ff;
+            padding: 40px 20px;
+            margin: 40px 0;
+            border-radius: 15px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #666;
+            margin-top: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .area-selector {
+                justify-content: center;
+            }
+            
+            .shop-details {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ヘッダー -->
+    <header class="header">
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="nav-logo">
+                    <h1>🌊 Jiji</h1>
+                    <span>AI感情マッチング</span>
+                </div>
+                <ul class="nav-menu">
+                    <li><a href="#hero">ホーム</a></li>
+                    <li><a href="#jiji-chat">AI相談</a></li>
+                    <li><a href="#stats">統計情報</a></li>
+                    <li><a href="#how-it-works">仕組み</a></li>
+                </ul>
+                <div class="nav-buttons">
+                    <button class="btn-secondary" onclick="scrollToChat()">
+                        <i class="fas fa-comments"></i> Jijiに相談
+                    </button>
+                    <button class="btn-primary" onclick="scrollToStats()">
+                        <i class="fas fa-chart-bar"></i> データを見る
+                    </button>
+                </div>
+                <div class="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- メインヒーローセクション -->
+    <section id="hero" class="hero">
+        <div class="hero-container">
+            <div class="hero-content">
+                <h1>🐠 Jiji沖縄ダイビングバディ</h1>
+                <h2>AI感情分析で見つける、あなたにぴったりのダイビング体験</h2>
+                <p>
+                    不安や心配事を自然な言葉で伝えるだけ。<br>
+                    Jijiが79店舗から最適なダイビングショップをマッチング。<br>
+                    <strong>石垣島・宮古島</strong>の美しい海があなたを待っています。
+                </p>
+                <div class="hero-buttons">
+                    <button class="btn-primary btn-large" onclick="scrollToChat()">
+                        <i class="fas fa-heart"></i> 感情マッチングを始める
+                    </button>
+                    <button class="btn-secondary btn-large" onclick="scrollToStats()">
+                        <i class="fas fa-database"></i> 79店舗データを見る
+                    </button>
+                </div>
+            </div>
+            <div class="hero-image">
+                <div class="floating-elements">
+                    <div class="floating-element" style="--delay: 0s">🐠</div>
+                    <div class="floating-element" style="--delay: 1s">🐙</div>
+                    <div class="floating-element" style="--delay: 2s">🦈</div>
+                    <div class="floating-element" style="--delay: 3s">🐢</div>
+                    <div class="floating-element" style="--delay: 4s">🦀</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Jiji AI チャットセクション -->
+    <section id="jiji-chat" class="jiji-chat-container">
+        <div class="chat-interface">
+            <div class="jiji-avatar">🐠</div>
+            <h2 style="text-align: center; margin-bottom: 10px;">Jijiに相談してみよう</h2>
+            <p style="text-align: center; opacity: 0.9; margin-bottom: 30px;">
+                ダイビングの不安や希望を自然な言葉で教えてください。AIが感情を分析して最適なショップをご提案します。
+            </p>
+
+            <div class="message-input-container">
+                <textarea 
+                    id="userMessage" 
+                    class="message-input" 
+                    placeholder="例：初心者で安全面が心配です。石垣島でマンタを見たいのですが、一人参加でも大丈夫でしょうか？体力に自信がないので優しく教えてもらえるところがいいです。"
+                ></textarea>
+            </div>
+
+            <div class="area-selector">
+                <span style="margin-right: 10px;">希望エリア：</span>
+                <button class="area-btn" data-area="all">すべて</button>
+                <button class="area-btn active" data-area="石垣島">石垣島</button>
+                <button class="area-btn" data-area="宮古島">宮古島</button>
+            </div>
+
+            <button id="matchButton" class="match-button" onclick="performEmotionalMatching()">
+                <i class="fas fa-heart"></i> 感情マッチング開始
+            </button>
+
+            <div id="resultsContainer" class="results-container">
+                <!-- マッチング結果がここに表示されます -->
+            </div>
+        </div>
+    </section>
+
+    <!-- 統計情報セクション -->
+    <section id="stats" class="stats-section">
+        <div class="container">
+            <h2 style="text-align: center; margin-bottom: 40px;">📊 Jijiデータベース統計</h2>
+            <div id="statsGrid" class="stats-grid">
+                <!-- 統計データがここに表示されます -->
+            </div>
+        </div>
+    </section>
+
+    <!-- 仕組み説明セクション -->
+    <section id="how-it-works" style="padding: 60px 20px; background: #f8f9ff;">
+        <div class="container" style="max-width: 1000px; margin: 0 auto;">
+            <h2 style="text-align: center; margin-bottom: 40px;">🧠 AI感情マッチングの仕組み</h2>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px;">
+                <div style="background: white; padding: 30px; border-radius: 15px; text-align: center;">
+                    <div style="font-size: 48px; margin-bottom: 20px;">💭</div>
+                    <h3>1. 感情分析</h3>
+                    <p>6つのカテゴリ（安全・スキル・一人参加・予算・体力・コミュニケーション）で不安を分析</p>
+                </div>
+                
+                <div style="background: white; padding: 30px; border-radius: 15px; text-align: center;">
+                    <div style="font-size: 48px; margin-bottom: 20px;">🔍</div>
+                    <h3>2. ショップマッチング</h3>
+                    <p>79店舗×34項目のデータからあなたの感情にぴったりのショップを選出</p>
+                </div>
+                
+                <div style="background: white; padding: 30px; border-radius: 15px; text-align: center;">
+                    <div style="font-size: 48px; margin-bottom: 20px;">🎯</div>
+                    <h3>3. パーソナライズ提案</h3>
+                    <p>Jijiキャラクターが共感メッセージと具体的なアドバイスをお届け</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- フッター -->
+    <footer style="background: #2c3e50; color: white; padding: 40px 20px; text-align: center;">
+        <div class="container">
+            <h3>🌊 Jiji沖縄ダイビングバディ</h3>
+            <p>AI感情分析 × 79店舗データベース = 最適なダイビング体験</p>
+            <div style="margin-top: 20px;">
+                <span>🚀 Phase 1 & 2 完了 | ✅ リアルタイム感情マッチング稼働中</span>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // API設定
+        const API_BASE_URL = '';  // 同じサーバーなので相対パス
+        let selectedArea = '石垣島';
+        let isMatching = false;
+
+        // 初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            setupEventListeners();
+            loadStats();
+            setupAnimations();
+        });
+
+        // イベントリスナー設定
+        function setupEventListeners() {
+            // エリア選択ボタン
+            document.querySelectorAll('.area-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.area-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    selectedArea = this.dataset.area === 'all' ? null : this.dataset.area;
+                });
+            });
+
+            // ハンバーガーメニュー
+            const hamburger = document.querySelector('.hamburger');
+            const navMenu = document.querySelector('.nav-menu');
+            
+            if (hamburger && navMenu) {
+                hamburger.addEventListener('click', function() {
+                    navMenu.classList.toggle('active');
+                    hamburger.classList.toggle('active');
+                });
+            }
+
+            // スムーススクロール
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({ behavior: 'smooth' });
+                    }
+                });
+            });
+
+            // Enterキーでマッチング実行
+            document.getElementById('userMessage').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                    e.preventDefault();
+                    performEmotionalMatching();
+                }
+            });
+        }
+
+        // 統計データ読み込み
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/stats');
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayStats(data.data);
+                }
+            } catch (error) {
+                console.error('統計データ読み込みエラー:', error);
+            }
+        }
+
+        // 統計データ表示
+        function displayStats(stats) {
+            const statsGrid = document.getElementById('statsGrid');
+            statsGrid.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-number">${stats.totalShops}</div>
+                    <div class="stat-label">登録ショップ数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${stats.areas.length}</div>
+                    <div class="stat-label">対応エリア</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${stats.avgRating}</div>
+                    <div class="stat-label">平均評価 ★</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">¥${stats.avgPrice.toLocaleString()}</div>
+                    <div class="stat-label">平均料金</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${stats.beginnerFriendly}</div>
+                    <div class="stat-label">初心者対応店舗</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">34</div>
+                    <div class="stat-label">分析項目数</div>
+                </div>
+            `;
+        }
+
+        // 感情マッチング実行
+        async function performEmotionalMatching() {
+            if (isMatching) return;
+
+            const message = document.getElementById('userMessage').value.trim();
+            if (!message) {
+                alert('メッセージを入力してください');
+                return;
+            }
+
+            isMatching = true;
+            const button = document.getElementById('matchButton');
+            const originalText = button.innerHTML;
+            
+            button.disabled = true;
+            button.innerHTML = '<span class="loading-spinner"></span> マッチング中...';
+
+            try {
+                const response = await fetch('/api/match', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        area: selectedArea,
+                        maxResults: 3
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayMatchingResults(data.data);
+                } else {
+                    throw new Error(data.error || 'マッチングに失敗しました');
+                }
+                
+            } catch (error) {
+                console.error('マッチングエラー:', error);
+                alert('マッチングエラーが発生しました: ' + error.message);
+            } finally {
+                isMatching = false;
+                button.disabled = false;
+                button.innerHTML = originalText;
+            }
+        }
+
+        // マッチング結果表示
+        function displayMatchingResults(data) {
+            const container = document.getElementById('resultsContainer');
+            
+            // 感情分析結果
+            const concernsHtml = Object.entries(data.emotional_analysis.concerns)
+                .filter(([_, score]) => score > 0)
+                .map(([category, score]) => {
+                    const categoryNames = {
+                        safety: '安全性への懸念',
+                        skill: 'スキルへの不安', 
+                        solo: '一人参加の心配',
+                        cost: '料金の心配',
+                        physical: '体力面の不安',
+                        communication: 'コミュニケーション'
+                    };
+                    return `<div class="concern-item">
+                        <span>${categoryNames[category]}</span>
+                        <span>${score}点</span>
+                    </div>`;
+                }).join('');
+
+            // ショップ推薦結果
+            const shopsHtml = data.recommendations.map((result, index) => {
+                const shop = result.shop;
+                return `
+                    <div class="shop-card">
+                        <div class="shop-rank">${index + 1}</div>
+                        <div class="shop-info">
+                            <div class="shop-name">${shop.shop_name}</div>
+                            <div style="margin: 8px 0; color: #666;">
+                                ${shop.area} | 総合スコア: ${result.totalScore}点 (感情: ${result.emotionalScore}, サービス: ${result.serviceScore})
+                            </div>
+                            <div class="shop-details">
+                                <div class="detail-item">
+                                    <i class="fas fa-star" style="color: #ffd700;"></i>
+                                    <span>${shop.customer_rating}★ (${shop.review_count}件)</span>
+                                </div>
+                                <div class="detail-item">
+                                    <i class="fas fa-yen-sign" style="color: #27ae60;"></i>
+                                    <span>¥${shop.fun_dive_price_2tanks.toLocaleString()}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <i class="fas fa-users" style="color: #3498db;"></i>
+                                    <span>最大${shop.max_group_size}名</span>
+                                </div>
+                                <div class="detail-item">
+                                    <i class="fas fa-medal" style="color: #e74c3c;"></i>
+                                    <span>グレード: ${shop.jiji_grade}</span>
+                                </div>
+                            </div>
+                            <div style="margin: 15px 0; padding: 10px; background: #f8f9fa; border-radius: 8px;">
+                                <strong>推薦理由:</strong> ${result.recommendation}
+                            </div>
+                            <div style="margin: 10px 0; color: #666; font-size: 14px;">
+                                <strong>特徴:</strong> ${shop.speciality_areas}
+                            </div>
+                            ${shop.website ? `
+                                <div style="margin-top: 15px;">
+                                    <a href="${shop.website}" target="_blank" style="color: #667eea; text-decoration: none;">
+                                        <i class="fas fa-external-link-alt"></i> ウェブサイトを見る
+                                    </a>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Jijiメッセージ生成
+            const bestMatch = data.recommendations[0];
+            let jijiMessage = `${bestMatch.shop.shop_name}がぴったりだと思います！`;
+            
+            if (data.emotional_analysis.concerns.safety > 0) {
+                jijiMessage += '安全面もしっかりしているので安心してダイビングを楽しめますよ。';
+            }
+            if (data.emotional_analysis.concerns.skill > 0) {
+                jijiMessage += '初心者の方にも丁寧に指導してくれるので、スキルアップにも最適です。';
+            }
+            if (data.emotional_analysis.concerns.solo > 0) {
+                jijiMessage += '一人参加の方も多いので、きっと素敵な出会いがあるはずです！';
+            }
+            
+            jijiMessage += `${bestMatch.shop.area}での素晴らしいダイビング体験を、Jijiも応援しています！🐠`;
+
+            container.innerHTML = `
+                <div class="emotional-analysis">
+                    <h3><i class="fas fa-brain"></i> 感情分析結果</h3>
+                    ${concernsHtml || '<p>特に心配事は検出されませんでした</p>'}
+                    <div style="margin-top: 15px; font-size: 14px; opacity: 0.8;">
+                        検索対象: ${data.search_stats.total_shops_searched}店舗 | 処理時間: ${data.search_stats.processing_time}
+                    </div>
+                </div>
+                
+                <div class="jiji-message">
+                    <strong>🐠 Jijiからのメッセージ</strong><br>
+                    ${jijiMessage}
+                </div>
+                
+                <h3><i class="fas fa-trophy"></i> おすすめショップ</h3>
+                ${shopsHtml}
+            `;
+
+            container.style.display = 'block';
+            container.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // ユーティリティ関数
+        function scrollToChat() {
+            document.getElementById('jiji-chat').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function scrollToStats() {
+            document.getElementById('stats').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // アニメーション設定
+        function setupAnimations() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            });
+
+            document.querySelectorAll('.stat-card, .shop-card').forEach(el => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(20px)';
+                el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                observer.observe(el);
+            });
+        }
+    </script>
+</body>
+</html>
