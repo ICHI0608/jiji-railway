@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>お問い合わせ・サポート - Jiji AI感情分析ダイビングマッチング</title>
+    <meta name="description" content="Jijiへのお問い合わせ、サポート、パートナーシップ相談はこちら。よくある質問、緊急時連絡先、各種フォームをご用意しています。">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="/css/common.css">
+    
+    <style>
+        /* Contact Page Specific Styles */
+        .hero-contact {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 120px 0 80px;
+            color: white;
+            text-align: center;
+        }
+        
+        .hero-contact h1 {
+            font-size: 3rem;
+            font-weight: 900;
+            margin-bottom: 20px;
+        }
+        
+        .hero-contact p {
+            font-size: 1.3rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .contact-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin: 60px 0;
+        }
+        
+        .contact-option {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .contact-option:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-5px);
+        }
+        
+        .contact-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: #ffd93d;
+        }
+        
+        .contact-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        
+        .contact-description {
+            opacity: 0.9;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        
+        .contact-action {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+        
+        .contact-action:hover {
+            background: white;
+            color: #667eea;
+        }
+        
+        .contact-forms {
+            padding: 100px 0;
+            background: linear-gradient(to bottom, #f8f9ff, white);
+        }
+        
+        .form-tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 40px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .form-tab {
+            padding: 15px 30px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            color: #666;
+        }
+        
+        .form-tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+        
+        .form-content {
+            display: none;
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .form-content.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+        
+        .form-group.required label::after {
+            content: ' *';
+            color: #e74c3c;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+            font-family: 'Noto Sans JP', sans-serif;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .submit-button {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        
+        .submit-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .submit-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .faq-section {
+            padding: 100px 0;
+            background: white;
+        }
+        
+        .faq-categories {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+            margin-top: 60px;
+        }
+        
+        .faq-category {
+            background: #f8f9ff;
+            padding: 30px;
+            border-radius: 15px;
+        }
+        
+        .faq-category h3 {
+            color: #2c3e50;
+            margin-bottom: 25px;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .faq-category-icon {
+            font-size: 1.5rem;
+            color: #667eea;
+        }
+        
+        .faq-item {
+            margin: 20px 0;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .faq-question {
+            padding: 15px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #2c3e50;
+            position: relative;
+            background: white;
+            transition: background 0.3s ease;
+        }
+        
+        .faq-question:hover {
+            background: #f0f7ff;
+        }
+        
+        .faq-question::after {
+            content: '+';
+            position: absolute;
+            right: 15px;
+            font-size: 1.2rem;
+            transition: transform 0.3s ease;
+        }
+        
+        .faq-item.active .faq-question::after {
+            transform: rotate(45deg);
+        }
+        
+        .faq-answer {
+            padding: 0 15px;
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            background: white;
+        }
+        
+        .faq-item.active .faq-answer {
+            padding: 0 15px 15px;
+            max-height: 200px;
+        }
+        
+        .faq-answer p {
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .support-info {
+            background: linear-gradient(135deg, #f8f9ff, #e8f2ff);
+            padding: 100px 0;
+        }
+        
+        .support-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 60px;
+        }
+        
+        .support-card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .support-card-icon {
+            font-size: 3rem;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+        
+        .support-card h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+        
+        .support-card p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .support-card .contact-method {
+            font-weight: 600;
+            color: #667eea;
+        }
+        
+        .emergency-section {
+            background: #e74c3c;
+            color: white;
+            padding: 60px 0;
+            text-align: center;
+        }
+        
+        .emergency-content {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .emergency-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .emergency-description {
+            margin-bottom: 30px;
+            opacity: 0.95;
+            line-height: 1.6;
+        }
+        
+        .emergency-contact {
+            background: rgba(255,255,255,0.2);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        
+        .emergency-contact h4 {
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+        
+        .emergency-phone {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        @media (max-width: 768px) {
+            .hero-contact h1 {
+                font-size: 2rem;
+            }
+            
+            .contact-options {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .form-tabs {
+                flex-wrap: wrap;
+                justify-content: flex-start;
+            }
+            
+            .form-tab {
+                padding: 10px 20px;
+                font-size: 0.9rem;
+            }
+            
+            .form-content {
+                padding: 20px;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .faq-categories {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .support-cards {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ヘッダー -->
+    <header class="main-header">
+        <nav class="main-nav">
+            <a href="/" class="main-logo">
+                <h1>🌊 Jiji</h1>
+                <span>AI感情マッチング</span>
+            </a>
+            
+            <ul class="main-nav-menu">
+                <li><a href="/">ホーム</a></li>
+                <li><a href="/about">サービス</a></li>
+                <li><a href="/pricing">料金プラン</a></li>
+                <li><a href="/partners">ショップ向け</a></li>
+                <li><a href="/contact" class="active">お問い合わせ</a></li>
+            </ul>
+            
+            <div class="main-nav-buttons">
+                <a href="/app" class="btn btn-secondary">
+                    <i class="fas fa-heart"></i> 体験する
+                </a>
+                <a href="https://line.me/ti/p/@2007331165" class="btn btn-primary" target="_blank">
+                    <i class="fab fa-line"></i> LINE連携
+                </a>
+            </div>
+            
+            <div class="nav-hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </nav>
+    </header>
+
+    <!-- ヒーローセクション -->
+    <section class="hero-contact">
+        <div class="container">
+            <h1>お問い合わせ・サポート</h1>
+            <p>
+                Jijiに関するご質問、サポート、パートナーシップのご相談など<br>
+                お気軽にお問い合わせください。専門スタッフが迅速にご対応いたします。
+            </p>
+            
+            <div class="contact-options">
+                <div class="contact-option">
+                    <div class="contact-icon">💬</div>
+                    <h3 class="contact-title">LINE Bot相談</h3>
+                    <p class="contact-description">24時間いつでもJijiに直接相談できます</p>
+                    <a href="https://line.me/ti/p/@2007331165" class="contact-action" target="_blank">LINE で相談</a>
+                </div>
+                
+                <div class="contact-option">
+                    <div class="contact-icon">🌐</div>
+                    <h3 class="contact-title">Web App体験</h3>
+                    <p class="contact-description">すぐにJijiの機能を体験できます</p>
+                    <a href="/app" class="contact-action">Web App</a>
+                </div>
+                
+                <div class="contact-option">
+                    <div class="contact-icon">📧</div>
+                    <h3 class="contact-title">メール相談</h3>
+                    <p class="contact-description">詳細なご質問やビジネス相談はこちら</p>
+                    <a href="#contact-form" class="contact-action">フォームへ</a>
+                </div>
+                
+                <div class="contact-option">
+                    <div class="contact-icon">📞</div>
+                    <h3 class="contact-title">緊急時サポート</h3>
+                    <p class="contact-description">ダイビング中の緊急事態はこちら</p>
+                    <a href="#emergency" class="contact-action">緊急連絡先</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- お問い合わせフォーム -->
+    <section class="contact-forms" id="contact-form">
+        <div class="container">
+            <h2 class="section-title">📝 お問い合わせフォーム</h2>
+            <p class="section-subtitle">
+                ご用件に応じて適切なフォームをお選びください
+            </p>
+            
+            <div class="form-tabs">
+                <div class="form-tab active" data-form="general">一般お問い合わせ</div>
+                <div class="form-tab" data-form="support">サポート・技術的問題</div>
+                <div class="form-tab" data-form="partnership">パートナーシップ</div>
+                <div class="form-tab" data-form="media">メディア・取材</div>
+            </div>
+            
+            <!-- 一般お問い合わせフォーム -->
+            <form class="form-content active" id="general-form" data-validate>
+                <h3 style="margin-bottom: 30px; color: #2c3e50;">一般お問い合わせ</h3>
+                
+                <div class="form-row">
+                    <div class="form-group required">
+                        <label for="general-name">お名前</label>
+                        <input type="text" id="general-name" name="name" required>
+                    </div>
+                    <div class="form-group required">
+                        <label for="general-email">メールアドレス</label>
+                        <input type="email" id="general-email" name="email" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="general-phone">電話番号（任意）</label>
+                    <input type="tel" id="general-phone" name="phone">
+                </div>
+                
+                <div class="form-group required">
+                    <label for="general-category">お問い合わせ内容</label>
+                    <select id="general-category" name="category" required>
+                        <option value="">選択してください</option>
+                        <option value="service">サービスについて</option>
+                        <option value="usage">使い方について</option>
+                        <option value="billing">料金について</option>
+                        <option value="suggestion">ご提案・ご要望</option>
+                        <option value="other">その他</option>
+                    </select>
+                </div>
+                
+                <div class="form-group required">
+                    <label for="general-message">お問い合わせ内容詳細</label>
+                    <textarea id="general-message" name="message" placeholder="具体的にお聞かせください..." required></textarea>
+                </div>
+                
+                <button type="submit" class="submit-button">
+                    <i class="fas fa-paper-plane"></i> 送信する
+                </button>
+            </form>
+            
+            <!-- サポートフォーム -->
+            <form class="form-content" id="support-form" data-validate>
+                <h3 style="margin-bottom: 30px; color: #2c3e50;">サポート・技術的問題</h3>
+                
+                <div class="form-row">
+                    <div class="form-group required">
+                        <label for="support-name">お名前</label>
+                        <input type="text" id="support-name" name="name" required>
+                    </div>
+                    <div class="form-group required">
+                        <label for="support-email">メールアドレス</label>
+                        <input type="email" id="support-email" name="email" required>
+                    </div>
+                </div>
+                
+                <div class="form-group required">
+                    <label for="support-issue">問題の種類</label>
+                    <select id="support-issue" name="issue" required>
+                        <option value="">選択してください</option>
+                        <option value="login">ログイン・アカウント</option>
+                        <option value="matching">マッチング機能</option>
+                        <option value="payment">決済・課金</option>
+                        <option value="line">LINE Bot</option>
+                        <option value="webapp">Web App</option>
+                        <option value="other">その他技術的問題</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="support-device">使用デバイス・ブラウザ</label>
+                    <input type="text" id="support-device" name="device" placeholder="例：iPhone Safari、Windows Chrome など">
+                </div>
+                
+                <div class="form-group required">
+                    <label for="support-description">問題の詳細</label>
+                    <textarea id="support-description" name="description" placeholder="発生した問題の詳細、エラーメッセージ、操作手順などをお聞かせください..." required></textarea>
+                </div>
+                
+                <button type="submit" class="submit-button">
+                    <i class="fas fa-tools"></i> サポートに送信
+                </button>
+            </form>
+            
+            <!-- パートナーシップフォーム -->
+            <form class="form-content" id="partnership-form" data-validate>
+                <h3 style="margin-bottom: 30px; color: #2c3e50;">パートナーシップ・ビジネス相談</h3>
+                
+                <div class="form-row">
+                    <div class="form-group required">
+                        <label for="partner-name">お名前</label>
+                        <input type="text" id="partner-name" name="name" required>
+                    </div>
+                    <div class="form-group required">
+                        <label for="partner-email">メールアドレス</label>
+                        <input type="email" id="partner-email" name="email" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group required">
+                        <label for="partner-company">会社・店舗名</label>
+                        <input type="text" id="partner-company" name="company" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="partner-phone">電話番号</label>
+                        <input type="tel" id="partner-phone" name="phone">
+                    </div>
+                </div>
+                
+                <div class="form-group required">
+                    <label for="partner-type">パートナーシップの種類</label>
+                    <select id="partner-type" name="type" required>
+                        <option value="">選択してください</option>
+                        <option value="diving-shop">ダイビングショップ</option>
+                        <option value="travel-agency">旅行会社</option>
+                        <option value="accommodation">宿泊施設</option>
+                        <option value="equipment">器材・用品会社</option>
+                        <option value="media">メディア・出版</option>
+                        <option value="other">その他</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="partner-location">所在地</label>
+                    <input type="text" id="partner-location" name="location" placeholder="都道府県・市区町村">
+                </div>
+                
+                <div class="form-group required">
+                    <label for="partner-description">事業内容・提携希望詳細</label>
+                    <textarea id="partner-description" name="description" placeholder="事業内容、提携を希望される理由、期待される効果などをお聞かせください..." required></textarea>
+                </div>
+                
+                <button type="submit" class="submit-button">
+                    <i class="fas fa-handshake"></i> パートナー申込み
+                </button>
+            </form>
+            
+            <!-- メディア・取材フォーム -->
+            <form class="form-content" id="media-form" data-validate>
+                <h3 style="margin-bottom: 30px; color: #2c3e50;">メディア・取材のお問い合わせ</h3>
+                
+                <div class="form-row">
+                    <div class="form-group required">
+                        <label for="media-name">お名前</label>
+                        <input type="text" id="media-name" name="name" required>
+                    </div>
+                    <div class="form-group required">
+                        <label for="media-email">メールアドレス</label>
+                        <input type="email" id="media-email" name="email" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group required">
+                        <label for="media-organization">媒体・組織名</label>
+                        <input type="text" id="media-organization" name="organization" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="media-phone">電話番号</label>
+                        <input type="tel" id="media-phone" name="phone">
+                    </div>
+                </div>
+                
+                <div class="form-group required">
+                    <label for="media-type">取材内容</label>
+                    <select id="media-type" name="type" required>
+                        <option value="">選択してください</option>
+                        <option value="interview">代表者インタビュー</option>
+                        <option value="service-feature">サービス紹介・特集</option>
+                        <option value="technology">技術・AI関連取材</option>
+                        <option value="industry">ダイビング業界関連</option>
+                        <option value="startup">スタートアップ関連</option>
+                        <option value="other">その他</option>
+                    </select>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="media-deadline">掲載・放送予定日</label>
+                        <input type="date" id="media-deadline" name="deadline">
+                    </div>
+                    <div class="form-group">
+                        <label for="media-reach">想定リーチ・部数</label>
+                        <input type="text" id="media-reach" name="reach" placeholder="例：月間10万PV、発行部数5万部など">
+                    </div>
+                </div>
+                
+                <div class="form-group required">
+                    <label for="media-details">取材詳細・企画概要</label>
+                    <textarea id="media-details" name="details" placeholder="取材の目的、記事・番組の企画概要、質問内容の概要などをお聞かせください..." required></textarea>
+                </div>
+                
+                <button type="submit" class="submit-button">
+                    <i class="fas fa-microphone"></i> 取材申込み
+                </button>
+            </form>
+        </div>
+    </section>
+
+    <!-- よくある質問 -->
+    <section class="faq-section">
+        <div class="container">
+            <h2 class="section-title">❓ よくある質問</h2>
+            <p class="section-subtitle">
+                カテゴリ別によくあるご質問をまとめました
+            </p>
+            
+            <div class="faq-categories">
+                <div class="faq-category">
+                    <h3><i class="faq-category-icon fas fa-heart"></i>サービス利用について</h3>
+                    
+                    <div class="faq-item">
+                        <div class="faq-question">Jijiは本当に無料で使えますか？</div>
+                        <div class="faq-answer">
+                            <p>はい、基本的な感情分析とマッチング機能は完全無料でご利用いただけます。月5回まで感情分析が可能で、十分にJijiの価値を体験していただけます。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <div class="faq-question">LINE Botと Web Appの違いは何ですか？</div>
+                        <div class="faq-answer">
+                            <p>LINE Botは気軽な相談に最適で、Web Appはより詳細な比較検討に適しています。どちらも同じAI感情分析エンジンを使用しており、お好みに応じてご利用ください。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <div class="faq-question">感情分析の精度はどの程度ですか？</div>
+                        <div class="faq-answer">
+                            <p>6カテゴリの感情分析で85%以上の精度を実現しています。継続的な学習により精度向上を図っており、β-testユーザーからのフィードバックも反映しています。</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="faq-category">
+                    <h3><i class="faq-category-icon fas fa-credit-card"></i>料金・決済について</h3>
+                    
+                    <div class="faq-item">
+                        <div class="faq-question">プレミアムプランの支払い方法は？</div>
+                        <div class="faq-answer">
+                            <p>クレジットカード（Visa、MasterCard、JCB）、銀行振込、コンビニ決済をご利用いただけます。年額プランの場合は一括払いのみとなります。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <div class="faq-question">プランの変更・解約はできますか？</div>
+                        <div class="faq-answer">
+                            <p>はい、いつでもプラン変更・解約が可能です。解約後も契約期間終了まではプレミアム機能をご利用いただけます。</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="faq-category">
+                    <h3><i class="faq-category-icon fas fa-store"></i>ショップ・パートナー向け</h3>
+                    
+                    <div class="faq-item">
+                        <div class="faq-question">パートナーシップの申込み条件は？</div>
+                        <div class="faq-answer">
+                            <p>営業許可を持つダイビングショップであれば、規模に関係なくお申込みいただけます。安全基準を満たし、初心者に優しいサービスを提供していることが条件です。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <div class="faq-question">手数料はいつ発生しますか？</div>
+                        <div class="faq-answer">
+                            <p>お客様が実際にサービスを利用し、料金をお支払いいただいた時点で手数料が発生します。紹介のみでは費用は発生いたしません。</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="faq-category">
+                    <h3><i class="faq-category-icon fas fa-cog"></i>技術・トラブル</h3>
+                    
+                    <div class="faq-item">
+                        <div class="faq-question">アプリが正常に動作しません</div>
+                        <div class="faq-answer">
+                            <p>ブラウザの再読み込み、キャッシュクリア、別ブラウザでの試行をお試しください。それでも解決しない場合は、サポートフォームからお問い合わせください。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="faq-item">
+                        <div class="faq-question">データの安全性は大丈夫ですか？</div>
+                        <div class="faq-answer">
+                            <p>すべてのデータは暗号化して保存し、厳格なプライバシーポリシーに従って管理しています。個人情報は適切に保護され、第三者に提供されることはありません。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- サポート情報 -->
+    <section class="support-info">
+        <div class="container">
+            <h2 class="section-title">🛠️ サポート情報</h2>
+            <p class="section-subtitle">
+                各種サポートチャネルとサポート時間
+            </p>
+            
+            <div class="support-cards">
+                <div class="support-card">
+                    <div class="support-card-icon">💬</div>
+                    <h3>LINE Bot サポート</h3>
+                    <p>24時間365日自動応答<br>営業時間内は有人対応</p>
+                    <div class="contact-method">@2007331165</div>
+                </div>
+                
+                <div class="support-card">
+                    <div class="support-card-icon">📧</div>
+                    <h3>メールサポート</h3>
+                    <p>24時間以内に回答<br>（土日祝日除く）</p>
+                    <div class="contact-method">contact@jiji-diving.app</div>
+                </div>
+                
+                <div class="support-card">
+                    <div class="support-card-icon">⏰</div>
+                    <h3>営業時間</h3>
+                    <p>平日 9:00-18:00<br>土日祝日はメール対応のみ</p>
+                    <div class="contact-method">JST (日本標準時)</div>
+                </div>
+                
+                <div class="support-card">
+                    <div class="support-card-icon">🌐</div>
+                    <h3>システム状況</h3>
+                    <p>リアルタイム稼働状況<br>99.5%稼働率達成</p>
+                    <div class="contact-method">status.jiji-diving.app</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 緊急時サポート -->
+    <section class="emergency-section" id="emergency">
+        <div class="container">
+            <div class="emergency-content">
+                <h2 class="emergency-title">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    緊急時サポート
+                </h2>
+                <p class="emergency-description">
+                    ダイビング中の緊急事態、医療的緊急事態が発生した場合は、
+                    まず以下の緊急連絡先にご連絡ください。
+                </p>
+                
+                <div class="emergency-contact">
+                    <h4>海上保安庁（海難事故）</h4>
+                    <div class="emergency-phone">118</div>
+                </div>
+                
+                <div class="emergency-contact">
+                    <h4>救急車・消防署</h4>
+                    <div class="emergency-phone">119</div>
+                </div>
+                
+                <div class="emergency-contact">
+                    <h4>警察（事故・トラブル）</h4>
+                    <div class="emergency-phone">110</div>
+                </div>
+                
+                <p style="margin-top: 30px; opacity: 0.9; font-size: 0.9rem;">
+                    ※ Jijiは緊急時の直接対応は行っておりません。<br>
+                    必ず適切な緊急機関にご連絡ください。
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA セクション -->
+    <section class="cta-section">
+        <div class="container">
+            <div class="cta-content">
+                <h2 class="cta-title">
+                    まずは<span style="color: #ffd93d;">Jiji</span>を<br>
+                    体験してみませんか？
+                </h2>
+                <p class="cta-subtitle">
+                    ご質問がある場合は、いつでもお気軽にお問い合わせください
+                </p>
+                
+                <div class="cta-buttons">
+                    <a href="/app" class="btn-cta-primary">
+                        <i class="fas fa-heart"></i> 無料で体験する
+                    </a>
+                    <a href="https://line.me/ti/p/@2007331165" class="btn-cta-secondary" target="_blank">
+                        <i class="fab fa-line"></i> LINE で相談
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- フッター -->
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>🌊 Jiji</h3>
+                    <p>初心者ダイバーの『できない』を『できる』に変える魔法の存在</p>
+                    <p style="margin-top: 15px;">
+                        <strong>AI感情分析 × 79店舗データベース</strong><br>
+                        = 最適なダイビング体験
+                    </p>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>サービス</h3>
+                    <ul>
+                        <li><a href="/app">Web App体験</a></li>
+                        <li><a href="https://line.me/ti/p/@2007331165" target="_blank">LINE Bot相談</a></li>
+                        <li><a href="/pricing">料金プラン</a></li>
+                        <li><a href="/about">サービス詳細</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>ビジネス</h3>
+                    <ul>
+                        <li><a href="/partners">ショップ向け</a></li>
+                        <li><a href="/contact">パートナーシップ</a></li>
+                        <li><a href="/contact">企業連携</a></li>
+                        <li><a href="/contact">メディア掲載</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>サポート</h3>
+                    <ul>
+                        <li><a href="/contact">お問い合わせ</a></li>
+                        <li><a href="/legal">利用規約</a></li>
+                        <li><a href="/legal">プライバシーポリシー</a></li>
+                        <li><a href="/contact">よくある質問</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 Jiji - AI感情分析ダイビングマッチング. All rights reserved.</p>
+                <p style="margin-top: 10px;">
+                    🚀 Phase 5完了 | ✅ 世界初感情分析×事業価値統合プラットフォーム稼働中
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="/js/common.js"></script>
+    
+    <script>
+        // フォーム切り替え
+        document.addEventListener('DOMContentLoaded', function() {
+            const formTabs = document.querySelectorAll('.form-tab');
+            const formContents = document.querySelectorAll('.form-content');
+            
+            formTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // アクティブタブ切り替え
+                    formTabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // フォーム表示切り替え
+                    formContents.forEach(content => content.classList.remove('active'));
+                    const targetForm = document.getElementById(this.dataset.form + '-form');
+                    if (targetForm) {
+                        targetForm.classList.add('active');
+                    }
+                });
+            });
+            
+            // FAQ アコーディオン
+            const faqItems = document.querySelectorAll('.faq-item');
+            faqItems.forEach(item => {
+                const question = item.querySelector('.faq-question');
+                question.addEventListener('click', () => {
+                    const isActive = item.classList.contains('active');
+                    
+                    // 同カテゴリ内の他のFAQを閉じる
+                    const category = item.closest('.faq-category');
+                    category.querySelectorAll('.faq-item').forEach(otherItem => {
+                        otherItem.classList.remove('active');
+                    });
+                    
+                    // クリックされたFAQを開く/閉じる
+                    if (!isActive) {
+                        item.classList.add('active');
+                    }
+                });
+            });
+            
+            // フォーム送信処理
+            const forms = document.querySelectorAll('form[data-validate]');
+            forms.forEach(form => {
+                form.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    if (!validateForm(this)) {
+                        return;
+                    }
+                    
+                    const submitButton = this.querySelector('.submit-button');
+                    const originalText = submitButton.innerHTML;
+                    
+                    // ローディング状態
+                    submitButton.disabled = true;
+                    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 送信中...';
+                    
+                    try {
+                        // フォームデータ収集
+                        const formData = new FormData(this);
+                        const data = Object.fromEntries(formData.entries());
+                        data.form_type = this.id;
+                        
+                        // イベント追跡
+                        trackEvent('form_submit', {
+                            form_type: this.id,
+                            category: data.category || data.issue || data.type || 'general'
+                        });
+                        
+                        // 実際の送信処理（デモ版では模擬）
+                        await new Promise(resolve => setTimeout(resolve, 2000));
+                        
+                        // 成功通知
+                        showNotification('お問い合わせを受け付けました。24時間以内にご連絡いたします。', 'success');
+                        this.reset();
+                        
+                    } catch (error) {
+                        console.error('Form submission error:', error);
+                        showNotification('送信に失敗しました。しばらく後でお試しください。', 'error');
+                    } finally {
+                        // ボタン状態復旧
+                        submitButton.disabled = false;
+                        submitButton.innerHTML = originalText;
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

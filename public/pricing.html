@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>料金プラン - Jiji AI感情分析ダイビングマッチング</title>
+    <meta name="description" content="Jijiの料金プラン。無料プランから始めて、プレミアム機能で最高のダイビング体験を。ショップ向けパートナープランもご用意しています。">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="/css/common.css">
+    
+    <style>
+        /* Pricing Page Specific Styles */
+        .hero-pricing {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 120px 0 80px;
+            color: white;
+            text-align: center;
+        }
+        
+        .hero-pricing h1 {
+            font-size: 3rem;
+            font-weight: 900;
+            margin-bottom: 20px;
+        }
+        
+        .hero-pricing p {
+            font-size: 1.3rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .pricing-toggle {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin: 40px 0;
+            background: rgba(255,255,255,0.1);
+            padding: 10px;
+            border-radius: 50px;
+            width: fit-content;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .toggle-option {
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+        
+        .toggle-option.active {
+            background: white;
+            color: #667eea;
+        }
+        
+        .pricing-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+            margin: 80px 0;
+        }
+        
+        .pricing-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            position: relative;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .pricing-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+        
+        .pricing-card.featured {
+            border: 3px solid #667eea;
+            transform: scale(1.05);
+        }
+        
+        .pricing-card.featured::before {
+            content: '最人気';
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #667eea;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        
+        .plan-name {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .plan-description {
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        
+        .plan-price {
+            display: flex;
+            align-items: baseline;
+            margin-bottom: 30px;
+        }
+        
+        .price-amount {
+            font-size: 3rem;
+            font-weight: 900;
+            color: #667eea;
+        }
+        
+        .price-currency {
+            font-size: 1.2rem;
+            color: #667eea;
+            margin-right: 8px;
+        }
+        
+        .price-period {
+            font-size: 1rem;
+            color: #666;
+            margin-left: 8px;
+        }
+        
+        .price-yearly {
+            display: none;
+        }
+        
+        .yearly-active .price-monthly {
+            display: none;
+        }
+        
+        .yearly-active .price-yearly {
+            display: flex;
+        }
+        
+        .savings-badge {
+            background: #27ae60;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: 15px;
+        }
+        
+        .plan-features {
+            list-style: none;
+            margin-bottom: 40px;
+        }
+        
+        .plan-features li {
+            padding: 12px 0;
+            color: #555;
+            position: relative;
+            padding-left: 30px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .plan-features li:last-child {
+            border-bottom: none;
+        }
+        
+        .plan-features li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #27ae60;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .plan-features li.not-included {
+            opacity: 0.5;
+        }
+        
+        .plan-features li.not-included::before {
+            content: '×';
+            color: #e74c3c;
+        }
+        
+        .plan-button {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+        
+        .plan-button.primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+        
+        .plan-button.primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .plan-button.secondary {
+            background: transparent;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+        
+        .plan-button.secondary:hover {
+            background: #667eea;
+            color: white;
+        }
+        
+        .business-plans {
+            background: linear-gradient(135deg, #f8f9ff, #e8f2ff);
+            padding: 100px 0;
+        }
+        
+        .commission-table {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin: 40px 0;
+        }
+        
+        .commission-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .commission-table th,
+        .commission-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .commission-table th {
+            background: #f8f9ff;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .grade-s { color: #e74c3c; font-weight: bold; }
+        .grade-a { color: #f39c12; font-weight: bold; }
+        .grade-b { color: #3498db; font-weight: bold; }
+        .grade-c { color: #95a5a6; font-weight: bold; }
+        
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin: 60px 0;
+        }
+        
+        .benefit-card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .benefit-icon {
+            font-size: 3rem;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+        
+        .benefit-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        
+        .benefit-description {
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .faq-section {
+            padding: 100px 0;
+            background: white;
+        }
+        
+        .faq-item {
+            background: #f8f9ff;
+            margin: 20px 0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .faq-question {
+            padding: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #2c3e50;
+            position: relative;
+            transition: background 0.3s ease;
+        }
+        
+        .faq-question:hover {
+            background: #e8f2ff;
+        }
+        
+        .faq-question::after {
+            content: '+';
+            position: absolute;
+            right: 25px;
+            font-size: 1.5rem;
+            transition: transform 0.3s ease;
+        }
+        
+        .faq-item.active .faq-question::after {
+            transform: rotate(45deg);
+        }
+        
+        .faq-answer {
+            padding: 0 25px;
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .faq-item.active .faq-answer {
+            padding: 0 25px 25px;
+            max-height: 200px;
+        }
+        
+        .faq-answer p {
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        @media (max-width: 768px) {
+            .pricing-cards {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .pricing-card.featured {
+                transform: none;
+            }
+            
+            .hero-pricing h1 {
+                font-size: 2rem;
+            }
+            
+            .commission-table {
+                overflow-x: auto;
+            }
+            
+            .commission-table table {
+                min-width: 500px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ヘッダー -->
+    <header class="main-header">
+        <nav class="main-nav">
+            <a href="/" class="main-logo">
+                <h1>🌊 Jiji</h1>
+                <span>AI感情マッチング</span>
+            </a>
+            
+            <ul class="main-nav-menu">
+                <li><a href="/">ホーム</a></li>
+                <li><a href="/about">サービス</a></li>
+                <li><a href="/pricing" class="active">料金プラン</a></li>
+                <li><a href="/partners">ショップ向け</a></li>
+                <li><a href="/contact">お問い合わせ</a></li>
+            </ul>
+            
+            <div class="main-nav-buttons">
+                <a href="/app" class="btn btn-secondary">
+                    <i class="fas fa-heart"></i> 体験する
+                </a>
+                <a href="https://line.me/ti/p/@2007331165" class="btn btn-primary" target="_blank">
+                    <i class="fab fa-line"></i> LINE連携
+                </a>
+            </div>
+            
+            <div class="nav-hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </nav>
+    </header>
+
+    <!-- ヒーローセクション -->
+    <section class="hero-pricing">
+        <div class="container">
+            <h1>料金プラン</h1>
+            <p>
+                あなたのダイビング体験に最適なプランをお選びください<br>
+                無料で始めて、必要に応じてプレミアム機能をご利用いただけます
+            </p>
+            
+            <div class="pricing-toggle">
+                <div class="toggle-option active" data-period="monthly">月額プラン</div>
+                <div class="toggle-option" data-period="yearly">年額プラン<span class="savings-badge">2ヶ月分お得</span></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 料金カード -->
+    <section class="section">
+        <div class="container">
+            <div class="pricing-cards">
+                <!-- フリープラン -->
+                <div class="pricing-card">
+                    <div class="plan-name">Free</div>
+                    <div class="plan-description">
+                        基本的なダイビングショップマッチング機能を無料でご利用いただけます
+                    </div>
+                    <div class="plan-price">
+                        <div class="price-monthly">
+                            <span class="price-currency">¥</span>
+                            <span class="price-amount">0</span>
+                            <span class="price-period">/月</span>
+                        </div>
+                        <div class="price-yearly">
+                            <span class="price-currency">¥</span>
+                            <span class="price-amount">0</span>
+                            <span class="price-period">/年</span>
+                        </div>
+                    </div>
+                    <ul class="plan-features">
+                        <li>基本感情分析（月5回まで）</li>
+                        <li>店舗マッチング機能</li>
+                        <li>LINE Bot相談（基本）</li>
+                        <li>Web App利用</li>
+                        <li class="not-included">優先サポート</li>
+                        <li class="not-included">詳細レポート</li>
+                        <li class="not-included">限定ショップ情報</li>
+                        <li class="not-included">プレミアム機能</li>
+                    </ul>
+                    <a href="/app" class="plan-button secondary">無料で始める</a>
+                </div>
+
+                <!-- ベーシックプラン -->
+                <div class="pricing-card featured">
+                    <div class="plan-name">Basic</div>
+                    <div class="plan-description">
+                        本格的なダイビング体験を求める方に最適。優先サポートと詳細分析が利用可能
+                    </div>
+                    <div class="plan-price">
+                        <div class="price-monthly">
+                            <span class="price-currency">¥</span>
+                            <span class="price-amount">980</span>
+                            <span class="price-period">/月</span>
+                        </div>
+                        <div class="price-yearly">
+                            <span class="price-currency">¥</span>
+                            <span class="price-amount">9,800</span>
+                            <span class="price-period">/年</span>
+                        </div>
+                    </div>
+                    <ul class="plan-features">
+                        <li>感情分析無制限（月50回）</li>
+                        <li>優先マッチング（待ち時間なし）</li>
+                        <li>詳細店舗比較レポート（月10件）</li>
+                        <li>限定ショップ情報アクセス</li>
+                        <li>専用Jijiサポート</li>
+                        <li>紹介コード無制限生成</li>
+                        <li>エラー優先対応</li>
+                        <li class="not-included">個人ダイビングプランナー</li>
+                    </ul>
+                    <a href="#" class="plan-button primary" onclick="subscribePlan('basic')">Basic を始める</a>
+                </div>
+
+                <!-- プロプラン -->
+                <div class="pricing-card">
+                    <div class="plan-name">Pro</div>
+                    <div class="plan-description">
+                        最高のダイビング体験を追求する方向け。専属サポートと限定機能をご提供
+                    </div>
+                    <div class="plan-price">
+                        <div class="price-monthly">
+                            <span class="price-currency">¥</span>
+                            <span class="price-amount">1,980</span>
+                            <span class="price-period">/月</span>
+                        </div>
+                        <div class="price-yearly">
+                            <span class="price-currency">¥</span>
+                            <span class="price-amount">19,800</span>
+                            <span class="price-period">/年</span>
+                        </div>
+                    </div>
+                    <ul class="plan-features">
+                        <li>全Basic機能</li>
+                        <li>感情分析完全無制限</li>
+                        <li>個人ダイビングプランナー</li>
+                        <li>AIダイビングコーチ</li>
+                        <li>独占ショップ割引</li>
+                        <li>VIPイベント招待</li>
+                        <li>24時間専用サポート</li>
+                        <li>カスタム旅行プラン作成</li>
+                    </ul>
+                    <a href="#" class="plan-button primary" onclick="subscribePlan('pro')">Pro を始める</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ビジネスプラン -->
+    <section class="business-plans">
+        <div class="container">
+            <h2 class="section-title">🏪 ショップ向けパートナープラン</h2>
+            <p class="section-subtitle">
+                ダイビングショップ様向けの紹介手数料プラン。質の高いお客様をご紹介し、Win-Winの関係を築きます
+            </p>
+            
+            <div class="commission-table">
+                <h3 style="margin-bottom: 30px; color: #2c3e50;">紹介手数料体系</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Jiji認定グレード</th>
+                            <th>手数料率</th>
+                            <th>ベース手数料</th>
+                            <th>特典・サービス</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="grade-s">S級ショップ</td>
+                            <td><strong>8%</strong></td>
+                            <td>¥500</td>
+                            <td>優先表示・専用サポート・マーケティング支援</td>
+                        </tr>
+                        <tr>
+                            <td class="grade-a">A級ショップ</td>
+                            <td><strong>6%</strong></td>
+                            <td>¥500</td>
+                            <td>優先表示・品質認定バッジ・レビュー管理</td>
+                        </tr>
+                        <tr>
+                            <td class="grade-b">B級ショップ</td>
+                            <td><strong>5%</strong></td>
+                            <td>¥500</td>
+                            <td>標準表示・基本サポート・分析レポート</td>
+                        </tr>
+                        <tr>
+                            <td class="grade-c">C級ショップ</td>
+                            <td><strong>3%</strong></td>
+                            <td>¥500</td>
+                            <td>基本表示・改善アドバイス・品質向上支援</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="benefits-grid">
+                <div class="benefit-card">
+                    <div class="benefit-icon">👥</div>
+                    <h3 class="benefit-title">質の高い顧客紹介</h3>
+                    <p class="benefit-description">
+                        感情分析により事前にお客様のニーズを把握。
+                        ショップの特徴と相性の良いお客様のみご紹介
+                    </p>
+                </div>
+                
+                <div class="benefit-card">
+                    <div class="benefit-icon">📊</div>
+                    <h3 class="benefit-title">詳細分析レポート</h3>
+                    <p class="benefit-description">
+                        紹介実績・顧客満足度・改善点など
+                        詳細な分析レポートを定期的にご提供
+                    </p>
+                </div>
+                
+                <div class="benefit-card">
+                    <div class="benefit-icon">🚀</div>
+                    <h3 class="benefit-title">マーケティング支援</h3>
+                    <p class="benefit-description">
+                        SNS露出・コンテンツ作成・ブランディング支援で
+                        ショップの認知度向上をサポート
+                    </p>
+                </div>
+                
+                <div class="benefit-card">
+                    <div class="benefit-icon">🤝</div>
+                    <h3 class="benefit-title">Win-Win関係構築</h3>
+                    <p class="benefit-description">
+                        お客様・ショップ・Jijiが全て満足できる
+                        持続可能なパートナーシップを実現
+                    </p>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 60px;">
+                <a href="/partners" class="btn btn-primary btn-large">
+                    <i class="fas fa-handshake"></i> パートナーシップ詳細
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- よくある質問 -->
+    <section class="faq-section">
+        <div class="container">
+            <h2 class="section-title">💬 よくある質問</h2>
+            
+            <div class="faq-item">
+                <div class="faq-question">無料プランでも十分利用できますか？</div>
+                <div class="faq-answer">
+                    <p>はい、基本的なマッチング機能は無料でご利用いただけます。月5回の感情分析でも、十分にJijiの価値を体験していただけます。より頻繁に利用したい場合は、Basicプランをご検討ください。</p>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">プレミアムプランはいつでも解約できますか？</div>
+                <div class="faq-answer">
+                    <p>はい、いつでも解約可能です。解約後も契約期間終了まではプレミアム機能をご利用いただけます。年額プランの場合は、残期間分の返金は行っておりませんのでご了承ください。</p>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">ショップ向けプランの手数料はいつ発生しますか？</div>
+                <div class="faq-answer">
+                    <p>お客様が実際にダイビングサービスを利用し、料金をお支払いいただいた時点で手数料が発生します。紹介のみでは費用は発生いたしません。</p>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">Jiji認定グレードはどのように決まりますか？</div>
+                <div class="faq-answer">
+                    <p>安全性・サービス品質・顧客満足度・設備・インストラクター資格など34項目の詳細評価に基づいて決定されます。定期的な見直しも行っており、サービス向上により上位グレードを目指していただけます。</p>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">支払い方法は何が利用できますか？</div>
+                <div class="faq-answer">
+                    <p>クレジットカード（Visa、MasterCard、JCB、American Express）、銀行振込、コンビニ決済をご利用いただけます。年額プランの場合は、一括払いのみとなります。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA セクション -->
+    <section class="cta-section">
+        <div class="container">
+            <div class="cta-content">
+                <h2 class="cta-title">
+                    あなたに最適な<br>
+                    <span style="color: #ffd93d;">プラン</span>で始めませんか？
+                </h2>
+                <p class="cta-subtitle">
+                    無料で始めて、必要に応じてアップグレード。いつでも変更可能です
+                </p>
+                
+                <div class="cta-buttons">
+                    <a href="/app" class="btn-cta-primary">
+                        <i class="fas fa-heart"></i> 無料で始める
+                    </a>
+                    <a href="/contact" class="btn-cta-secondary">
+                        <i class="fas fa-envelope"></i> 相談する
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- フッター -->
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>🌊 Jiji</h3>
+                    <p>初心者ダイバーの『できない』を『できる』に変える魔法の存在</p>
+                    <p style="margin-top: 15px;">
+                        <strong>AI感情分析 × 79店舗データベース</strong><br>
+                        = 最適なダイビング体験
+                    </p>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>サービス</h3>
+                    <ul>
+                        <li><a href="/app">Web App体験</a></li>
+                        <li><a href="https://line.me/ti/p/@2007331165" target="_blank">LINE Bot相談</a></li>
+                        <li><a href="/pricing">料金プラン</a></li>
+                        <li><a href="/about">サービス詳細</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>ビジネス</h3>
+                    <ul>
+                        <li><a href="/partners">ショップ向け</a></li>
+                        <li><a href="/contact">パートナーシップ</a></li>
+                        <li><a href="/contact">企業連携</a></li>
+                        <li><a href="/contact">メディア掲載</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>サポート</h3>
+                    <ul>
+                        <li><a href="/contact">お問い合わせ</a></li>
+                        <li><a href="/legal">利用規約</a></li>
+                        <li><a href="/legal">プライバシーポリシー</a></li>
+                        <li><a href="/contact">よくある質問</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 Jiji - AI感情分析ダイビングマッチング. All rights reserved.</p>
+                <p style="margin-top: 10px;">
+                    🚀 Phase 5完了 | ✅ 世界初感情分析×事業価値統合プラットフォーム稼働中
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="/js/common.js"></script>
+    
+    <script>
+        // 料金プラン切り替え
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggleOptions = document.querySelectorAll('.toggle-option');
+            const pricingCards = document.querySelector('.pricing-cards');
+            
+            toggleOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    toggleOptions.forEach(opt => opt.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    if (this.dataset.period === 'yearly') {
+                        pricingCards.classList.add('yearly-active');
+                    } else {
+                        pricingCards.classList.remove('yearly-active');
+                    }
+                });
+            });
+            
+            // FAQ アコーディオン
+            const faqItems = document.querySelectorAll('.faq-item');
+            faqItems.forEach(item => {
+                const question = item.querySelector('.faq-question');
+                question.addEventListener('click', () => {
+                    const isActive = item.classList.contains('active');
+                    
+                    // 他のFAQを閉じる
+                    faqItems.forEach(otherItem => {
+                        otherItem.classList.remove('active');
+                    });
+                    
+                    // クリックされたFAQを開く/閉じる
+                    if (!isActive) {
+                        item.classList.add('active');
+                    }
+                });
+            });
+        });
+        
+        // プラン登録処理
+        async function subscribePlan(planType) {
+            try {
+                const response = await jijiAPI.post('/api/v5/revenue/premium/subscribe', {
+                    user_id: 'demo_user_' + Date.now(),
+                    plan_id: planType === 'basic' ? 'premium_basic' : 'premium_pro',
+                    payment_method: 'monthly'
+                });
+                
+                if (response.success) {
+                    showNotification(`${planType === 'basic' ? 'Basic' : 'Pro'}プランにご登録ありがとうございます！`, 'success');
+                    trackEvent('plan_subscription', {
+                        plan_type: planType,
+                        payment_method: 'monthly'
+                    });
+                } else {
+                    showNotification('登録に失敗しました。しばらく後でお試しください。', 'error');
+                }
+            } catch (error) {
+                console.error('Subscription error:', error);
+                showNotification('現在この機能は開発中です。お問い合わせください。', 'info');
+            }
+        }
+    </script>
+</body>
+</html>

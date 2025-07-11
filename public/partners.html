@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ショップ向けパートナーシップ - Jiji AI感情分析ダイビングマッチング</title>
+    <meta name="description" content="ダイビングショップ様向けのJijiパートナーシップ。質の高い顧客紹介、認定制度、マーケティング支援で、Win-Winの関係を築きます。">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="/css/common.css">
+    
+    <style>
+        /* Partners Page Specific Styles */
+        .hero-partners {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 120px 0 80px;
+            color: white;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero-partners::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><defs><pattern id="partners-pattern" x="0" y="0" width="50" height="50" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="3" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100%" height="100%" fill="url(%23partners-pattern)"/></svg>');
+        }
+        
+        .hero-partners .container {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .hero-partners h1 {
+            font-size: 3.5rem;
+            font-weight: 900;
+            margin-bottom: 20px;
+        }
+        
+        .hero-partners .subtitle {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            opacity: 0.95;
+        }
+        
+        .hero-partners p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 700px;
+            margin: 0 auto 40px;
+        }
+        
+        .partner-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 40px;
+            margin: 60px 0;
+        }
+        
+        .partner-stat {
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #ffd93d;
+            display: block;
+        }
+        
+        .stat-label {
+            font-size: 1rem;
+            opacity: 0.9;
+            margin-top: 10px;
+        }
+        
+        .value-proposition {
+            padding: 100px 0;
+            background: linear-gradient(to bottom, #f8f9ff, white);
+        }
+        
+        .value-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 40px;
+            margin-top: 60px;
+        }
+        
+        .value-card {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            position: relative;
+            transition: transform 0.3s ease;
+        }
+        
+        .value-card:hover {
+            transform: translateY(-10px);
+        }
+        
+        .value-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+        
+        .value-icon {
+            font-size: 4rem;
+            color: #667eea;
+            margin-bottom: 25px;
+        }
+        
+        .value-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        
+        .value-description {
+            color: #666;
+            line-height: 1.7;
+            margin-bottom: 25px;
+        }
+        
+        .value-benefits {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .value-benefits li {
+            padding: 8px 0;
+            color: #555;
+            position: relative;
+            padding-left: 25px;
+        }
+        
+        .value-benefits li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #27ae60;
+            font-weight: bold;
+        }
+        
+        .certification-system {
+            padding: 100px 0;
+            background: #2c3e50;
+            color: white;
+        }
+        
+        .grade-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-top: 60px;
+        }
+        
+        .grade-card {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 15px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .grade-card.grade-s {
+            border-color: #e74c3c;
+            background: rgba(231, 76, 60, 0.1);
+        }
+        
+        .grade-card.grade-a {
+            border-color: #f39c12;
+            background: rgba(243, 156, 18, 0.1);
+        }
+        
+        .grade-card.grade-b {
+            border-color: #3498db;
+            background: rgba(52, 152, 219, 0.1);
+        }
+        
+        .grade-card.grade-c {
+            border-color: #95a5a6;
+            background: rgba(149, 165, 166, 0.1);
+        }
+        
+        .grade-badge {
+            position: absolute;
+            top: -15px;
+            left: 20px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+        
+        .grade-s .grade-badge {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .grade-a .grade-badge {
+            background: #f39c12;
+            color: white;
+        }
+        
+        .grade-b .grade-badge {
+            background: #3498db;
+            color: white;
+        }
+        
+        .grade-c .grade-badge {
+            background: #95a5a6;
+            color: white;
+        }
+        
+        .grade-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 20px 0 15px;
+        }
+        
+        .grade-commission {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 20px;
+        }
+        
+        .grade-features {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .grade-features li {
+            padding: 8px 0;
+            position: relative;
+            padding-left: 25px;
+            opacity: 0.9;
+        }
+        
+        .grade-features li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: #ffd93d;
+        }
+        
+        .commission-calculator {
+            background: linear-gradient(135deg, #f8f9ff, #e8f2ff);
+            padding: 100px 0;
+        }
+        
+        .calculator-container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            max-width: 600px;
+            margin: 60px auto 0;
+        }
+        
+        .calculator-inputs {
+            display: grid;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .input-group label {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+        
+        .input-group select,
+        .input-group input {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .input-group select:focus,
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .calculator-result {
+            background: #f8f9ff;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .result-amount {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .result-breakdown {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .success-stories {
+            padding: 100px 0;
+            background: white;
+        }
+        
+        .story-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 40px;
+            margin-top: 60px;
+        }
+        
+        .story-card {
+            background: #f8f9ff;
+            padding: 40px;
+            border-radius: 20px;
+            position: relative;
+        }
+        
+        .story-card::before {
+            content: '"';
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 4rem;
+            color: #667eea;
+            opacity: 0.3;
+            font-family: serif;
+        }
+        
+        .story-content {
+            margin-bottom: 25px;
+            font-style: italic;
+            color: #555;
+            line-height: 1.7;
+        }
+        
+        .story-author {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .story-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+        
+        .story-info h4 {
+            color: #2c3e50;
+            margin-bottom: 5px;
+            font-size: 1.2rem;
+        }
+        
+        .story-info p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .application-process {
+            padding: 100px 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .process-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-top: 60px;
+        }
+        
+        .process-step {
+            text-align: center;
+            position: relative;
+        }
+        
+        .process-step::after {
+            content: '';
+            position: absolute;
+            top: 40px;
+            right: -20px;
+            width: 40px;
+            height: 2px;
+            background: rgba(255,255,255,0.3);
+            display: block;
+        }
+        
+        .process-step:last-child::after {
+            display: none;
+        }
+        
+        .step-number {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 0 auto 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+        
+        .step-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        
+        .step-description {
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+        
+        @media (max-width: 768px) {
+            .hero-partners h1 {
+                font-size: 2.5rem;
+            }
+            
+            .partner-stats {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 20px;
+            }
+            
+            .value-cards {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .grade-cards {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .story-cards {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .process-steps {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+            
+            .process-step::after {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ヘッダー -->
+    <header class="main-header">
+        <nav class="main-nav">
+            <a href="/" class="main-logo">
+                <h1>🌊 Jiji</h1>
+                <span>AI感情マッチング</span>
+            </a>
+            
+            <ul class="main-nav-menu">
+                <li><a href="/">ホーム</a></li>
+                <li><a href="/about">サービス</a></li>
+                <li><a href="/pricing">料金プラン</a></li>
+                <li><a href="/partners" class="active">ショップ向け</a></li>
+                <li><a href="/contact">お問い合わせ</a></li>
+            </ul>
+            
+            <div class="main-nav-buttons">
+                <a href="/app" class="btn btn-secondary">
+                    <i class="fas fa-heart"></i> 体験する
+                </a>
+                <a href="https://line.me/ti/p/@2007331165" class="btn btn-primary" target="_blank">
+                    <i class="fab fa-line"></i> LINE連携
+                </a>
+            </div>
+            
+            <div class="nav-hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </nav>
+    </header>
+
+    <!-- ヒーローセクション -->
+    <section class="hero-partners">
+        <div class="container">
+            <h1>ショップパートナーシップ</h1>
+            <p class="subtitle">Jijiと一緒に、ダイビング業界の未来を創造しませんか？</p>
+            <p>
+                質の高い顧客紹介と充実したサポートで、<br>
+                ショップ様のビジネス成長を全力で支援します。<br>
+                Win-Winの持続可能なパートナーシップを築きましょう。
+            </p>
+            
+            <div class="partner-stats">
+                <div class="partner-stat">
+                    <span class="stat-number counter" data-target="79">79</span>
+                    <div class="stat-label">パートナーショップ</div>
+                </div>
+                <div class="partner-stat">
+                    <span class="stat-number counter" data-target="1000">1,000+</span>
+                    <div class="stat-label">月間紹介予定</div>
+                </div>
+                <div class="partner-stat">
+                    <span class="stat-number">3-8%</span>
+                    <div class="stat-label">紹介手数料</div>
+                </div>
+                <div class="partner-stat">
+                    <span class="stat-number">Win-Win</span>
+                    <div class="stat-label">関係構築</div>
+                </div>
+            </div>
+            
+            <div style="margin-top: 40px;">
+                <a href="#application" class="btn-cta-primary">
+                    <i class="fas fa-handshake"></i> パートナー申込み
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- 価値提案 -->
+    <section class="value-proposition">
+        <div class="container">
+            <h2 class="section-title">🤝 パートナーシップの価値</h2>
+            <p class="section-subtitle">
+                Jijiがショップ様に提供する4つの核心価値
+            </p>
+            
+            <div class="value-cards">
+                <div class="value-card animate-on-scroll">
+                    <div class="value-icon">👥</div>
+                    <h3 class="value-title">質の高い顧客紹介</h3>
+                    <p class="value-description">
+                        AI感情分析により、お客様のニーズを事前に把握。
+                        ショップの特徴と相性の良いお客様のみご紹介します。
+                    </p>
+                    <ul class="value-benefits">
+                        <li>感情分析による事前ニーズ把握</li>
+                        <li>ショップ特徴との高精度マッチング</li>
+                        <li>初心者特化の安心顧客層</li>
+                        <li>高いコンバージョン率実現</li>
+                    </ul>
+                </div>
+                
+                <div class="value-card animate-on-scroll">
+                    <div class="value-icon">🏆</div>
+                    <h3 class="value-title">Jiji認定制度</h3>
+                    <p class="value-description">
+                        S/A/B/C級の認定システムで品質を保証。
+                        上位グレードショップには特別な特典をご提供します。
+                    </p>
+                    <ul class="value-benefits">
+                        <li>34項目の詳細品質評価</li>
+                        <li>認定バッジでの差別化</li>
+                        <li>優先表示・特別露出</li>
+                        <li>品質向上支援プログラム</li>
+                    </ul>
+                </div>
+                
+                <div class="value-card animate-on-scroll">
+                    <div class="value-icon">📊</div>
+                    <h3 class="value-title">詳細分析レポート</h3>
+                    <p class="value-description">
+                        紹介実績・顧客満足度・改善点など
+                        詳細な分析レポートを定期的にご提供します。
+                    </p>
+                    <ul class="value-benefits">
+                        <li>月次・四半期詳細レポート</li>
+                        <li>顧客満足度・NPS分析</li>
+                        <li>競合比較・市場ポジション</li>
+                        <li>改善提案・成長戦略支援</li>
+                    </ul>
+                </div>
+                
+                <div class="value-card animate-on-scroll">
+                    <div class="value-icon">🚀</div>
+                    <h3 class="value-title">マーケティング支援</h3>
+                    <p class="value-description">
+                        SNS露出・コンテンツ作成・ブランディング支援で
+                        ショップの認知度向上をサポートします。
+                    </p>
+                    <ul class="value-benefits">
+                        <li>SNS・メディア露出支援</li>
+                        <li>プロフェッショナル写真撮影</li>
+                        <li>コンテンツ作成・配信支援</li>
+                        <li>イベント・キャンペーン企画</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 認定システム -->
+    <section class="certification-system">
+        <div class="container">
+            <h2 class="section-title" style="color: white;">🏅 Jiji認定グレードシステム</h2>
+            <p class="section-subtitle" style="color: rgba(255,255,255,0.9);">
+                34項目の詳細評価に基づく品質認定システム
+            </p>
+            
+            <div class="grade-cards">
+                <div class="grade-card grade-s animate-on-scroll">
+                    <div class="grade-badge">S級</div>
+                    <h3 class="grade-title">プレミアムショップ</h3>
+                    <div class="grade-commission">8% + ¥500</div>
+                    <ul class="grade-features">
+                        <li>最優先表示・特別露出</li>
+                        <li>専属マーケティング担当</li>
+                        <li>VIP顧客専用紹介</li>
+                        <li>年4回の詳細レポート</li>
+                        <li>イベント・メディア優先参加</li>
+                        <li>カスタム改善プログラム</li>
+                    </ul>
+                </div>
+                
+                <div class="grade-card grade-a animate-on-scroll">
+                    <div class="grade-badge">A級</div>
+                    <h3 class="grade-title">優良ショップ</h3>
+                    <div class="grade-commission">6% + ¥500</div>
+                    <ul class="grade-features">
+                        <li>優先表示・認定バッジ</li>
+                        <li>品質保証マーク付与</li>
+                        <li>月次パフォーマンスレポート</li>
+                        <li>レビュー管理支援</li>
+                        <li>マーケティング素材提供</li>
+                        <li>改善アドバイス提供</li>
+                    </ul>
+                </div>
+                
+                <div class="grade-card grade-b animate-on-scroll">
+                    <div class="grade-badge">B級</div>
+                    <h3 class="grade-title">標準ショップ</h3>
+                    <div class="grade-commission">5% + ¥500</div>
+                    <ul class="grade-features">
+                        <li>標準表示・基本サポート</li>
+                        <li>四半期レポート提供</li>
+                        <li>基本マーケティング支援</li>
+                        <li>品質向上プログラム参加</li>
+                        <li>グレードアップ支援</li>
+                        <li>コミュニティアクセス</li>
+                    </ul>
+                </div>
+                
+                <div class="grade-card grade-c animate-on-scroll">
+                    <div class="grade-badge">C級</div>
+                    <h3 class="grade-title">エントリーショップ</h3>
+                    <div class="grade-commission">3% + ¥500</div>
+                    <ul class="grade-features">
+                        <li>基本表示・リスト掲載</li>
+                        <li>改善アドバイス重点提供</li>
+                        <li>品質向上集中支援</li>
+                        <li>教育・研修プログラム</li>
+                        <li>段階的グレードアップ</li>
+                        <li>メンタリング制度</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 手数料計算機 -->
+    <section class="commission-calculator">
+        <div class="container">
+            <h2 class="section-title">💰 手数料シミュレーター</h2>
+            <p class="section-subtitle">
+                想定される月間売上から手数料を計算してみてください
+            </p>
+            
+            <div class="calculator-container">
+                <div class="calculator-inputs">
+                    <div class="input-group">
+                        <label for="grade-select">ショップグレード</label>
+                        <select id="grade-select">
+                            <option value="S">S級（8%）</option>
+                            <option value="A">A級（6%）</option>
+                            <option value="B" selected>B級（5%）</option>
+                            <option value="C">C級（3%）</option>
+                        </select>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="monthly-revenue">月間売上予想（円）</label>
+                        <input type="number" id="monthly-revenue" value="500000" min="0" step="10000">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="referral-rate">Jiji経由の割合（%）</label>
+                        <input type="number" id="referral-rate" value="30" min="0" max="100" step="5">
+                    </div>
+                </div>
+                
+                <div class="calculator-result">
+                    <div class="result-amount" id="commission-result">¥15,000</div>
+                    <div class="result-breakdown" id="commission-breakdown">
+                        月間売上 ¥500,000 × Jiji経由 30% × 手数料率 5% = ¥7,500<br>
+                        + 基本手数料 ¥500 × 15件 = ¥7,500
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 成功事例 -->
+    <section class="success-stories">
+        <div class="container">
+            <h2 class="section-title">📈 パートナー成功事例</h2>
+            <p class="section-subtitle">
+                Jijiパートナーショップからの実際の声
+            </p>
+            
+            <div class="story-cards">
+                <div class="story-card animate-on-scroll">
+                    <p class="story-content">
+                        「Jijiの紹介システムのおかげで、質の高いお客様を安定してご紹介いただけています。
+                        事前に感情分析でお客様の不安を把握できるので、より良いサービスを提供できます。
+                        月間20%の売上向上を実現でき、Win-Winの関係を築けています。」
+                    </p>
+                    <div class="story-author">
+                        <div class="story-avatar">M</div>
+                        <div class="story-info">
+                            <h4>石垣島マリンサービス M</h4>
+                            <p>S級認定ショップ・パートナー歴6ヶ月</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="story-card animate-on-scroll">
+                    <p class="story-content">
+                        「初心者のお客様に特化したサービスを提供していますが、Jijiの感情分析マッチングが
+                        本当に素晴らしいです。不安を抱えたお客様も、事前に心の準備ができているので
+                        スムーズに対応できます。リピート率も30%向上しました。」
+                    </p>
+                    <div class="story-author">
+                        <div class="story-avatar">B</div>
+                        <div class="story-info">
+                            <h4>宮古島ブルーオーシャン</h4>
+                            <p>A級認定ショップ・パートナー歴4ヶ月</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="story-card animate-on-scroll">
+                    <p class="story-content">
+                        「Jiji認定制度のおかげで、品質向上に向けた具体的な指標ができました。
+                        C級からB級にグレードアップして、紹介数も手数料も向上。
+                        詳細なフィードバックレポートで改善点が明確になり、サービス品質が劇的に向上しました。」
+                    </p>
+                    <div class="story-author">
+                        <div class="story-avatar">S</div>
+                        <div class="story-info">
+                            <h4>石垣島シーワールド</h4>
+                            <p>B級認定ショップ・パートナー歴3ヶ月</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 申込みプロセス -->
+    <section class="application-process" id="application">
+        <div class="container">
+            <h2 class="section-title" style="color: white;">📝 パートナー申込みプロセス</h2>
+            <p class="section-subtitle" style="color: rgba(255,255,255,0.9);">
+                簡単4ステップでJijiパートナーに
+            </p>
+            
+            <div class="process-steps">
+                <div class="process-step">
+                    <div class="step-number">1</div>
+                    <h3 class="step-title">申込み・基本情報登録</h3>
+                    <p class="step-description">
+                        お問い合わせフォームから基本情報を送信。
+                        24時間以内にご連絡いたします。
+                    </p>
+                </div>
+                
+                <div class="process-step">
+                    <div class="step-number">2</div>
+                    <h3 class="step-title">詳細ヒアリング・審査</h3>
+                    <p class="step-description">
+                        ショップの特徴・サービス内容・品質基準など
+                        詳細なヒアリングを実施します。
+                    </p>
+                </div>
+                
+                <div class="process-step">
+                    <div class="step-number">3</div>
+                    <h3 class="step-title">グレード認定・契約</h3>
+                    <p class="step-description">
+                        34項目評価によるグレード認定後、
+                        パートナーシップ契約を締結します。
+                    </p>
+                </div>
+                
+                <div class="process-step">
+                    <div class="step-number">4</div>
+                    <h3 class="step-title">システム連携・運用開始</h3>
+                    <p class="step-description">
+                        Jijiシステムとの連携設定完了後、
+                        顧客紹介・サポートを開始します。
+                    </p>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 60px;">
+                <a href="/contact" class="btn-cta-primary">
+                    <i class="fas fa-paper-plane"></i> 今すぐ申込み
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA セクション -->
+    <section class="cta-section">
+        <div class="container">
+            <div class="cta-content">
+                <h2 class="cta-title">
+                    一緒に<span style="color: #ffd93d;">ダイビング業界の未来</span>を<br>
+                    創造しませんか？
+                </h2>
+                <p class="cta-subtitle">
+                    Jijiパートナーシップで、持続可能な成長を実現しましょう
+                </p>
+                
+                <div class="cta-buttons">
+                    <a href="/contact" class="btn-cta-primary">
+                        <i class="fas fa-handshake"></i> パートナー申込み
+                    </a>
+                    <a href="/pricing" class="btn-cta-secondary">
+                        <i class="fas fa-calculator"></i> 料金詳細
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- フッター -->
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>🌊 Jiji</h3>
+                    <p>初心者ダイバーの『できない』を『できる』に変える魔法の存在</p>
+                    <p style="margin-top: 15px;">
+                        <strong>AI感情分析 × 79店舗データベース</strong><br>
+                        = 最適なダイビング体験
+                    </p>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>サービス</h3>
+                    <ul>
+                        <li><a href="/app">Web App体験</a></li>
+                        <li><a href="https://line.me/ti/p/@2007331165" target="_blank">LINE Bot相談</a></li>
+                        <li><a href="/pricing">料金プラン</a></li>
+                        <li><a href="/about">サービス詳細</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>ビジネス</h3>
+                    <ul>
+                        <li><a href="/partners">ショップ向け</a></li>
+                        <li><a href="/contact">パートナーシップ</a></li>
+                        <li><a href="/contact">企業連携</a></li>
+                        <li><a href="/contact">メディア掲載</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>サポート</h3>
+                    <ul>
+                        <li><a href="/contact">お問い合わせ</a></li>
+                        <li><a href="/legal">利用規約</a></li>
+                        <li><a href="/legal">プライバシーポリシー</a></li>
+                        <li><a href="/contact">よくある質問</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 Jiji - AI感情分析ダイビングマッチング. All rights reserved.</p>
+                <p style="margin-top: 10px;">
+                    🚀 Phase 5完了 | ✅ 世界初感情分析×事業価値統合プラットフォーム稼働中
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="/js/common.js"></script>
+    
+    <script>
+        // 手数料計算機
+        document.addEventListener('DOMContentLoaded', function() {
+            const gradeSelect = document.getElementById('grade-select');
+            const monthlyRevenue = document.getElementById('monthly-revenue');
+            const referralRate = document.getElementById('referral-rate');
+            const commissionResult = document.getElementById('commission-result');
+            const commissionBreakdown = document.getElementById('commission-breakdown');
+            
+            function calculateCommission() {
+                const grade = gradeSelect.value;
+                const revenue = parseInt(monthlyRevenue.value) || 0;
+                const rate = parseInt(referralRate.value) || 0;
+                
+                const commissionRates = {
+                    'S': 0.08,
+                    'A': 0.06,
+                    'B': 0.05,
+                    'C': 0.03
+                };
+                
+                const jijiRevenue = revenue * (rate / 100);
+                const commission = jijiRevenue * commissionRates[grade];
+                const transactions = Math.floor(jijiRevenue / 10000); // 1万円あたり1件と仮定
+                const baseFee = transactions * 500;
+                const totalCommission = commission + baseFee;
+                
+                commissionResult.textContent = `¥${totalCommission.toLocaleString()}`;
+                commissionBreakdown.innerHTML = `
+                    月間売上 ¥${revenue.toLocaleString()} × Jiji経由 ${rate}% × 手数料率 ${(commissionRates[grade] * 100)}% = ¥${commission.toLocaleString()}<br>
+                    + 基本手数料 ¥500 × ${transactions}件 = ¥${baseFee.toLocaleString()}
+                `;
+            }
+            
+            gradeSelect.addEventListener('change', calculateCommission);
+            monthlyRevenue.addEventListener('input', calculateCommission);
+            referralRate.addEventListener('input', calculateCommission);
+            
+            // 初期計算
+            calculateCommission();
+        });
+    </script>
+</body>
+</html>

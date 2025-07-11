@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ブログ - Jiji AI感情分析ダイビングマッチング</title>
+    <meta name="description" content="Jijiの最新情報、ダイビング業界の革新、初心者サポート、技術解説など、価値のあるコンテンツをお届けします。">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="/css/common.css">
+    
+    <!-- RSS Feed -->
+    <link rel="alternate" type="application/rss+xml" title="Jiji Blog RSS Feed" href="/blog/rss">
+    
+    <style>
+        /* Blog Page Specific Styles */
+        .hero-blog {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 120px 0 80px;
+            color: white;
+            text-align: center;
+        }
+        
+        .hero-blog h1 {
+            font-size: 3rem;
+            font-weight: 900;
+            margin-bottom: 20px;
+        }
+        
+        .hero-blog p {
+            font-size: 1.3rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto 40px;
+        }
+        
+        .rss-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .rss-link:hover {
+            background: white;
+            color: #667eea;
+        }
+        
+        .blog-filters {
+            padding: 60px 0 30px;
+            background: #f8f9ff;
+        }
+        
+        .filter-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-tab {
+            padding: 12px 24px;
+            border: 2px solid #667eea;
+            border-radius: 25px;
+            background: white;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .filter-tab.active,
+        .filter-tab:hover {
+            background: #667eea;
+            color: white;
+        }
+        
+        .search-box {
+            max-width: 400px;
+            margin: 0 auto;
+            position: relative;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 15px 50px 15px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 30px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .search-button {
+            position: absolute;
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #667eea;
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        
+        .search-button:hover {
+            background: #5a6fd8;
+        }
+        
+        .blog-posts {
+            padding: 60px 0 100px;
+            background: white;
+        }
+        
+        .posts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 40px;
+            margin-top: 40px;
+        }
+        
+        .post-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .post-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+        
+        .post-image {
+            width: 100%;
+            height: 250px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            color: white;
+            position: relative;
+        }
+        
+        .post-category {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255,255,255,0.9);
+            color: #667eea;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .post-content {
+            padding: 30px;
+        }
+        
+        .post-meta {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .post-author {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .post-date {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .post-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+        
+        .post-excerpt {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .post-tags {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .post-tag {
+            background: #f0f2ff;
+            color: #667eea;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .read-more {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #667eea;
+            font-weight: 600;
+            text-decoration: none;
+            transition: gap 0.3s ease;
+        }
+        
+        .read-more:hover {
+            gap: 12px;
+        }
+        
+        .loading-spinner {
+            text-align: center;
+            padding: 60px 0;
+            display: none;
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .no-posts {
+            text-align: center;
+            padding: 60px 0;
+            display: none;
+        }
+        
+        .no-posts-icon {
+            font-size: 4rem;
+            color: #ccc;
+            margin-bottom: 20px;
+        }
+        
+        .newsletter-signup {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 80px 0;
+            text-align: center;
+        }
+        
+        .newsletter-content h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+        
+        .newsletter-content p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 40px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .newsletter-form {
+            display: flex;
+            max-width: 500px;
+            margin: 0 auto;
+            gap: 15px;
+        }
+        
+        .newsletter-input {
+            flex: 1;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 30px;
+            font-size: 1rem;
+        }
+        
+        .newsletter-button {
+            background: #ffd93d;
+            color: #2c3e50;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .newsletter-button:hover {
+            background: #ffed4e;
+            transform: translateY(-2px);
+        }
+        
+        @media (max-width: 768px) {
+            .hero-blog h1 {
+                font-size: 2rem;
+            }
+            
+            .posts-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .filter-tabs {
+                gap: 10px;
+            }
+            
+            .filter-tab {
+                padding: 8px 16px;
+                font-size: 0.9rem;
+            }
+            
+            .newsletter-form {
+                flex-direction: column;
+                max-width: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ヘッダー -->
+    <header class="main-header">
+        <nav class="main-nav">
+            <a href="/" class="main-logo">
+                <h1>🌊 Jiji</h1>
+                <span>AI感情マッチング</span>
+            </a>
+            
+            <ul class="main-nav-menu">
+                <li><a href="/">ホーム</a></li>
+                <li><a href="/about">サービス</a></li>
+                <li><a href="/pricing">料金プラン</a></li>
+                <li><a href="/partners">ショップ向け</a></li>
+                <li><a href="/blog" class="active">ブログ</a></li>
+                <li><a href="/contact">お問い合わせ</a></li>
+            </ul>
+            
+            <div class="main-nav-buttons">
+                <a href="/app" class="btn btn-secondary">
+                    <i class="fas fa-heart"></i> 体験する
+                </a>
+                <a href="https://line.me/ti/p/@2007331165" class="btn btn-primary" target="_blank">
+                    <i class="fab fa-line"></i> LINE連携
+                </a>
+            </div>
+            
+            <div class="nav-hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </nav>
+    </header>
+
+    <!-- ヒーローセクション -->
+    <section class="hero-blog">
+        <div class="container">
+            <h1>📝 Jijiブログ</h1>
+            <p>
+                AI感情分析×ダイビングの最新情報、技術解説、初心者サポート情報、<br>
+                業界インサイトなど、価値のあるコンテンツをお届けします
+            </p>
+            
+            <a href="/blog/rss" class="rss-link" target="_blank">
+                <i class="fas fa-rss"></i> RSS購読
+            </a>
+        </div>
+    </section>
+
+    <!-- フィルター・検索 -->
+    <section class="blog-filters">
+        <div class="container">
+            <div class="filter-tabs">
+                <div class="filter-tab active" data-category="all">すべて</div>
+                <div class="filter-tab" data-category="テクノロジー">テクノロジー</div>
+                <div class="filter-tab" data-category="ビジネス">ビジネス</div>
+                <div class="filter-tab" data-category="ユーザー事例">ユーザー事例</div>
+                <div class="filter-tab" data-category="ダイビング情報">ダイビング情報</div>
+            </div>
+            
+            <div class="search-box">
+                <input type="text" class="search-input" placeholder="記事を検索..." id="searchInput">
+                <button class="search-button" onclick="searchPosts()">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ブログ記事一覧 -->
+    <section class="blog-posts">
+        <div class="container">
+            <h2 class="section-title">📚 最新記事</h2>
+            
+            <div class="loading-spinner" id="loadingSpinner">
+                <div class="spinner"></div>
+                <p>記事を読み込み中...</p>
+            </div>
+            
+            <div class="posts-grid" id="postsGrid">
+                <!-- Posts will be loaded here dynamically -->
+            </div>
+            
+            <div class="no-posts" id="noPosts">
+                <div class="no-posts-icon">📭</div>
+                <h3>記事が見つかりませんでした</h3>
+                <p>検索条件を変更してお試しください</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ニュースレター登録 -->
+    <section class="newsletter-signup">
+        <div class="container">
+            <div class="newsletter-content">
+                <h2>📮 最新情報をお届け</h2>
+                <p>
+                    Jijiの最新アップデート、ダイビング業界の動向、<br>
+                    限定コンテンツを定期的にお届けします
+                </p>
+                
+                <form class="newsletter-form" onsubmit="subscribeNewsletter(event)">
+                    <input type="email" class="newsletter-input" placeholder="メールアドレスを入力" required>
+                    <button type="submit" class="newsletter-button">
+                        <i class="fas fa-paper-plane"></i> 登録
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- フッター -->
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>🌊 Jiji</h3>
+                    <p>初心者ダイバーの『できない』を『できる』に変える魔法の存在</p>
+                    <p style="margin-top: 15px;">
+                        <strong>AI感情分析 × 79店舗データベース</strong><br>
+                        = 最適なダイビング体験
+                    </p>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>サービス</h3>
+                    <ul>
+                        <li><a href="/app">Web App体験</a></li>
+                        <li><a href="https://line.me/ti/p/@2007331165" target="_blank">LINE Bot相談</a></li>
+                        <li><a href="/pricing">料金プラン</a></li>
+                        <li><a href="/about">サービス詳細</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>ビジネス</h3>
+                    <ul>
+                        <li><a href="/partners">ショップ向け</a></li>
+                        <li><a href="/contact">パートナーシップ</a></li>
+                        <li><a href="/contact">企業連携</a></li>
+                        <li><a href="/contact">メディア掲載</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>サポート</h3>
+                    <ul>
+                        <li><a href="/contact">お問い合わせ</a></li>
+                        <li><a href="/legal">利用規約</a></li>
+                        <li><a href="/legal">プライバシーポリシー</a></li>
+                        <li><a href="/contact">よくある質問</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 Jiji - AI感情分析ダイビングマッチング. All rights reserved.</p>
+                <p style="margin-top: 10px;">
+                    🚀 Phase 5完了 | ✅ 世界初感情分析×事業価値統合プラットフォーム稼働中
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="/js/common.js"></script>
+    
+    <script>
+        let allPosts = [];
+        let filteredPosts = [];
+        let currentCategory = 'all';
+        let currentSearchTerm = '';
+
+        // Load blog posts on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadBlogPosts();
+            setupFilterTabs();
+            setupSearch();
+        });
+
+        async function loadBlogPosts() {
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const postsGrid = document.getElementById('postsGrid');
+            const noPosts = document.getElementById('noPosts');
+            
+            loadingSpinner.style.display = 'block';
+            postsGrid.style.display = 'none';
+            noPosts.style.display = 'none';
+            
+            try {
+                const response = await fetch('/api/blog/posts');
+                const data = await response.json();
+                
+                if (data.success) {
+                    allPosts = data.data.posts;
+                    filteredPosts = [...allPosts];
+                    renderPosts();
+                } else {
+                    showError('記事の読み込みに失敗しました');
+                }
+            } catch (error) {
+                console.error('Blog posts loading error:', error);
+                showError('記事の読み込み中にエラーが発生しました');
+            } finally {
+                loadingSpinner.style.display = 'none';
+            }
+        }
+
+        function renderPosts() {
+            const postsGrid = document.getElementById('postsGrid');
+            const noPosts = document.getElementById('noPosts');
+            
+            if (filteredPosts.length === 0) {
+                postsGrid.style.display = 'none';
+                noPosts.style.display = 'block';
+                return;
+            }
+            
+            postsGrid.style.display = 'grid';
+            noPosts.style.display = 'none';
+            
+            postsGrid.innerHTML = filteredPosts.map(post => `
+                <article class="post-card" onclick="navigateToPost('${post.slug}')">
+                    <div class="post-image">
+                        <div class="post-category">${post.category}</div>
+                        ${getCategoryIcon(post.category)}
+                    </div>
+                    <div class="post-content">
+                        <div class="post-meta">
+                            <div class="post-author">
+                                <i class="fas fa-user"></i>
+                                <span>${post.author}</span>
+                            </div>
+                            <div class="post-date">
+                                <i class="fas fa-calendar-alt"></i>
+                                <span>${formatDate(post.published_date)}</span>
+                            </div>
+                        </div>
+                        
+                        <h3 class="post-title">${post.title}</h3>
+                        <p class="post-excerpt">${post.excerpt}</p>
+                        
+                        <div class="post-tags">
+                            ${post.tags.map(tag => `<span class="post-tag">${tag}</span>`).join('')}
+                        </div>
+                        
+                        <a href="/blog/${post.slug}" class="read-more">
+                            続きを読む <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </article>
+            `).join('');
+            
+            trackEvent('blog_posts_viewed', {
+                category: currentCategory,
+                search_term: currentSearchTerm,
+                posts_count: filteredPosts.length
+            });
+        }
+
+        function getCategoryIcon(category) {
+            const icons = {
+                'テクノロジー': '🤖',
+                'ビジネス': '💼',
+                'ユーザー事例': '👥',
+                'ダイビング情報': '🌊'
+            };
+            return icons[category] || '📝';
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('ja-JP', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+
+        function setupFilterTabs() {
+            const filterTabs = document.querySelectorAll('.filter-tab');
+            filterTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // Update active tab
+                    filterTabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Filter posts
+                    currentCategory = this.dataset.category;
+                    filterPosts();
+                });
+            });
+        }
+
+        function setupSearch() {
+            const searchInput = document.getElementById('searchInput');
+            searchInput.addEventListener('input', function() {
+                currentSearchTerm = this.value.toLowerCase();
+                filterPosts();
+            });
+            
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    searchPosts();
+                }
+            });
+        }
+
+        function filterPosts() {
+            filteredPosts = allPosts.filter(post => {
+                // Category filter
+                const categoryMatch = currentCategory === 'all' || post.category === currentCategory;
+                
+                // Search filter
+                const searchMatch = currentSearchTerm === '' || 
+                    post.title.toLowerCase().includes(currentSearchTerm) ||
+                    post.excerpt.toLowerCase().includes(currentSearchTerm) ||
+                    post.tags.some(tag => tag.toLowerCase().includes(currentSearchTerm));
+                
+                return categoryMatch && searchMatch;
+            });
+            
+            renderPosts();
+        }
+
+        function searchPosts() {
+            const searchInput = document.getElementById('searchInput');
+            currentSearchTerm = searchInput.value.toLowerCase();
+            filterPosts();
+            
+            trackEvent('blog_search', {
+                search_term: currentSearchTerm,
+                results_count: filteredPosts.length
+            });
+        }
+
+        function navigateToPost(slug) {
+            trackEvent('blog_post_click', {
+                post_slug: slug,
+                source: 'blog_listing'
+            });
+            window.location.href = `/blog/${slug}`;
+        }
+
+        async function subscribeNewsletter(event) {
+            event.preventDefault();
+            const form = event.target;
+            const email = form.querySelector('.newsletter-input').value;
+            
+            try {
+                // In a real application, this would send to your newsletter service
+                showNotification(`${email} をニュースレターに登録しました！`, 'success');
+                form.reset();
+                
+                trackEvent('newsletter_subscription', {
+                    email: email,
+                    source: 'blog_page'
+                });
+            } catch (error) {
+                showNotification('登録に失敗しました。しばらく後でお試しください。', 'error');
+            }
+        }
+
+        function showError(message) {
+            const postsGrid = document.getElementById('postsGrid');
+            postsGrid.innerHTML = `
+                <div style="text-align: center; padding: 60px 0; grid-column: 1 / -1;">
+                    <div style="font-size: 3rem; color: #e74c3c; margin-bottom: 20px;">⚠️</div>
+                    <h3 style="color: #2c3e50; margin-bottom: 15px;">エラーが発生しました</h3>
+                    <p style="color: #666;">${message}</p>
+                    <button onclick="loadBlogPosts()" style="margin-top: 20px; padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                        再読み込み
+                    </button>
+                </div>
+            `;
+            postsGrid.style.display = 'grid';
+        }
+    </script>
+</body>
+</html>
