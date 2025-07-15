@@ -1,6 +1,7 @@
 /**
- * Jiji沖縄ダイビングバディ - 感情的マッチングシステム
- * スプレッドシート特化版 - 初心者の不安解消に特化したマッチングアルゴリズム
+ * Jiji沖縄ダイビングバディ - V2.8 口コミ重視マッチングシステム
+ * アーキテクチャ刷新版 - 口コミ50% + 基本情報30% + プラン優遇20%
+ * LINE Bot完結型・Web知識ベース統合対応
  */
 
 const { JijiSheetsConnector } = require('./sheets-connector');
@@ -122,8 +123,8 @@ class JijiEmotionalMatcher {
             const emotionalNeeds = this.analyzeUserConcerns(userProfile, userConcerns);
             console.log('💝 感情分析結果:', emotionalNeeds);
 
-            // 4. 34項目感情スコア計算
-            const rankedShops = this.calculateEmotionalScores(candidates, emotionalNeeds);
+            // 4. V2.8: 口コミ重視スコア計算 (50/30/20)
+            const rankedShops = this.calculateReviewBasedScores(candidates, emotionalNeeds);
             console.log(`🏆 スコア計算完了: トップ3の平均スコア ${this.getAverageScore(rankedShops.slice(0, 3))}`);
 
             // 5. Jijiキャラクターコメント生成
@@ -234,22 +235,37 @@ class JijiEmotionalMatcher {
     }
 
     /**
-     * 34項目を活用した感情スコア計算
+     * V2.8: 口コミ重視マッチングスコア計算
+     * 重み付け: 口コミ50% + 基本情報30% + プラン20%
      * @param {Array} shops - 候補ショップ
      * @param {Object} emotionalNeeds - 感情的ニーズ
      * @returns {Array} スコア付きショップリスト
      */
-    calculateEmotionalScores(shops, emotionalNeeds) {
+    calculateReviewBasedScores(shops, emotionalNeeds) {
         return shops.map(shop => {
-            let emotionalScore = 0;
+            // V2.8: 3つのスコア成分を分離
+            let reviewScore = 0;        // 口コミ分析スコア (50%)
+            let basicInfoScore = 0;     // 基本情報適合スコア (30%)
+            let planPremiumScore = 0;   // プラン優遇スコア (20%)
+            
             const emotionalReasons = [];
             const scoreBreakdown = {};
 
-            // 安全性不安解消
+            // ===================
+            // 1. 口コミ分析スコア (50%)
+            // ===================
+            reviewScore = this.calculateReviewScore(shop, emotionalNeeds);
+            
+            // 安全性不安解消（口コミベース）
             if (emotionalNeeds.safety) {
                 let safetyScore = 0;
                 const safetyReasons = [];
 
+                // 口コミでの安全性評価を重視
+                if (shop.safety_rating && shop.safety_rating >= 4.5) {
+                    safetyScore += 25;
+                    safetyReasons.push('口コミで安全性高評価');
+                }
                 if (shop.safety_equipment) {
                     safetyScore += 15;
                     safetyReasons.push('AED・酸素完備');
@@ -268,7 +284,7 @@ class JijiEmotionalMatcher {
                 }
 
                 if (safetyScore > 0) {
-                    emotionalScore += safetyScore;
+                    reviewScore += safetyScore;
                     scoreBreakdown.safety = safetyScore;
                     emotionalReasons.push({
                         concern: '安全性不安',
@@ -279,11 +295,16 @@ class JijiEmotionalMatcher {
                 }
             }
 
-            // 少人数制・個別対応による安心感
+            // 少人数制・個別対応による安心感（口コミベース強化）
             if (emotionalNeeds.skill || emotionalNeeds.solo) {
                 let personalScore = 0;
                 const personalReasons = [];
 
+                // 口コミでの個別対応評価を重視
+                if (shop.staff_rating && shop.staff_rating >= 4.5) {
+                    personalScore += 20;
+                    personalReasons.push('口コミでスタッフ対応高評価');
+                }
                 if (shop.max_group_size <= 4) {
                     personalScore += 12;
                     personalReasons.push(`少人数制（最大${shop.max_group_size}名）`);
@@ -298,7 +319,7 @@ class JijiEmotionalMatcher {
                 }
 
                 if (personalScore > 0) {
-                    emotionalScore += personalScore;
+                    reviewScore += personalScore;
                     scoreBreakdown.personal = personalScore;
                     emotionalReasons.push({
                         concern: emotionalNeeds.skill ? 'スキル不安' : '一人参加不安',
@@ -309,10 +330,16 @@ class JijiEmotionalMatcher {
                 }
             }
 
-            // 予算配慮
+            // 予算配慮（口コミベース強化）
             if (emotionalNeeds.cost) {
                 let costScore = 0;
                 const costReasons = [];
+
+                // 口コミでのコスパ評価を重視
+                if (shop.cost_performance >= 4.5) {
+                    costScore += 20;
+                    costReasons.push('口コミでコスパ高評価');
+                }
 
                 // 価格帯評価
                 if (shop.fun_dive_price_2tanks <= 12000) {
@@ -337,7 +364,7 @@ class JijiEmotionalMatcher {
                 }
 
                 if (costScore > 0) {
-                    emotionalScore += costScore;
+                    reviewScore += costScore;
                     scoreBreakdown.cost = costScore;
                     emotionalReasons.push({
                         concern: '予算心配',
@@ -348,10 +375,16 @@ class JijiEmotionalMatcher {
                 }
             }
 
-            // 一人参加歓迎度
+            // 一人参加歓迎度（口コミベース強化）
             if (emotionalNeeds.solo) {
                 let soloScore = 0;
                 const soloReasons = [];
+
+                // 口コミでの一人参加評価を重視
+                if (shop.solo_friendliness >= 4.5) {
+                    soloScore += 20;
+                    soloReasons.push('口コミで一人参加高評価');
+                }
 
                 if (shop.solo_welcome) {
                     soloScore += 15;
@@ -367,7 +400,7 @@ class JijiEmotionalMatcher {
                 }
 
                 if (soloScore > 0) {
-                    emotionalScore += soloScore;
+                    reviewScore += soloScore;
                     scoreBreakdown.solo = soloScore;
                     emotionalReasons.push({
                         concern: '一人参加不安',
@@ -378,10 +411,16 @@ class JijiEmotionalMatcher {
                 }
             }
 
-            // コミュニケーション不安
+            // コミュニケーション不安（口コミベース強化）
             if (emotionalNeeds.communication) {
                 let commScore = 0;
                 const commReasons = [];
+
+                // 口コミでのコミュニケーション評価を重視
+                if (shop.communication_rating >= 4.5) {
+                    commScore += 15;
+                    commReasons.push('口コミでコミュニケーション高評価');
+                }
 
                 if (shop.english_support && emotionalNeeds.communication.keywords.includes('英語')) {
                     commScore += 10;
@@ -397,7 +436,7 @@ class JijiEmotionalMatcher {
                 }
 
                 if (commScore > 0) {
-                    emotionalScore += commScore;
+                    reviewScore += commScore;
                     scoreBreakdown.communication = commScore;
                     emotionalReasons.push({
                         concern: 'コミュニケーション不安',
@@ -408,19 +447,35 @@ class JijiEmotionalMatcher {
                 }
             }
 
-            // ベースサービススコア計算
-            const serviceScore = this.calculateServiceScore(shop);
+            // ===================
+            // 2. 基本情報適合スコア (30%)
+            // ===================
+            basicInfoScore = this.calculateBasicInfoScore(shop, emotionalNeeds);
+            
+            // ===================
+            // 3. プラン優遇スコア (20%)
+            // ===================
+            planPremiumScore = this.calculatePlanPremiumScore(shop);
+            
+            // V2.8: 重み付け適用
+            const weightedReviewScore = reviewScore * 0.5;      // 50%
+            const weightedBasicScore = basicInfoScore * 0.3;    // 30%
+            const weightedPlanScore = planPremiumScore * 0.2;   // 20%
+            
+            const finalScore = weightedReviewScore + weightedBasicScore + weightedPlanScore;
 
             return {
                 ...shop,
-                emotional_score: emotionalScore,
+                review_score: reviewScore,
+                basic_info_score: basicInfoScore,
+                plan_premium_score: planPremiumScore,
                 emotional_reasons: emotionalReasons,
-                service_score: serviceScore,
-                total_score: emotionalScore + serviceScore,
+                total_score: finalScore,
                 score_breakdown: {
-                    emotional: emotionalScore,
-                    service: serviceScore,
-                    total: emotionalScore + serviceScore,
+                    review: { raw: reviewScore, weighted: weightedReviewScore },
+                    basic_info: { raw: basicInfoScore, weighted: weightedBasicScore },
+                    plan_premium: { raw: planPremiumScore, weighted: weightedPlanScore },
+                    final_score: finalScore,
                     details: scoreBreakdown
                 }
             };
@@ -428,44 +483,127 @@ class JijiEmotionalMatcher {
     }
 
     /**
-     * サービス基本スコア計算
+     * V2.8: 口コミ分析スコア計算 (50%)
+     * @param {Object} shop - ショップデータ
+     * @param {Object} emotionalNeeds - 感情的ニーズ
+     * @returns {number} 口コミスコア
+     */
+    calculateReviewScore(shop, emotionalNeeds) {
+        let score = 0;
+        
+        // 総合口コミ評価 (60%)
+        if (shop.customer_rating >= 4.8) score += 30;
+        else if (shop.customer_rating >= 4.5) score += 20;
+        else if (shop.customer_rating >= 4.0) score += 10;
+        
+        // カテゴリ別評価 (各項目最大10点)
+        if (shop.beginner_friendliness >= 4.5) score += 10;
+        if (shop.safety_rating >= 4.5) score += 10;
+        if (shop.staff_rating >= 4.5) score += 10;
+        if (shop.satisfaction_rating >= 4.5) score += 10;
+        if (shop.cost_performance >= 4.5) score += 10;
+        
+        // 口コミ数による信頼度調整
+        if (shop.review_count >= 50) score *= 1.0;
+        else if (shop.review_count >= 20) score *= 0.9;
+        else if (shop.review_count >= 10) score *= 0.8;
+        else score *= 0.7;
+        
+        return Math.round(score);
+    }
+
+    /**
+     * V2.8: 基本情報適合度スコア計算 (30%)
+     * @param {Object} shop - ショップデータ
+     * @param {Object} emotionalNeeds - 感情的ニーズ
+     * @returns {number} 基本情報適合スコア
+     */
+    calculateBasicInfoScore(shop, emotionalNeeds) {
+        let score = 0;
+        
+        // エリア適合度 (25%)
+        // 基本的に該当エリアなら満点
+        score += 25;
+        
+        // 価格帯適合度 (25%)
+        if (shop.fun_dive_price_2tanks <= 12000) score += 25;
+        else if (shop.fun_dive_price_2tanks <= 15000) score += 20;
+        else if (shop.fun_dive_price_2tanks <= 18000) score += 15;
+        else score += 10;
+        
+        // サービス適合度 (25%)
+        if (shop.beginner_friendly) score += 8;
+        if (shop.pickup_service) score += 5;
+        if (shop.equipment_rental_included) score += 7;
+        if (shop.photo_service) score += 5;
+        
+        // 特徴適合度 (25%)
+        if (shop.solo_welcome) score += 8;
+        if (shop.female_instructor) score += 6;
+        if (shop.english_support) score += 6;
+        if (shop.private_guide_available) score += 5;
+        
+        return Math.round(score);
+    }
+
+    /**
+     * V2.8: プラン優遇スコア計算 (20%) + 認定バッジ統合
+     * @param {Object} shop - ショップデータ
+     * @returns {number} プラン優遇スコア
+     */
+    calculatePlanPremiumScore(shop) {
+        let score = 0;
+        let badges = [];
+        
+        // shop.subscription_plan が設定されている場合（V2.8新システム）
+        switch (shop.subscription_plan) {
+            case 'premium':
+                score += 100; // 20% の満点
+                badges.push('🌟 Jijiプレミアム認定');
+                break;
+            case 'standard':
+                score += 60;  // 12% 相当（20%重みの60%）
+                badges.push('⭐ Jiji推薦店');
+                break;
+            case 'basic':
+            default:
+                score += 0;   // 優遇なし
+        }
+        
+        // 既存のjiji_gradeとの互換性維持（旧システム）
+        if (!shop.subscription_plan) {
+            switch (shop.jiji_grade) {
+                case 'S級認定':
+                    score += 100;
+                    badges.push('🌟 S級認定');
+                    break;
+                case 'A級認定':
+                    score += 80;
+                    badges.push('⭐ A級認定');
+                    break;
+                case 'B級認定':
+                    score += 40;
+                    badges.push('⚪ B級認定');
+                    break;
+                default:
+                    score += 20;
+            }
+        }
+        
+        // バッジ情報をshopオブジェクトに追加
+        shop.certification_badges = badges;
+        
+        return Math.round(score);
+    }
+
+    /**
+     * 旧メソッド（互換性維持）
      * @param {Object} shop - ショップデータ
      * @returns {number} サービススコア
      */
     calculateServiceScore(shop) {
-        let score = 0;
-
-        // Jiji認定グレード
-        switch (shop.jiji_grade) {
-            case 'S級認定':
-                score += 20;
-                break;
-            case 'A級認定':
-                score += 15;
-                break;
-            case 'B級認定':
-                score += 10;
-                break;
-            default:
-                score += 5;
-        }
-
-        // 顧客評価
-        if (shop.customer_rating >= 4.8) score += 15;
-        else if (shop.customer_rating >= 4.5) score += 10;
-        else if (shop.customer_rating >= 4.0) score += 5;
-
-        // レビュー数（信頼性）
-        if (shop.review_count >= 100) score += 10;
-        else if (shop.review_count >= 50) score += 7;
-        else if (shop.review_count >= 20) score += 4;
-
-        // 追加サービス
-        if (shop.pickup_service) score += 5;
-        if (shop.photo_service) score += 3;
-        if (shop.video_service) score += 3;
-
-        return score;
+        // V2.8では基本情報スコアに統合
+        return this.calculateBasicInfoScore(shop, {});
     }
 
     /**
@@ -494,7 +632,9 @@ class JijiEmotionalMatcher {
                 jijiPersonalizedMessage: personalizedMessage,
                 experiencePreview: experienceComment,
                 emotionalMatch: {
-                    score: shop.emotional_score,
+                    reviewScore: shop.review_score,
+                    basicInfoScore: shop.basic_info_score,
+                    planPremiumScore: shop.plan_premium_score,
                     reasons: shop.emotional_reasons,
                     totalScore: shop.total_score
                 },
@@ -538,7 +678,7 @@ class JijiEmotionalMatcher {
         
         if (shop.jiji_grade === 'S級認定') reasons.push('Jiji最高認定');
         if (shop.customer_rating >= 4.7) reasons.push('高評価');
-        if (shop.emotional_score >= 40) reasons.push('感情的マッチング度◎');
+        if (shop.review_score >= 40) reasons.push('口コミ評価◎');
         if (shop.beginner_friendly) reasons.push('初心者に優しい');
 
         return `${reasons.join('・')}で特におすすめです！`;
@@ -693,12 +833,14 @@ class JijiEmotionalMatcher {
             return;
         }
 
-        console.log('\n🎯 感情的マッチング結果詳細:');
+        console.log('\n🎯 V2.8 口コミ重視マッチング結果詳細:');
         console.log(`📊 総合統計: ${result.matchingStats.totalShops}店舗中${result.matchingStats.filteredShops}店舗が条件適合`);
         
         result.recommendations.forEach((rec, index) => {
             console.log(`\n${rec.ranking}: ${rec.shop.shop_name}`);
-            console.log(`  💝 感情スコア: ${rec.shop.emotional_score}`);
+            console.log(`  📝 口コミスコア: ${rec.shop.review_score || 0}`);
+            console.log(`  📋 基本情報スコア: ${rec.shop.basic_info_score || 0}`);
+            console.log(`  ⭐ プラン優遇スコア: ${rec.shop.plan_premium_score || 0}`);
             console.log(`  🏆 総合スコア: ${rec.shop.total_score}`);
             console.log(`  💬 Jijiコメント: ${rec.jijiMainComment}`);
             if (rec.jijiPersonalizedMessage) {
