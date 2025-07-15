@@ -1,0 +1,135 @@
+# Filebeat設定 - ログファイルの監視・転送
+filebeat.inputs:
+  # アプリケーションログの監視
+  - type: log
+    enabled: true
+    paths:
+      - /usr/share/filebeat/logs/*.log
+    fields:
+      logtype: application
+      service: jiji-diving-bot
+    fields_under_root: true
+    json.keys_under_root: true
+    json.add_error_key: true
+    multiline.pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}'
+    multiline.negate: true
+    multiline.match: after
+    
+  # セキュリティログの監視
+  - type: log
+    enabled: true
+    paths:
+      - /usr/share/filebeat/logs/security*.log
+    fields:
+      logtype: security
+      service: jiji-diving-bot
+      priority: high
+    fields_under_root: true
+    json.keys_under_root: true
+    json.add_error_key: true
+    
+  # APIログの監視
+  - type: log
+    enabled: true
+    paths:
+      - /usr/share/filebeat/logs/api*.log
+    fields:
+      logtype: api
+      service: jiji-diving-bot
+    fields_under_root: true
+    json.keys_under_root: true
+    json.add_error_key: true
+    
+  # パフォーマンスログの監視
+  - type: log
+    enabled: true
+    paths:
+      - /usr/share/filebeat/logs/performance*.log
+    fields:
+      logtype: performance
+      service: jiji-diving-bot
+    fields_under_root: true
+    json.keys_under_root: true
+    json.add_error_key: true
+
+# プロセッサー設定
+processors:
+  # タイムスタンプの正規化
+  - timestamp:
+      field: timestamp
+      layouts:
+        - '2006-01-02T15:04:05.000Z'
+        - '2006-01-02 15:04:05'
+      test:
+        - '2023-01-01T00:00:00.000Z'
+        - '2023-01-01 00:00:00'
+  
+  # ホスト情報の追加
+  - add_host_metadata:
+      when.not.contains.tags: forwarded
+      
+  # Docker情報の追加
+  - add_docker_metadata: ~
+  
+  # 機密情報のマスキング
+  - script:
+      lang: javascript
+      source: >
+        function process(event) {
+          var message = event.Get("message");
+          if (message) {
+            message = message.replace(/password=[^&\s]*/g, "password=***");
+            message = message.replace(/token=[^&\s]*/g, "token=***");
+            message = message.replace(/key=[^&\s]*/g, "key=***");
+            message = message.replace(/secret=[^&\s]*/g, "secret=***");
+            event.Put("message", message);
+          }
+        }
+
+# 出力設定
+output.logstash:
+  hosts: ["logstash:5044"]
+  compression_level: 3
+  
+# 代替出力（Logstashが利用できない場合）
+#output.elasticsearch:
+#  hosts: ["elasticsearch:9200"]
+#  index: "jiji-logs-%{[logtype]}-%{+yyyy.MM.dd}"
+#  template.name: "jiji-logs"
+#  template.pattern: "jiji-logs-*"
+
+# ログレベル設定
+logging.level: info
+logging.to_files: true
+logging.files:
+  path: /var/log/filebeat
+  name: filebeat
+  keepfiles: 7
+  permissions: 0644
+
+# 監視設定
+monitoring.enabled: true
+monitoring.elasticsearch:
+  hosts: ["elasticsearch:9200"]
+
+# セキュリティ設定
+http.enabled: true
+http.host: "0.0.0.0"
+http.port: 5066
+
+# パフォーマンス設定
+queue.mem:
+  events: 4096
+  flush.min_events: 2048
+  flush.timeout: 1s
+
+# 再試行設定
+max_retries: 3
+bulk_max_size: 2048
+timeout: 30s
+
+# フィールド設定
+fields:
+  environment: "${ENVIRONMENT:production}"
+  datacenter: "${DATACENTER:tokyo}"
+  application: "jiji-diving-bot"
