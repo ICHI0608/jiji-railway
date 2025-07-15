@@ -1,0 +1,192 @@
+name: Security Checks
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # 毎週月曜日 9:00 JST に実行
+    - cron: '0 0 * * 1'
+
+jobs:
+  security-audit:
+    runs-on: ubuntu-latest
+    name: Security Audit
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run npm audit
+      run: |
+        npm audit --audit-level=moderate --production
+        
+    - name: Run security audit with detailed output
+      run: |
+        npm audit --json > security-audit.json || true
+        
+    - name: Upload audit results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: security-audit-results
+        path: security-audit.json
+        retention-days: 30
+
+  dependency-check:
+    runs-on: ubuntu-latest
+    name: OWASP Dependency Check
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run OWASP Dependency Check
+      uses: dependency-check/Dependency-Check_Action@main
+      id: dependency-check
+      with:
+        project: 'jiji-diving-bot'
+        path: '.'
+        format: 'ALL'
+        args: >
+          --enableRetired
+          --enableExperimental
+          --out reports
+          --failOnCVSS 7
+          
+    - name: Upload dependency check results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: dependency-check-reports
+        path: reports/
+        retention-days: 30
+
+  code-security-scan:
+    runs-on: ubuntu-latest
+    name: Code Security Scan
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Install ESLint security plugin
+      run: npm install --save-dev eslint-plugin-security
+      
+    - name: Run ESLint security scan
+      run: |
+        npx eslint --ext .js --format json --output-file eslint-security.json . || true
+        
+    - name: Upload ESLint results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: eslint-security-results
+        path: eslint-security.json
+        retention-days: 30
+
+  secrets-scan:
+    runs-on: ubuntu-latest
+    name: Secrets Scan
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Run TruffleHog
+      uses: trufflesecurity/trufflehog@main
+      with:
+        path: ./
+        base: main
+        head: HEAD
+        extra_args: --debug --only-verified
+
+  security-scorecard:
+    runs-on: ubuntu-latest
+    name: OpenSSF Scorecard
+    
+    permissions:
+      security-events: write
+      id-token: write
+      
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Run analysis
+      uses: ossf/scorecard-action@v2.3.1
+      with:
+        results_file: scorecard-results.sarif
+        results_format: sarif
+        publish_results: true
+        
+    - name: Upload SARIF results
+      uses: github/codeql-action/upload-sarif@v3
+      with:
+        sarif_file: scorecard-results.sarif
+
+  security-summary:
+    runs-on: ubuntu-latest
+    name: Security Summary
+    needs: [security-audit, dependency-check, code-security-scan]
+    if: always()
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+      
+    - name: Generate security summary
+      run: |
+        echo "# Security Check Summary" > security-summary.md
+        echo "Date: $(date)" >> security-summary.md
+        echo "" >> security-summary.md
+        
+        if [ -f security-audit-results/security-audit.json ]; then
+          echo "## NPM Audit Results" >> security-summary.md
+          echo "```json" >> security-summary.md
+          cat security-audit-results/security-audit.json >> security-summary.md
+          echo "```" >> security-summary.md
+        fi
+        
+        echo "## Security Recommendations" >> security-summary.md
+        echo "1. 定期的にnpm auditを実行してください" >> security-summary.md
+        echo "2. 依存関係を最新に保ってください" >> security-summary.md
+        echo "3. セキュリティアラートを確認してください" >> security-summary.md
+        
+    - name: Upload security summary
+      uses: actions/upload-artifact@v4
+      with:
+        name: security-summary
+        path: security-summary.md
+        retention-days: 90

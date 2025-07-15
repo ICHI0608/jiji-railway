@@ -1,0 +1,61 @@
+# GitHub Dependabot設定 - 無料の脆弱性監視
+version: 2
+updates:
+  # Node.js依存関係の監視
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Asia/Tokyo"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "your-username"
+    assignees:
+      - "your-username"
+    commit-message:
+      prefix: "security"
+      include: "scope"
+    
+    # 脆弱性の自動修正
+    vulnerability-alerts:
+      enabled: true
+    
+    # セキュリティアップデートの優先度設定
+    labels:
+      - "security"
+      - "dependencies"
+    
+    # 無視する依存関係（必要に応じて）
+    ignore:
+      # 例: メジャーバージョンアップデートを無視
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    
+    # 自動マージ設定（セキュリティ関連のみ）
+    allow:
+      - dependency-type: "direct"
+        update-type: "security"
+      - dependency-type: "indirect"
+        update-type: "security"
+
+  # GitHub Actions の監視
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    labels:
+      - "security"
+      - "github-actions"
+
+  # Docker依存関係の監視（将来的に使用時）
+  - package-ecosystem: "docker"
+    directory: "/docker"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    labels:
+      - "security"
+      - "docker"

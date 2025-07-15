@@ -15,7 +15,18 @@
     "debug": "node --inspect api-server-railway.js",
     "rich-menu:setup": "node setup-rich-menu.js setup",
     "rich-menu:remove": "node setup-rich-menu.js remove",
-    "rich-menu:list": "node setup-rich-menu.js list"
+    "rich-menu:list": "node setup-rich-menu.js list",
+    "sheets:setup": "node api/setup-google-sheets.js setup",
+    "sheets:demo": "node api/setup-google-sheets.js demo",
+    "sheets:performance": "node api/setup-google-sheets.js performance",
+    "sheets:sync": "node api/sync-sheets-data.js",
+    "v28:migrate": "node scripts/migrate-csv-to-v28.js",
+    "v28:setup": "node api/setup-google-sheets.js setup && node scripts/migrate-csv-to-v28.js",
+    "v28:test": "node api/setup-google-sheets.js demo",
+    "security:audit": "npm audit --audit-level=high",
+    "security:fix": "npm audit fix --force",
+    "security:test": "node security/security-test.js",
+    "security:check": "node security/security-checklist.js"
   },
   "keywords": [
     "diving",
@@ -38,11 +49,22 @@
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
+    "express-rate-limit": "^7.1.5",
+    "express-validator": "^7.0.1",
     "google-auth-library": "^10.1.0",
     "googleapis": "^150.0.1",
+    "google-spreadsheet": "^4.1.2",
+    "helmet": "^8.0.0",
     "openai": "^4.20.1",
     "pg": "^8.11.3",
-    "redis": "^4.6.13"
+    "redis": "^4.6.13",
+    "node-cron": "^3.0.3",
+    "winston": "^3.11.0",
+    "joi": "^17.11.0",
+    "moment": "^2.29.4",
+    "lodash": "^4.17.21",
+    "uuid": "^9.0.1",
+    "csv-parser": "^3.0.0"
   },
   "devDependencies": {
     "eslint": "^8.50.0",
