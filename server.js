@@ -1111,7 +1111,7 @@ Cache-Control: max-age=86400`;
             const healthStatus = {
                 status: 'OK',
                 timestamp: new Date().toISOString(),
-                version: '4.0.0-railway-monitoring',
+                version: '4.0.0-railway-monitoring-v2',
                 phase: 'Phase 4-D: Complete Monitoring System',
                 services: {
                     api_server: 'active',
