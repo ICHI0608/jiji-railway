@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>海況・天気情報 | Jiji知識ベース</title>
+    <meta name="description" content="沖縄ダイビングの海況・天気情報。リアルタイム海況、週間予報、季節別ベストタイミング。石垣島・宮古島・沖縄本島・離島対応。">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="../app/v28-styles.css">
+    
+    <style>
+        .weather-header {
+            background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+            color: white;
+            padding: 80px 0 60px;
+            text-align: center;
+        }
+        
+        .current-conditions {
+            padding: 60px 0;
+            background: #f0f9ff;
+        }
+        
+        .conditions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .condition-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            text-align: center;
+            position: relative;
+        }
+        
+        .area-name {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #1e40af;
+        }
+        
+        .weather-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+        
+        .temperature {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #0ea5e9;
+            margin-bottom: 15px;
+        }
+        
+        .condition-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .detail-item {
+            padding: 10px;
+            background: #f8fafc;
+            border-radius: 8px;
+        }
+        
+        .detail-label {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-bottom: 5px;
+        }
+        
+        .detail-value {
+            font-weight: 600;
+            color: #1e293b;
+        }
+        
+        .diving-status {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .status-excellent { background: #10b981; }
+        .status-good { background: #3b82f6; }
+        .status-fair { background: #f59e0b; }
+        .status-poor { background: #ef4444; }
+        
+        .forecast-section {
+            padding: 80px 0;
+            background: white;
+        }
+        
+        .forecast-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 40px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .forecast-tab {
+            padding: 12px 24px;
+            background: #f1f5f9;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .forecast-tab.active {
+            background: #0ea5e9;
+            color: white;
+        }
+        
+        .forecast-content {
+            display: none;
+        }
+        
+        .forecast-content.active {
+            display: block;
+        }
+        
+        .forecast-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .forecast-card {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            border: 2px solid transparent;
+            transition: border-color 0.3s ease;
+        }
+        
+        .forecast-card:hover {
+            border-color: #0ea5e9;
+        }
+        
+        .forecast-date {
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 10px;
+        }
+        
+        .forecast-weather {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        
+        .forecast-temp {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #0ea5e9;
+            margin-bottom: 15px;
+        }
+        
+        .forecast-details {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+        
+        .seasonal-info {
+            padding: 80px 0;
+            background: #f0f9ff;
+        }
+        
+        .seasonal-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .season-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        
+        .season-header {
+            padding: 20px;
+            background: linear-gradient(135deg, #0ea5e9, #0284c7);
+            color: white;
+            text-align: center;
+        }
+        
+        .season-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .season-period {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .season-content {
+            padding: 25px;
+        }
+        
+        .season-features {
+            margin-bottom: 20px;
+        }
+        
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .feature-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .feature-icon {
+            color: #0ea5e9;
+            width: 20px;
+        }
+        
+        .pros-cons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .pros, .cons {
+            padding: 15px;
+            border-radius: 8px;
+        }
+        
+        .pros {
+            background: #f0fdf4;
+            border-left: 4px solid #10b981;
+        }
+        
+        .cons {
+            background: #fef2f2;
+            border-left: 4px solid #ef4444;
+        }
+        
+        .pros h4, .cons h4 {
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        
+        .pros h4 { color: #047857; }
+        .cons h4 { color: #dc2626; }
+        
+        .pros ul, .cons ul {
+            list-style: none;
+            padding: 0;
+            font-size: 0.8rem;
+        }
+        
+        .pros li::before {
+            content: '✓ ';
+            color: #10b981;
+            font-weight: bold;
+        }
+        
+        .cons li::before {
+            content: '× ';
+            color: #ef4444;
+            font-weight: bold;
+        }
+        
+        .alert-section {
+            background: #fef3c7;
+            border: 2px solid #f59e0b;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 40px 0;
+            display: none;
+        }
+        
+        .alert-section.show {
+            display: block;
+        }
+        
+        .alert-title {
+            color: #92400e;
+            font-weight: 700;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .alert-content {
+            color: #b45309;
+            line-height: 1.6;
+        }
+        
+        @media (max-width: 768px) {
+            .conditions-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .condition-details {
+                grid-template-columns: 1fr;
+            }
+            
+            .forecast-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .pros-cons {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ヘッダー -->
+    <header class="main-header">
+        <nav class="main-nav">
+            <a href="/" class="main-logo">
+                <h1>🌊 Jiji</h1>
+                <span>知識ベース</span>
+            </a>
+            
+            <ul class="main-nav-menu">
+                <li><a href="/">ホーム</a></li>
+                <li><a href="/shops-database">ショップDB</a></li>
+                <li><a href="/travel-guide">旅行ガイド</a></li>
+                <li><a href="/diving-blog">ダイビングブログ</a></li>
+                <li><a href="/weather-ocean" class="active">海況・天気</a></li>
+                <li><a href="/member">会員ページ</a></li>
+            </ul>
+            
+            <div class="main-nav-buttons">
+                <a href="https://line.me/ti/p/@2007331165" class="btn btn-primary" target="_blank">
+                    <i class="fab fa-line"></i> LINE相談
+                </a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- 海況・天気ヘッダー -->
+    <section class="weather-header">
+        <div class="container">
+            <h1 class="database-title">🌊 海況・天気情報</h1>
+            <p class="database-subtitle">
+                沖縄ダイビングの最新海況・天気情報。リアルタイムデータと週間予報でベストなダイビング日程を計画しよう。
+            </p>
+        </div>
+    </section>
+
+    <!-- 台風・緊急アラート -->
+    <section class="container">
+        <div class="alert-section" id="weather-alert">
+            <div class="alert-title">
+                <i class="fas fa-exclamation-triangle"></i>
+                気象警報・注意報
+            </div>
+            <div class="alert-content">
+                現在、特別な気象警報や注意報は発表されていません。
+            </div>
+        </div>
+    </section>
+
+    <!-- 現在の海況・天気 -->
+    <section class="current-conditions">
+        <div class="container">
+            <h2 class="section-title">📊 現在の海況・天気</h2>
+            <p class="section-subtitle">
+                各エリアのリアルタイム海況・天気情報とダイビング適性
+            </p>
+            
+            <div class="conditions-grid">
+                <div class="condition-card">
+                    <div class="diving-status status-excellent">ダイビング最適</div>
+                    <h3 class="area-name">🏝️ 石垣島</h3>
+                    <div class="weather-icon">☀️</div>
+                    <div class="temperature">28°C</div>
+                    
+                    <div class="condition-details">
+                        <div class="detail-item">
+                            <div class="detail-label">風向・風速</div>
+                            <div class="detail-value">北東 3m/s</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">波高</div>
+                            <div class="detail-value">1.0m</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">透明度</div>
+                            <div class="detail-value">25m</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">水温</div>
+                            <div class="detail-value">26°C</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="condition-card">
+                    <div class="diving-status status-good">ダイビング良好</div>
+                    <h3 class="area-name">🌺 宮古島</h3>
+                    <div class="weather-icon">⛅</div>
+                    <div class="temperature">27°C</div>
+                    
+                    <div class="condition-details">
+                        <div class="detail-item">
+                            <div class="detail-label">風向・風速</div>
+                            <div class="detail-value">東 4m/s</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">波高</div>
+                            <div class="detail-value">1.5m</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">透明度</div>
+                            <div class="detail-value">30m</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">水温</div>
+                            <div class="detail-value">25°C</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="condition-card">
+                    <div class="diving-status status-fair">ダイビング可能</div>
+                    <h3 class="area-name">🏖️ 沖縄本島</h3>
+                    <div class="weather-icon">🌧️</div>
+                    <div class="temperature">25°C</div>
+                    
+                    <div class="condition-details">
+                        <div class="detail-item">
+                            <div class="detail-label">風向・風速</div>
+                            <div class="detail-value">南西 6m/s</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">波高</div>
+                            <div class="detail-value">2.0m</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">透明度</div>
+                            <div class="detail-value">15m</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">水温</div>
+                            <div class="detail-value">24°C</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="condition-card">
+                    <div class="diving-status status-excellent">ダイビング最適</div>
+                    <h3 class="area-name">🚢 与那国島</h3>
+                    <div class="weather-icon">☀️</div>
+                    <div class="temperature">26°C</div>
+                    
+                    <div class="condition-details">
+                        <div class="detail-item">
+                            <div class="detail-label">風向・風速</div>
+                            <div class="detail-value">北 2m/s</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">波高</div>
+                            <div class="detail-value">0.8m</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">透明度</div>
+                            <div class="detail-value">35m</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">水温</div>
+                            <div class="detail-value">25°C</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 週間予報 -->
+    <section class="forecast-section">
+        <div class="container">
+            <h2 class="section-title">📅 週間予報</h2>
+            <p class="section-subtitle">
+                7日間の天気・海況予報でダイビング計画を立てよう
+            </p>
+            
+            <div class="forecast-tabs">
+                <button class="forecast-tab active" data-area="ishigaki">石垣島</button>
+                <button class="forecast-tab" data-area="miyako">宮古島</button>
+                <button class="forecast-tab" data-area="okinawa">沖縄本島</button>
+                <button class="forecast-tab" data-area="other">離島</button>
+            </div>
+            
+            <div class="forecast-content active" id="forecast-ishigaki">
+                <div class="forecast-grid">
+                    <div class="forecast-card">
+                        <div class="forecast-date">今日 7/15</div>
+                        <div class="forecast-weather">☀️</div>
+                        <div class="forecast-temp">最高28°C / 最低24°C</div>
+                        <div class="forecast-details">
+                            <span>波高: 1.0m</span>
+                            <span>風: 北東3m/s</span>
+                        </div>
+                    </div>
+                    
+                    <div class="forecast-card">
+                        <div class="forecast-date">明日 7/16</div>
+                        <div class="forecast-weather">☀️</div>
+                        <div class="forecast-temp">最高29°C / 最低25°C</div>
+                        <div class="forecast-details">
+                            <span>波高: 1.2m</span>
+                            <span>風: 東4m/s</span>
+                        </div>
+                    </div>
+                    
+                    <div class="forecast-card">
+                        <div class="forecast-date">7/17</div>
+                        <div class="forecast-weather">⛅</div>
+                        <div class="forecast-temp">最高28°C / 最低24°C</div>
+                        <div class="forecast-details">
+                            <span>波高: 1.5m</span>
+                            <span>風: 東南5m/s</span>
+                        </div>
+                    </div>
+                    
+                    <div class="forecast-card">
+                        <div class="forecast-date">7/18</div>
+                        <div class="forecast-weather">🌧️</div>
+                        <div class="forecast-temp">最高26°C / 最低23°C</div>
+                        <div class="forecast-details">
+                            <span>波高: 2.0m</span>
+                            <span>風: 南6m/s</span>
+                        </div>
+                    </div>
+                    
+                    <div class="forecast-card">
+                        <div class="forecast-date">7/19</div>
+                        <div class="forecast-weather">⛅</div>
+                        <div class="forecast-temp">最高27°C / 最低24°C</div>
+                        <div class="forecast-details">
+                            <span>波高: 1.8m</span>
+                            <span>風: 南西5m/s</span>
+                        </div>
+                    </div>
+                    
+                    <div class="forecast-card">
+                        <div class="forecast-date">7/20</div>
+                        <div class="forecast-weather">☀️</div>
+                        <div class="forecast-temp">最高29°C / 最低25°C</div>
+                        <div class="forecast-details">
+                            <span>波高: 1.0m</span>
+                            <span>風: 北東3m/s</span>
+                        </div>
+                    </div>
+                    
+                    <div class="forecast-card">
+                        <div class="forecast-date">7/21</div>
+                        <div class="forecast-weather">☀️</div>
+                        <div class="forecast-temp">最高30°C / 最低26°C</div>
+                        <div class="forecast-details">
+                            <span>波高: 0.8m</span>
+                            <span>風: 北2m/s</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 他のエリアの予報も同様に実装 -->
+        </div>
+    </section>
+
+    <!-- 季節別ダイビング情報 -->
+    <section class="seasonal-info">
+        <div class="container">
+            <h2 class="section-title">📅 季節別ダイビング情報</h2>
+            <p class="section-subtitle">
+                各シーズンの特徴とベストタイミングを把握してダイビング計画を立てよう
+            </p>
+            
+            <div class="seasonal-grid">
+                <div class="season-card">
+                    <div class="season-header">
+                        <div class="season-title">🌸 春シーズン</div>
+                        <div class="season-period">3月〜5月</div>
+                    </div>
+                    <div class="season-content">
+                        <div class="season-features">
+                            <ul class="feature-list">
+                                <li><i class="fas fa-thermometer-half feature-icon"></i>過ごしやすい気候</li>
+                                <li><i class="fas fa-eye feature-icon"></i>透明度向上開始</li>
+                                <li><i class="fas fa-fish feature-icon"></i>マンタシーズン開始</li>
+                                <li><i class="fas fa-users feature-icon"></i>混雑少なめ</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="pros-cons">
+                            <div class="pros">
+                                <h4>メリット</h4>
+                                <ul>
+                                    <li>料金が安い</li>
+                                    <li>気候が安定</li>
+                                    <li>人が少ない</li>
+                                </ul>
+                            </div>
+                            <div class="cons">
+                                <h4>注意点</h4>
+                                <ul>
+                                    <li>稀に北風あり</li>
+                                    <li>水温やや低め</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="season-card">
+                    <div class="season-header">
+                        <div class="season-title">☀️ 夏シーズン</div>
+                        <div class="season-period">6月〜8月</div>
+                    </div>
+                    <div class="season-content">
+                        <div class="season-features">
+                            <ul class="feature-list">
+                                <li><i class="fas fa-star feature-icon"></i>ベストシーズン</li>
+                                <li><i class="fas fa-water feature-icon"></i>海況安定</li>
+                                <li><i class="fas fa-whale feature-icon"></i>ジンベエザメ遭遇</li>
+                                <li><i class="fas fa-sun feature-icon"></i>最高の透明度</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="pros-cons">
+                            <div class="pros">
+                                <h4>メリット</h4>
+                                <ul>
+                                    <li>最高の海況</li>
+                                    <li>生物豊富</li>
+                                    <li>安定した天気</li>
+                                </ul>
+                            </div>
+                            <div class="cons">
+                                <h4>注意点</h4>
+                                <ul>
+                                    <li>料金が高い</li>
+                                    <li>混雑</li>
+                                    <li>台風リスク</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="season-card">
+                    <div class="season-header">
+                        <div class="season-title">🍂 秋シーズン</div>
+                        <div class="season-period">9月〜11月</div>
+                    </div>
+                    <div class="season-content">
+                        <div class="season-features">
+                            <ul class="feature-list">
+                                <li><i class="fas fa-eye feature-icon"></i>透明度抜群</li>
+                                <li><i class="fas fa-fish feature-icon"></i>秋マンタ活発</li>
+                                <li><i class="fas fa-users-slash feature-icon"></i>混雑解消</li>
+                                <li><i class="fas fa-temperature-high feature-icon"></i>まだ暖かい</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="pros-cons">
+                            <div class="pros">
+                                <h4>メリット</h4>
+                                <ul>
+                                    <li>透明度最高</li>
+                                    <li>人が少ない</li>
+                                    <li>マンタ活発</li>
+                                </ul>
+                            </div>
+                            <div class="cons">
+                                <h4>注意点</h4>
+                                <ul>
+                                    <li>台風の影響</li>
+                                    <li>気温下降</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="season-card">
+                    <div class="season-header">
+                        <div class="season-title">❄️ 冬シーズン</div>
+                        <div class="season-period">12月〜2月</div>
+                    </div>
+                    <div class="season-content">
+                        <div class="season-features">
+                            <ul class="feature-list">
+                                <li><i class="fas fa-whale feature-icon"></i>ホエールウォッチング</li>
+                                <li><i class="fas fa-hammer feature-icon"></i>ハンマーヘッド</li>
+                                <li><i class="fas fa-yen-sign feature-icon"></i>料金安い</li>
+                                <li><i class="fas fa-users-slash feature-icon"></i>空いている</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="pros-cons">
+                            <div class="pros">
+                                <h4>メリット</h4>
+                                <ul>
+                                    <li>特別な生物</li>
+                                    <li>料金最安</li>
+                                    <li>空いている</li>
+                                </ul>
+                            </div>
+                            <div class="cons">
+                                <h4>注意点</h4>
+                                <ul>
+                                    <li>北風強い</li>
+                                    <li>気温低め</li>
+                                    <li>海況不安定</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- フッター -->
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>🌊 Jiji知識ベース</h3>
+                    <p>LINE Bot完結型・Web知識ベース統合システム</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>海況・天気</h3>
+                    <ul>
+                        <li><a href="/weather-ocean/current">現在の海況</a></li>
+                        <li><a href="/weather-ocean/forecast">週間予報</a></li>
+                        <li><a href="/weather-ocean/seasonal">季節情報</a></li>
+                        <li><a href="/weather-ocean/history">過去データ</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>エリア別情報</h3>
+                    <ul>
+                        <li><a href="/weather-ocean/ishigaki">石垣島</a></li>
+                        <li><a href="/weather-ocean/miyako">宮古島</a></li>
+                        <li><a href="/weather-ocean/okinawa">沖縄本島</a></li>
+                        <li><a href="/weather-ocean/other">その他離島</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>サポート</h3>
+                    <ul>
+                        <li><a href="https://line.me/ti/p/@2007331165" target="_blank">LINE Bot相談</a></li>
+                        <li><a href="/contact">お問い合わせ</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 Jiji知識ベース - 海況・天気情報システム</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 予報タブ切り替え
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabs = document.querySelectorAll('.forecast-tab');
+            const contents = document.querySelectorAll('.forecast-content');
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // アクティブタブの切り替え
+                    tabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // コンテンツの切り替え
+                    contents.forEach(c => c.classList.remove('active'));
+                    const targetArea = this.dataset.area;
+                    const targetContent = document.getElementById(`forecast-${targetArea}`);
+                    if (targetContent) {
+                        targetContent.classList.add('active');
+                    }
+                });
+            });
+            
+            // リアルタイム更新（簡易実装）
+            setInterval(updateCurrentConditions, 300000); // 5分ごと
+        });
+        
+        function updateCurrentConditions() {
+            // 実際の実装では気象APIからデータを取得
+            console.log('海況・天気情報を更新中...');
+        }
+        
+        // 緊急アラートの表示制御
+        function checkWeatherAlerts() {
+            // 実際の実装では気象庁APIなどから警報情報を取得
+            const alertElement = document.getElementById('weather-alert');
+            
+            // 例: 台風接近時のアラート表示
+            const hasTyphoonWarning = false; // APIから取得
+            
+            if (hasTyphoonWarning) {
+                alertElement.classList.add('show');
+                alertElement.querySelector('.alert-content').textContent = 
+                    '台風接近により、明日からダイビングツアーが中止となる可能性があります。最新情報をご確認ください。';
+            }
+        }
+        
+        // ページ読み込み時にアラートチェック
+        document.addEventListener('DOMContentLoaded', checkWeatherAlerts);
+    </script>
+</body>
+</html>

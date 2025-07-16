@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>マイページ | Jiji会員システム</title>
+    <meta name="description" content="Jiji会員システムのマイページ。ポイント残高確認、口コミ管理、お気に入りショップ、ダイビング履歴を一元管理。">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="../app/v28-styles.css">
+    
+    <style>
+        .member-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 80px 0 60px;
+        }
+        
+        .user-welcome {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .user-avatar {
+            width: 80px;
+            height: 80px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            border: 3px solid rgba(255,255,255,0.3);
+        }
+        
+        .user-info h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        
+        .user-stats {
+            display: flex;
+            gap: 30px;
+            opacity: 0.9;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: block;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        .dashboard-section {
+            padding: 80px 0;
+            background: #f8f9ff;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .dashboard-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f1f5f9;
+        }
+        
+        .card-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #1f2937;
+        }
+        
+        .card-icon {
+            font-size: 1.5rem;
+            color: #667eea;
+        }
+        
+        .card-action {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: color 0.3s ease;
+        }
+        
+        .card-action:hover {
+            color: #5a67d8;
+        }
+        
+        /* ポイントカード */
+        .points-card {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            border: 2px solid #f59e0b;
+        }
+        
+        .points-balance {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        
+        .points-amount {
+            font-size: 3rem;
+            font-weight: 900;
+            color: #f59e0b;
+            margin-bottom: 5px;
+        }
+        
+        .points-label {
+            color: #92400e;
+            font-weight: 600;
+        }
+        
+        .points-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .btn-points {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+        
+        .btn-earn {
+            background: #10b981;
+            color: white;
+        }
+        
+        .btn-earn:hover {
+            background: #059669;
+            color: white;
+        }
+        
+        .btn-exchange {
+            background: white;
+            color: #f59e0b;
+            border: 2px solid #f59e0b;
+        }
+        
+        .btn-exchange:hover {
+            background: #f59e0b;
+            color: white;
+        }
+        
+        /* 口コミカード */
+        .review-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .review-item {
+            padding: 15px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            transition: background 0.3s ease;
+        }
+        
+        .review-item:hover {
+            background: #f9fafb;
+        }
+        
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 10px;
+        }
+        
+        .review-shop {
+            font-weight: 600;
+            color: #1f2937;
+        }
+        
+        .review-date {
+            font-size: 0.8rem;
+            color: #6b7280;
+        }
+        
+        .review-rating {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .review-stars {
+            color: #fbbf24;
+            font-size: 0.9rem;
+        }
+        
+        .review-score {
+            font-weight: 600;
+            color: #1f2937;
+            font-size: 0.9rem;
+        }
+        
+        .review-excerpt {
+            color: #6b7280;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+        
+        /* お気に入りカード */
+        .favorite-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .favorite-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            transition: background 0.3s ease;
+        }
+        
+        .favorite-item:hover {
+            background: #f9fafb;
+        }
+        
+        .favorite-image {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+        
+        .favorite-info {
+            flex: 1;
+        }
+        
+        .favorite-name {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 5px;
+        }
+        
+        .favorite-area {
+            color: #667eea;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+        
+        .favorite-rating {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .favorite-stars {
+            color: #fbbf24;
+            font-size: 0.8rem;
+        }
+        
+        /* 履歴カード */
+        .history-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .history-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            border-left: 4px solid #667eea;
+            background: #f8f9ff;
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 15px;
+        }
+        
+        .history-icon {
+            width: 50px;
+            height: 50px;
+            background: #667eea;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+        
+        .history-info {
+            flex: 1;
+        }
+        
+        .history-action {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 5px;
+        }
+        
+        .history-detail {
+            color: #6b7280;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+        
+        .history-date {
+            color: #9ca3af;
+            font-size: 0.8rem;
+        }
+        
+        /* 設定カード */
+        .settings-list {
+            display: grid;
+            gap: 15px;
+        }
+        
+        .setting-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            transition: background 0.3s ease;
+        }
+        
+        .setting-item:hover {
+            background: #f9fafb;
+        }
+        
+        .setting-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .setting-icon {
+            color: #667eea;
+        }
+        
+        .setting-label {
+            font-weight: 500;
+            color: #1f2937;
+        }
+        
+        .setting-action {
+            color: #667eea;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        
+        /* プロフィール完成度 */
+        .profile-completion {
+            margin-bottom: 30px;
+        }
+        
+        .completion-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .completion-label {
+            font-weight: 600;
+            color: #1f2937;
+        }
+        
+        .completion-percentage {
+            font-weight: 700;
+            color: #667eea;
+        }
+        
+        .completion-bar {
+            background: #e5e7eb;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .completion-progress {
+            background: linear-gradient(135deg, #10b981, #059669);
+            height: 100%;
+            width: 75%;
+            transition: width 0.3s ease;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6b7280;
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: #d1d5db;
+        }
+        
+        .empty-state h3 {
+            margin-bottom: 10px;
+            color: #374151;
+        }
+        
+        .empty-state p {
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        
+        @media (max-width: 768px) {
+            .user-welcome {
+                flex-direction: column;
+                text-align: center;
+                gap: 20px;
+            }
+            
+            .user-stats {
+                justify-content: center;
+                gap: 20px;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .points-actions {
+                grid-template-columns: 1fr;
+            }
+            
+            .favorite-item, .history-item {
+                flex-direction: column;
+                text-align: center;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ヘッダー -->
+    <header class="main-header">
+        <nav class="main-nav">
+            <a href="/" class="main-logo">
+                <h1>🌊 Jiji</h1>
+                <span>会員システム</span>
+            </a>
+            
+            <ul class="main-nav-menu">
+                <li><a href="/">ホーム</a></li>
+                <li><a href="/member" class="active">マイページ</a></li>
+                <li><a href="/member/review-post">口コミ投稿</a></li>
+                <li><a href="/member/points">ポイント</a></li>
+                <li><a href="/shops-database">ショップDB</a></li>
+            </ul>
+            
+            <div class="main-nav-buttons">
+                <a href="https://line.me/ti/p/@2007331165" class="btn btn-primary" target="_blank">
+                    <i class="fab fa-line"></i> LINE相談
+                </a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- 会員ヘッダー -->
+    <section class="member-header">
+        <div class="container">
+            <div class="user-welcome">
+                <div class="user-avatar">
+                    👤
+                </div>
+                <div class="user-info">
+                    <h1>おかえりなさい、田中さん</h1>
+                    <div class="user-stats">
+                        <div class="stat-item">
+                            <span class="stat-number">1,250</span>
+                            <span class="stat-label">ポイント</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">3</span>
+                            <span class="stat-label">投稿口コミ</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">5</span>
+                            <span class="stat-label">お気に入り</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">12</span>
+                            <span class="stat-label">ダイビング歴</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- プロフィール完成度 -->
+            <div class="profile-completion">
+                <div class="completion-header">
+                    <span class="completion-label">プロフィール完成度</span>
+                    <span class="completion-percentage">75%</span>
+                </div>
+                <div class="completion-bar">
+                    <div class="completion-progress"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ダッシュボード -->
+    <section class="dashboard-section">
+        <div class="container">
+            <h2 class="section-title">📊 ダッシュボード</h2>
+            <p class="section-subtitle">
+                あなたのダイビング活動を一目で確認
+            </p>
+            
+            <div class="dashboard-grid">
+                <!-- ポイント残高 -->
+                <div class="dashboard-card points-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-coins card-icon"></i>
+                            ポイント残高
+                        </div>
+                        <a href="/member/points" class="card-action">詳細を見る</a>
+                    </div>
+                    
+                    <div class="points-balance">
+                        <div class="points-amount">1,250</div>
+                        <div class="points-label">ポイント</div>
+                    </div>
+                    
+                    <div class="points-actions">
+                        <a href="/member/review-post" class="btn-points btn-earn">
+                            口コミでポイント獲得
+                        </a>
+                        <a href="/member/point-exchange" class="btn-points btn-exchange">
+                            ポイント交換
+                        </a>
+                    </div>
+                </div>
+
+                <!-- 投稿した口コミ -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-comment-dots card-icon"></i>
+                            投稿した口コミ
+                        </div>
+                        <a href="/member/reviews" class="card-action">全て見る</a>
+                    </div>
+                    
+                    <div class="review-list">
+                        <div class="review-item">
+                            <div class="review-header">
+                                <div class="review-shop">S2クラブ石垣</div>
+                                <div class="review-date">2025/07/10</div>
+                            </div>
+                            <div class="review-rating">
+                                <span class="review-stars">★★★★★</span>
+                                <span class="review-score">5.0</span>
+                            </div>
+                            <div class="review-excerpt">
+                                初心者の私にも丁寧に教えてくださり、マンタに遭遇できて最高の体験でした...
+                            </div>
+                        </div>
+                        
+                        <div class="review-item">
+                            <div class="review-header">
+                                <div class="review-shop">宮古島ダイビングサービス</div>
+                                <div class="review-date">2025/06/15</div>
+                            </div>
+                            <div class="review-rating">
+                                <span class="review-stars">★★★★☆</span>
+                                <span class="review-score">4.5</span>
+                            </div>
+                            <div class="review-excerpt">
+                                地形ダイビングが素晴らしく、透明度も抜群でした。スタッフの方も親切で...
+                            </div>
+                        </div>
+                        
+                        <div class="review-item">
+                            <div class="review-header">
+                                <div class="review-shop">青の洞窟ダイビング</div>
+                                <div class="review-date">2025/05/20</div>
+                            </div>
+                            <div class="review-rating">
+                                <span class="review-stars">★★★★☆</span>
+                                <span class="review-score">4.0</span>
+                            </div>
+                            <div class="review-excerpt">
+                                初めての青の洞窟体験。神秘的な青い光に感動しました。写真もたくさん...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- お気に入りショップ -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-heart card-icon"></i>
+                            お気に入りショップ
+                        </div>
+                        <a href="/member/favorites" class="card-action">全て見る</a>
+                    </div>
+                    
+                    <div class="favorite-list">
+                        <div class="favorite-item">
+                            <div class="favorite-image">🏪</div>
+                            <div class="favorite-info">
+                                <div class="favorite-name">S2クラブ石垣</div>
+                                <div class="favorite-area">🏝️ 石垣島</div>
+                                <div class="favorite-rating">
+                                    <span class="favorite-stars">★★★★★</span>
+                                    <span>4.8 (127件)</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="favorite-item">
+                            <div class="favorite-image">🏪</div>
+                            <div class="favorite-info">
+                                <div class="favorite-name">アクアティックアドベンチャー</div>
+                                <div class="favorite-area">🌺 宮古島</div>
+                                <div class="favorite-rating">
+                                    <span class="favorite-stars">★★★★☆</span>
+                                    <span>4.7 (156件)</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="favorite-item">
+                            <div class="favorite-image">🏪</div>
+                            <div class="favorite-info">
+                                <div class="favorite-name">青の洞窟専門店</div>
+                                <div class="favorite-area">🏖️ 沖縄本島</div>
+                                <div class="favorite-rating">
+                                    <span class="favorite-stars">★★★★☆</span>
+                                    <span>4.3 (89件)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 活動履歴 -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-history card-icon"></i>
+                            最近の活動
+                        </div>
+                        <a href="/member/history" class="card-action">全て見る</a>
+                    </div>
+                    
+                    <div class="history-list">
+                        <div class="history-item">
+                            <div class="history-icon">
+                                <i class="fas fa-comment"></i>
+                            </div>
+                            <div class="history-info">
+                                <div class="history-action">口コミを投稿しました</div>
+                                <div class="history-detail">S2クラブ石垣 - 150ポイント獲得</div>
+                                <div class="history-date">2025年7月10日 14:30</div>
+                            </div>
+                        </div>
+                        
+                        <div class="history-item">
+                            <div class="history-icon">
+                                <i class="fas fa-heart"></i>
+                            </div>
+                            <div class="history-info">
+                                <div class="history-action">ショップをお気に入りに追加</div>
+                                <div class="history-detail">宮古島ダイビングサービス</div>
+                                <div class="history-date">2025年7月8日 10:15</div>
+                            </div>
+                        </div>
+                        
+                        <div class="history-item">
+                            <div class="history-icon">
+                                <i class="fas fa-gift"></i>
+                            </div>
+                            <div class="history-info">
+                                <div class="history-action">ポイントを交換しました</div>
+                                <div class="history-detail">体験ダイビングチケット - 3,000ポイント使用</div>
+                                <div class="history-date">2025年6月20日 16:45</div>
+                            </div>
+                        </div>
+                        
+                        <div class="history-item">
+                            <div class="history-icon">
+                                <i class="fas fa-user-plus"></i>
+                            </div>
+                            <div class="history-info">
+                                <div class="history-action">プロフィールを更新</div>
+                                <div class="history-detail">ダイビング経験・ライセンス情報を追加</div>
+                                <div class="history-date">2025年6月18日 09:20</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 設定・アカウント -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-cog card-icon"></i>
+                            設定・アカウント
+                        </div>
+                    </div>
+                    
+                    <div class="settings-list">
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <i class="fas fa-user setting-icon"></i>
+                                <span class="setting-label">プロフィール編集</span>
+                            </div>
+                            <a href="/member/profile" class="setting-action">編集</a>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <i class="fas fa-bell setting-icon"></i>
+                                <span class="setting-label">通知設定</span>
+                            </div>
+                            <a href="/member/notifications" class="setting-action">設定</a>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <i class="fas fa-shield-alt setting-icon"></i>
+                                <span class="setting-label">プライバシー設定</span>
+                            </div>
+                            <a href="/member/privacy" class="setting-action">設定</a>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <i class="fab fa-line setting-icon"></i>
+                                <span class="setting-label">LINE連携</span>
+                            </div>
+                            <a href="/member/line-settings" class="setting-action">確認</a>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <i class="fas fa-question-circle setting-icon"></i>
+                                <span class="setting-label">ヘルプ・サポート</span>
+                            </div>
+                            <a href="/help" class="setting-action">表示</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- おすすめアクション -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-lightbulb card-icon"></i>
+                            おすすめアクション
+                        </div>
+                    </div>
+                    
+                    <div class="settings-list">
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <i class="fas fa-comment-dots setting-icon"></i>
+                                <span class="setting-label">最近のダイビング体験を口コミ投稿</span>
+                            </div>
+                            <a href="/member/review-post" class="setting-action">投稿</a>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <i class="fas fa-search setting-icon"></i>
+                                <span class="setting-label">新しいショップを探す</span>
+                            </div>
+                            <a href="/shops-database" class="setting-action">探す</a>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <i class="fas fa-gift setting-icon"></i>
+                                <span class="setting-label">ポイントを特典と交換</span>
+                            </div>
+                            <a href="/member/point-exchange" class="setting-action">交換</a>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <i class="fas fa-user-friends setting-icon"></i>
+                                <span class="setting-label">友達を招待してポイント獲得</span>
+                            </div>
+                            <a href="/member/referral" class="setting-action">招待</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- フッター -->
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>🌊 Jiji会員システム</h3>
+                    <p>あなたのダイビングライフをサポート</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>会員サービス</h3>
+                    <ul>
+                        <li><a href="/member">マイページ</a></li>
+                        <li><a href="/member/review-post">口コミ投稿</a></li>
+                        <li><a href="/member/points">ポイント管理</a></li>
+                        <li><a href="/member/settings">設定</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>サポート</h3>
+                    <ul>
+                        <li><a href="https://line.me/ti/p/@2007331165" target="_blank">LINE Bot相談</a></li>
+                        <li><a href="/contact">お問い合わせ</a></li>
+                        <li><a href="/help">ヘルプ</a></li>
+                        <li><a href="/legal">利用規約</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>ダイビング情報</h3>
+                    <ul>
+                        <li><a href="/shops-database">ショップDB</a></li>
+                        <li><a href="/travel-guide">旅行ガイド</a></li>
+                        <li><a href="/weather-ocean">海況・天気</a></li>
+                        <li><a href="/diving-blog">ダイビングブログ</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 Jiji会員システム - ダイビングコミュニティプラットフォーム</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // ページ初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            // プロフィール完成度アニメーション
+            animateProfileCompletion();
+            
+            // 統計数字アニメーション
+            animateStats();
+            
+            // 最近の活動の自動更新
+            // setInterval(updateRecentActivity, 300000); // 5分ごと
+        });
+
+        // プロフィール完成度アニメーション
+        function animateProfileCompletion() {
+            const progressBar = document.querySelector('.completion-progress');
+            const targetWidth = 75; // 75%
+            
+            setTimeout(() => {
+                progressBar.style.width = `${targetWidth}%`;
+            }, 500);
+        }
+
+        // 統計数字アニメーション
+        function animateStats() {
+            const statNumbers = document.querySelectorAll('.stat-number');
+            const pointsAmount = document.querySelector('.points-amount');
+            
+            statNumbers.forEach(stat => {
+                const target = parseInt(stat.textContent);
+                animateNumber(stat, target, 1000);
+            });
+            
+            if (pointsAmount) {
+                const target = parseInt(pointsAmount.textContent.replace(',', ''));
+                animateNumber(pointsAmount, target, 1500);
+            }
+        }
+
+        // 数字アニメーション
+        function animateNumber(element, target, duration) {
+            const start = 0;
+            const startTime = performance.now();
+            
+            function update(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                const easeOut = 1 - Math.pow(1 - progress, 3);
+                const current = Math.round(start + (target - start) * easeOut);
+                
+                if (target > 1000) {
+                    element.textContent = current.toLocaleString();
+                } else {
+                    element.textContent = current;
+                }
+                
+                if (progress < 1) {
+                    requestAnimationFrame(update);
+                }
+            }
+            
+            requestAnimationFrame(update);
+        }
+
+        // 最近の活動更新（実際の実装ではAPIから取得）
+        function updateRecentActivity() {
+            console.log('最近の活動を更新中...');
+            // 実際の実装ではここでAPIを呼び出して最新の活動を取得
+        }
+
+        // ダッシュボードカードホバーエフェクト
+        document.querySelectorAll('.dashboard-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-5px)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
+        });
+
+        // ポイントアクションクリック追跡
+        document.querySelectorAll('.btn-points').forEach(button => {
+            button.addEventListener('click', function() {
+                const action = this.classList.contains('btn-earn') ? 'earn' : 'exchange';
+                console.log(`ポイントアクション: ${action}`);
+                // 実際の実装ではアナリティクス送信
+            });
+        });
+
+        // お気に入りショップクリック
+        document.querySelectorAll('.favorite-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const shopName = this.querySelector('.favorite-name').textContent;
+                console.log(`お気に入りショップクリック: ${shopName}`);
+                // ショップ詳細ページに遷移
+                // window.location.href = `/shops-database/shop/${shopId}`;
+            });
+        });
+
+        // 口コミアイテムクリック
+        document.querySelectorAll('.review-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const shopName = this.querySelector('.review-shop').textContent;
+                console.log(`口コミクリック: ${shopName}`);
+                // 口コミ詳細表示
+            });
+        });
+
+        // 設定項目クリック追跡
+        document.querySelectorAll('.setting-action').forEach(link => {
+            link.addEventListener('click', function() {
+                const settingLabel = this.parentNode.querySelector('.setting-label').textContent;
+                console.log(`設定アクセス: ${settingLabel}`);
+            });
+        });
+    </script>
+</body>
+</html>

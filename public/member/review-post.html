@@ -1,0 +1,1544 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>口コミ投稿 | Jiji会員システム</title>
+    <meta name="description" content="ダイビング体験の口コミを投稿してポイントを獲得。他の初心者ダイバーのために貴重な体験談をシェアしよう。">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="../app/v28-styles.css">
+    
+    <style>
+        .review-header {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 80px 0 60px;
+            text-align: center;
+        }
+        
+        .review-process {
+            padding: 60px 0;
+            background: #f0fdf4;
+        }
+        
+        .process-steps {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+        
+        .process-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            flex: 1;
+            max-width: 200px;
+        }
+        
+        .process-step::after {
+            content: '';
+            position: absolute;
+            top: 25px;
+            right: -50px;
+            width: 40px;
+            height: 2px;
+            background: #10b981;
+            z-index: 1;
+        }
+        
+        .process-step:last-child::after {
+            display: none;
+        }
+        
+        .step-number {
+            width: 50px;
+            height: 50px;
+            background: #10b981;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .step-number.active {
+            background: #ef4444;
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+        }
+        
+        .step-title {
+            font-weight: 600;
+            color: #065f46;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+        
+        .review-form-section {
+            padding: 80px 0;
+            background: white;
+        }
+        
+        .review-form {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #f8fafc;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .form-step {
+            display: none;
+        }
+        
+        .form-step.active {
+            display: block;
+        }
+        
+        .step-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        
+        .step-title-main {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+        
+        .step-description {
+            color: #6b7280;
+            line-height: 1.6;
+        }
+        
+        /* Step 1: エリア・ショップ選択 */
+        .area-selection {
+            margin-bottom: 40px;
+        }
+        
+        .area-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .area-tab {
+            padding: 12px 24px;
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        
+        .area-tab.selected {
+            background: #10b981;
+            color: white;
+            border-color: #10b981;
+        }
+        
+        .shop-search {
+            margin-bottom: 30px;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .search-input:focus {
+            border-color: #10b981;
+            outline: none;
+        }
+        
+        .shop-list {
+            display: none;
+        }
+        
+        .shop-list.active {
+            display: block;
+        }
+        
+        .shop-tier {
+            margin-bottom: 30px;
+        }
+        
+        .tier-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .tier-premium {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            color: #92400e;
+        }
+        
+        .tier-verified {
+            background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+            color: #1e40af;
+        }
+        
+        .tier-basic {
+            background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+            color: #374151;
+        }
+        
+        .shop-items {
+            display: grid;
+            gap: 15px;
+        }
+        
+        .shop-item {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .shop-item:hover {
+            border-color: #10b981;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.1);
+        }
+        
+        .shop-item.selected {
+            border-color: #10b981;
+            background: #f0fdf4;
+        }
+        
+        .shop-item input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+        }
+        
+        .shop-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .shop-badge {
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .badge-premium { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .badge-verified { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+        
+        .shop-details h4 {
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 5px;
+        }
+        
+        .shop-description {
+            color: #6b7280;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+        
+        .shop-rating {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        
+        .rating-stars {
+            color: #fbbf24;
+            font-size: 0.9rem;
+        }
+        
+        .rating-text {
+            font-size: 0.8rem;
+            color: #6b7280;
+        }
+        
+        /* Step 2: 体験内容 */
+        .experience-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #374151;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .form-input, .form-select, .form-textarea {
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+            font-family: inherit;
+        }
+        
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            border-color: #10b981;
+            outline: none;
+        }
+        
+        .form-textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+        
+        /* Step 3: 評価・スコア */
+        .rating-section {
+            margin-bottom: 40px;
+        }
+        
+        .rating-group {
+            margin-bottom: 30px;
+            padding: 25px;
+            background: white;
+            border-radius: 12px;
+            border: 2px solid #e5e7eb;
+        }
+        
+        .rating-label {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .star-rating {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+        
+        .star {
+            font-size: 2rem;
+            color: #d1d5db;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+        
+        .star:hover,
+        .star.active {
+            color: #fbbf24;
+        }
+        
+        .rating-description {
+            font-size: 0.9rem;
+            color: #6b7280;
+            font-style: italic;
+        }
+        
+        /* Step 4: 詳細体験談 */
+        .review-content {
+            margin-bottom: 30px;
+        }
+        
+        .content-group {
+            margin-bottom: 25px;
+        }
+        
+        .char-counter {
+            text-align: right;
+            font-size: 0.8rem;
+            color: #6b7280;
+            margin-top: 5px;
+        }
+        
+        /* Step 5: メディア投稿 */
+        .media-upload {
+            margin-bottom: 30px;
+        }
+        
+        .upload-section {
+            margin-bottom: 30px;
+        }
+        
+        .upload-area {
+            border: 2px dashed #d1d5db;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f9fafb;
+        }
+        
+        .upload-area:hover {
+            border-color: #10b981;
+            background: #f0fdf4;
+        }
+        
+        .upload-area.dragover {
+            border-color: #10b981;
+            background: #f0fdf4;
+            transform: scale(1.02);
+        }
+        
+        .upload-icon {
+            font-size: 3rem;
+            color: #9ca3af;
+            margin-bottom: 15px;
+        }
+        
+        .upload-text {
+            color: #6b7280;
+            margin-bottom: 10px;
+        }
+        
+        .upload-hint {
+            font-size: 0.8rem;
+            color: #9ca3af;
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        .uploaded-files {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .uploaded-file {
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #f3f4f6;
+            aspect-ratio: 1;
+        }
+        
+        .file-preview {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .file-remove {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(239, 68, 68, 0.9);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+        }
+        
+        /* ポイント表示 */
+        .points-preview {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            border: 2px solid #f59e0b;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .points-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #92400e;
+            margin-bottom: 10px;
+        }
+        
+        .points-amount {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: #f59e0b;
+            margin-bottom: 10px;
+        }
+        
+        .points-breakdown {
+            font-size: 0.9rem;
+            color: #b45309;
+            line-height: 1.5;
+        }
+        
+        /* ナビゲーションボタン */
+        .form-navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 2px solid #e5e7eb;
+        }
+        
+        .btn-nav {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .btn-prev {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+        
+        .btn-prev:hover {
+            background: #e5e7eb;
+            color: #374151;
+        }
+        
+        .btn-next {
+            background: #10b981;
+            color: white;
+        }
+        
+        .btn-next:hover {
+            background: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3);
+        }
+        
+        .btn-submit {
+            background: #ef4444;
+            color: white;
+            font-size: 1.1rem;
+            padding: 15px 40px;
+        }
+        
+        .btn-submit:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(239, 68, 68, 0.3);
+        }
+        
+        .form-progress {
+            background: #e5e7eb;
+            height: 6px;
+            border-radius: 3px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+        
+        .form-progress-bar {
+            background: linear-gradient(135deg, #10b981, #059669);
+            height: 100%;
+            width: 20%;
+            transition: width 0.3s ease;
+            border-radius: 3px;
+        }
+        
+        @media (max-width: 768px) {
+            .process-steps {
+                flex-direction: column;
+                align-items: center;
+                gap: 20px;
+            }
+            
+            .process-step::after {
+                display: none;
+            }
+            
+            .experience-form {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .area-tabs {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .form-navigation {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .uploaded-files {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ヘッダー -->
+    <header class="main-header">
+        <nav class="main-nav">
+            <a href="/" class="main-logo">
+                <h1>🌊 Jiji</h1>
+                <span>会員システム</span>
+            </a>
+            
+            <ul class="main-nav-menu">
+                <li><a href="/">ホーム</a></li>
+                <li><a href="/member">マイページ</a></li>
+                <li><a href="/member/review-post" class="active">口コミ投稿</a></li>
+                <li><a href="/member/points">ポイント</a></li>
+                <li><a href="/shops-database">ショップDB</a></li>
+            </ul>
+            
+            <div class="main-nav-buttons">
+                <a href="https://line.me/ti/p/@2007331165" class="btn btn-primary" target="_blank">
+                    <i class="fab fa-line"></i> LINE相談
+                </a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- 口コミ投稿ヘッダー -->
+    <section class="review-header">
+        <div class="container">
+            <h1 class="database-title">📝 口コミ投稿</h1>
+            <p class="database-subtitle">
+                あなたのダイビング体験をシェアして、他の初心者ダイバーを応援しよう。<br>
+                詳細な口コミでポイントも獲得できます！
+            </p>
+        </div>
+    </section>
+
+    <!-- 投稿プロセス -->
+    <section class="review-process">
+        <div class="container">
+            <div class="process-steps">
+                <div class="process-step">
+                    <div class="step-number active" id="step-indicator-1">1</div>
+                    <div class="step-title">ショップ選択</div>
+                </div>
+                <div class="process-step">
+                    <div class="step-number" id="step-indicator-2">2</div>
+                    <div class="step-title">体験内容入力</div>
+                </div>
+                <div class="process-step">
+                    <div class="step-number" id="step-indicator-3">3</div>
+                    <div class="step-title">評価・スコア</div>
+                </div>
+                <div class="process-step">
+                    <div class="step-number" id="step-indicator-4">4</div>
+                    <div class="step-title">詳細体験談</div>
+                </div>
+                <div class="process-step">
+                    <div class="step-number" id="step-indicator-5">5</div>
+                    <div class="step-title">メディア・投稿</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 口コミ投稿フォーム -->
+    <section class="review-form-section">
+        <div class="container">
+            <div class="review-form">
+                <!-- プログレスバー -->
+                <div class="form-progress">
+                    <div class="form-progress-bar" id="progress-bar"></div>
+                </div>
+
+                <!-- Step 1: ショップ選択 -->
+                <div class="form-step active" id="step-1">
+                    <div class="step-header">
+                        <h2 class="step-title-main">🏪 ダイビングショップを選択</h2>
+                        <p class="step-description">
+                            体験したダイビングショップを地域から選択してください。<br>
+                            ショップ名で検索も可能です。
+                        </p>
+                    </div>
+
+                    <!-- エリア選択 -->
+                    <div class="area-selection">
+                        <div class="area-tabs">
+                            <div class="area-tab selected" data-area="ishigaki">🏝️ 石垣島</div>
+                            <div class="area-tab" data-area="miyako">🌺 宮古島</div>
+                            <div class="area-tab" data-area="okinawa">🏖️ 沖縄本島</div>
+                            <div class="area-tab" data-area="other">🚢 その他離島</div>
+                        </div>
+
+                        <!-- ショップ検索 -->
+                        <div class="shop-search">
+                            <input type="text" class="search-input" id="shop-search" 
+                                   placeholder="🔍 ショップ名で検索...">
+                        </div>
+
+                        <!-- ショップリスト（石垣島） -->
+                        <div class="shop-list active" id="shops-ishigaki">
+                            <!-- プレミアム認定ショップ -->
+                            <div class="shop-tier">
+                                <h3 class="tier-title tier-premium">
+                                    🌟 Jijiプレミアム認定ショップ
+                                </h3>
+                                <div class="shop-items">
+                                    <label class="shop-item">
+                                        <input type="radio" name="selected-shop" value="ISH001">
+                                        <div class="shop-info">
+                                            <div class="shop-details">
+                                                <h4>S2クラブ石垣</h4>
+                                                <div class="shop-badge badge-premium">🌟 プレミアム認定</div>
+                                                <p class="shop-description">マンタ遭遇率95%、初心者専門指導20年の実績</p>
+                                                <div class="shop-rating">
+                                                    <span class="rating-stars">★★★★★</span>
+                                                    <span class="rating-text">4.8 (127件)</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Jiji推薦店 -->
+                            <div class="shop-tier">
+                                <h3 class="tier-title tier-verified">
+                                    ⭐ Jiji推薦店
+                                </h3>
+                                <div class="shop-items">
+                                    <label class="shop-item">
+                                        <input type="radio" name="selected-shop" value="ISH002">
+                                        <div class="shop-info">
+                                            <div class="shop-details">
+                                                <h4>マリンハウスぷしぃぬしま</h4>
+                                                <div class="shop-badge badge-verified">⭐ Jiji推薦店</div>
+                                                <p class="shop-description">マンタ特化、送迎サービス充実</p>
+                                                <div class="shop-rating">
+                                                    <span class="rating-stars">★★★★☆</span>
+                                                    <span class="rating-text">4.6 (89件)</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </label>
+                                    
+                                    <label class="shop-item">
+                                        <input type="radio" name="selected-shop" value="ISH003">
+                                        <div class="shop-info">
+                                            <div class="shop-details">
+                                                <h4>石垣島ダイビングサービス</h4>
+                                                <div class="shop-badge badge-verified">⭐ Jiji推薦店</div>
+                                                <p class="shop-description">少人数制、アットホームな雰囲気</p>
+                                                <div class="shop-rating">
+                                                    <span class="rating-stars">★★★★☆</span>
+                                                    <span class="rating-text">4.5 (76件)</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- 基本掲載ショップ -->
+                            <div class="shop-tier">
+                                <h3 class="tier-title tier-basic">
+                                    ✨ 基本掲載ショップ
+                                </h3>
+                                <div class="shop-items">
+                                    <label class="shop-item">
+                                        <input type="radio" name="selected-shop" value="ISH004">
+                                        <div class="shop-info">
+                                            <div class="shop-details">
+                                                <h4>石垣マリンサービス</h4>
+                                                <p class="shop-description">地元密着型、リーズナブルな料金設定</p>
+                                                <div class="shop-rating">
+                                                    <span class="rating-stars">★★★★☆</span>
+                                                    <span class="rating-text">4.2 (54件)</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 他のエリアのショップリストも同様に実装（省略） -->
+                    </div>
+                </div>
+
+                <!-- Step 2: 体験内容 -->
+                <div class="form-step" id="step-2">
+                    <div class="step-header">
+                        <h2 class="step-title-main">📅 体験内容を入力</h2>
+                        <p class="step-description">
+                            ダイビング体験の基本情報を入力してください。
+                        </p>
+                    </div>
+
+                    <div class="experience-form">
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-calendar"></i> 体験日
+                            </label>
+                            <input type="date" class="form-input" id="experience-date" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-clock"></i> 時間帯
+                            </label>
+                            <select class="form-select" id="time-slot" required>
+                                <option value="">選択してください</option>
+                                <option value="morning">午前（8:00-12:00）</option>
+                                <option value="afternoon">午後（13:00-17:00）</option>
+                                <option value="full-day">1日（8:00-17:00）</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-swimming-pool"></i> 参加コース
+                            </label>
+                            <select class="form-select" id="course-type" required>
+                                <option value="">選択してください</option>
+                                <option value="trial-beach">体験ダイビング（ビーチ）</option>
+                                <option value="trial-boat">体験ダイビング（ボート）</option>
+                                <option value="fun-dive">ファンダイビング</option>
+                                <option value="license">ライセンス講習</option>
+                                <option value="snorkel">シュノーケリング</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-users"></i> 参加人数
+                            </label>
+                            <select class="form-select" id="participants" required>
+                                <option value="">選択してください</option>
+                                <option value="1">1名（一人参加）</option>
+                                <option value="2">2名</option>
+                                <option value="3">3名</option>
+                                <option value="4">4名</option>
+                                <option value="5plus">5名以上</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-cloud-sun"></i> 当日の天候
+                            </label>
+                            <select class="form-select" id="weather" required>
+                                <option value="">選択してください</option>
+                                <option value="sunny">晴れ</option>
+                                <option value="cloudy">曇り</option>
+                                <option value="rainy">雨</option>
+                                <option value="partly-cloudy">晴れ時々曇り</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-waves"></i> 海況
+                            </label>
+                            <select class="form-select" id="sea-condition" required>
+                                <option value="">選択してください</option>
+                                <option value="excellent">最高（穏やか）</option>
+                                <option value="good">良好</option>
+                                <option value="fair">普通</option>
+                                <option value="rough">やや荒れ気味</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-map-marker-alt"></i> 潜ったポイント（分かる範囲で）
+                        </label>
+                        <textarea class="form-textarea" id="dive-points" 
+                                  placeholder="例：マンタスクランブル、川平石崎など"></textarea>
+                    </div>
+                </div>
+
+                <!-- Step 3: 評価・スコア -->
+                <div class="form-step" id="step-3">
+                    <div class="step-header">
+                        <h2 class="step-title-main">⭐ 評価・スコアを入力</h2>
+                        <p class="step-description">
+                            体験した内容について、5段階で評価してください。<br>
+                            正直な評価が他の初心者ダイバーの参考になります。
+                        </p>
+                    </div>
+
+                    <div class="rating-section">
+                        <!-- 総合満足度 -->
+                        <div class="rating-group">
+                            <div class="rating-label">
+                                <i class="fas fa-heart"></i> 総合満足度
+                            </div>
+                            <div class="star-rating" data-rating="overall-satisfaction">
+                                <span class="star" data-value="1">★</span>
+                                <span class="star" data-value="2">★</span>
+                                <span class="star" data-value="3">★</span>
+                                <span class="star" data-value="4">★</span>
+                                <span class="star" data-value="5">★</span>
+                            </div>
+                            <div class="rating-description">全体的な満足度をお聞かせください</div>
+                        </div>
+
+                        <!-- 初心者対応度 -->
+                        <div class="rating-group">
+                            <div class="rating-label">
+                                <i class="fas fa-graduation-cap"></i> 初心者対応度
+                            </div>
+                            <div class="star-rating" data-rating="beginner-support">
+                                <span class="star" data-value="1">★</span>
+                                <span class="star" data-value="2">★</span>
+                                <span class="star" data-value="3">★</span>
+                                <span class="star" data-value="4">★</span>
+                                <span class="star" data-value="5">★</span>
+                            </div>
+                            <div class="rating-description">初心者への説明や配慮はいかがでしたか？</div>
+                        </div>
+
+                        <!-- 安全性・信頼度 -->
+                        <div class="rating-group">
+                            <div class="rating-label">
+                                <i class="fas fa-shield-alt"></i> 安全性・信頼度
+                            </div>
+                            <div class="star-rating" data-rating="safety">
+                                <span class="star" data-value="1">★</span>
+                                <span class="star" data-value="2">★</span>
+                                <span class="star" data-value="3">★</span>
+                                <span class="star" data-value="4">★</span>
+                                <span class="star" data-value="5">★</span>
+                            </div>
+                            <div class="rating-description">安全面での配慮や器材の状態はいかがでしたか？</div>
+                        </div>
+
+                        <!-- スタッフ対応 -->
+                        <div class="rating-group">
+                            <div class="rating-label">
+                                <i class="fas fa-users"></i> スタッフ対応・親切度
+                            </div>
+                            <div class="star-rating" data-rating="staff">
+                                <span class="star" data-value="1">★</span>
+                                <span class="star" data-value="2">★</span>
+                                <span class="star" data-value="3">★</span>
+                                <span class="star" data-value="4">★</span>
+                                <span class="star" data-value="5">★</span>
+                            </div>
+                            <div class="rating-description">スタッフの接客や親切さはいかがでしたか？</div>
+                        </div>
+
+                        <!-- 体験満足度 -->
+                        <div class="rating-group">
+                            <div class="rating-label">
+                                <i class="fas fa-fish"></i> 体験内容・満足度
+                            </div>
+                            <div class="star-rating" data-rating="experience">
+                                <span class="star" data-value="1">★</span>
+                                <span class="star" data-value="2">★</span>
+                                <span class="star" data-value="3">★</span>
+                                <span class="star" data-value="4">★</span>
+                                <span class="star" data-value="5">★</span>
+                            </div>
+                            <div class="rating-description">海の美しさや生物との遭遇など、体験内容はいかがでしたか？</div>
+                        </div>
+
+                        <!-- コストパフォーマンス -->
+                        <div class="rating-group">
+                            <div class="rating-label">
+                                <i class="fas fa-yen-sign"></i> コストパフォーマンス
+                            </div>
+                            <div class="star-rating" data-rating="cost-performance">
+                                <span class="star" data-value="1">★</span>
+                                <span class="star" data-value="2">★</span>
+                                <span class="star" data-value="3">★</span>
+                                <span class="star" data-value="4">★</span>
+                                <span class="star" data-value="5">★</span>
+                            </div>
+                            <div class="rating-description">料金に対する満足度はいかがでしたか？</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 4: 詳細体験談 -->
+                <div class="form-step" id="step-4">
+                    <div class="step-header">
+                        <h2 class="step-title-main">📝 詳細体験談を入力</h2>
+                        <p class="step-description">
+                            他の初心者ダイバーが参考にできる、具体的な体験談をお聞かせください。<br>
+                            詳しく書くほど、より多くのポイントを獲得できます。
+                        </p>
+                    </div>
+
+                    <div class="review-content">
+                        <div class="content-group">
+                            <label class="form-label">
+                                <i class="fas fa-thumbs-up"></i> 良かった点・印象的だった体験
+                            </label>
+                            <textarea class="form-textarea" id="good-points" 
+                                      placeholder="例：インストラクターの方がとても親切で、怖がりな私にも丁寧に教えてくださいました。マンタに遭遇できて感動しました..."
+                                      maxlength="1000"></textarea>
+                            <div class="char-counter">
+                                <span id="good-points-count">0</span>/1000文字
+                            </div>
+                        </div>
+
+                        <div class="content-group">
+                            <label class="form-label">
+                                <i class="fas fa-exclamation-triangle"></i> 改善希望点・注意点（任意）
+                            </label>
+                            <textarea class="form-textarea" id="improvement-points" 
+                                      placeholder="例：更衣室がもう少し広いと良いと思いました。特に問題はありませんでしたが..."
+                                      maxlength="500"></textarea>
+                            <div class="char-counter">
+                                <span id="improvement-points-count">0</span>/500文字
+                            </div>
+                        </div>
+
+                        <div class="content-group">
+                            <label class="form-label">
+                                <i class="fas fa-lightbulb"></i> 初心者へのアドバイス（任意）
+                            </label>
+                            <textarea class="form-textarea" id="advice" 
+                                      placeholder="例：初心者の方でも安心して参加できます。事前に不安なことは遠慮なく質問すると良いと思います..."
+                                      maxlength="500"></textarea>
+                            <div class="char-counter">
+                                <span id="advice-count">0</span>/500文字
+                            </div>
+                        </div>
+
+                        <div class="content-group">
+                            <label class="form-label">
+                                <i class="fas fa-comment"></i> 全体的な感想・メッセージ
+                            </label>
+                            <textarea class="form-textarea" id="overall-message" 
+                                      placeholder="例：人生初のダイビングでしたが、こんなに素晴らしい体験ができるとは思いませんでした。沖縄の海の美しさに感動..."
+                                      maxlength="1000"></textarea>
+                            <div class="char-counter">
+                                <span id="overall-message-count">0</span>/1000文字
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 5: メディア投稿 -->
+                <div class="form-step" id="step-5">
+                    <div class="step-header">
+                        <h2 class="step-title-main">📸 写真・動画をアップロード</h2>
+                        <p class="step-description">
+                            ダイビング体験の写真や動画があれば、ぜひ投稿してください。<br>
+                            写真付きで+50ポイント、動画付きで+100ポイント獲得できます！
+                        </p>
+                    </div>
+
+                    <div class="media-upload">
+                        <!-- 写真アップロード -->
+                        <div class="upload-section">
+                            <h3 style="margin-bottom: 20px; color: #1f2937; font-weight: 600;">
+                                <i class="fas fa-camera"></i> 写真アップロード（最大10枚）
+                            </h3>
+                            <div class="upload-area" id="photo-upload-area">
+                                <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                                <div class="upload-text">写真をドラッグ&ドロップ または クリックして選択</div>
+                                <div class="upload-hint">JPG, PNG形式（各5MBまで）</div>
+                                <input type="file" class="file-input" id="photo-input" 
+                                       accept="image/*" multiple>
+                            </div>
+                            <div class="uploaded-files" id="uploaded-photos"></div>
+                        </div>
+
+                        <!-- 動画アップロード -->
+                        <div class="upload-section">
+                            <h3 style="margin-bottom: 20px; color: #1f2937; font-weight: 600;">
+                                <i class="fas fa-video"></i> 動画アップロード（最大3分）
+                            </h3>
+                            <div class="upload-area" id="video-upload-area">
+                                <i class="fas fa-film upload-icon"></i>
+                                <div class="upload-text">動画をドラッグ&ドロップ または クリックして選択</div>
+                                <div class="upload-hint">MP4, MOV形式（50MBまで、3分以内）</div>
+                                <input type="file" class="file-input" id="video-input" 
+                                       accept="video/*">
+                            </div>
+                            <div class="uploaded-files" id="uploaded-videos"></div>
+                        </div>
+                    </div>
+
+                    <!-- ポイント獲得予定 -->
+                    <div class="points-preview">
+                        <div class="points-title">🎁 獲得予定ポイント</div>
+                        <div class="points-amount" id="total-points">150</div>
+                        <div class="points-breakdown" id="points-breakdown">
+                            基本投稿: 100P + 写真投稿: 50P = 150P<br>
+                            ※高品質レビューの場合、追加ボーナスがつく場合があります
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ナビゲーション -->
+                <div class="form-navigation">
+                    <button type="button" class="btn-nav btn-prev" id="prev-btn" style="display: none;">
+                        <i class="fas fa-chevron-left"></i> 前へ
+                    </button>
+                    
+                    <div style="flex: 1;"></div>
+                    
+                    <button type="button" class="btn-nav btn-next" id="next-btn">
+                        次へ <i class="fas fa-chevron-right"></i>
+                    </button>
+                    
+                    <button type="submit" class="btn-nav btn-submit" id="submit-btn" style="display: none;">
+                        <i class="fas fa-paper-plane"></i> 口コミを投稿する
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- フッター -->
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>🌊 Jiji会員システム</h3>
+                    <p>口コミでつながる、ダイビングコミュニティ</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>会員サービス</h3>
+                    <ul>
+                        <li><a href="/member">マイページ</a></li>
+                        <li><a href="/member/review-post">口コミ投稿</a></li>
+                        <li><a href="/member/points">ポイント管理</a></li>
+                        <li><a href="/member/settings">設定</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>サポート</h3>
+                    <ul>
+                        <li><a href="https://line.me/ti/p/@2007331165" target="_blank">LINE Bot相談</a></li>
+                        <li><a href="/contact">お問い合わせ</a></li>
+                        <li><a href="/help">ヘルプ</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 Jiji会員システム - 口コミ重視ダイビング支援</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // フォーム状態管理
+        const formState = {
+            currentStep: 1,
+            totalSteps: 5,
+            data: {},
+            uploadedPhotos: [],
+            uploadedVideos: []
+        };
+
+        // DOM要素
+        const stepIndicators = document.querySelectorAll('[id^="step-indicator-"]');
+        const formSteps = document.querySelectorAll('.form-step');
+        const progressBar = document.getElementById('progress-bar');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const submitBtn = document.getElementById('submit-btn');
+
+        // 初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            setupEventListeners();
+            updateUI();
+            setupFileUpload();
+            setupCharCounters();
+            setupStarRatings();
+        });
+
+        // イベントリスナー設定
+        function setupEventListeners() {
+            // ナビゲーションボタン
+            prevBtn.addEventListener('click', previousStep);
+            nextBtn.addEventListener('click', nextStep);
+            submitBtn.addEventListener('click', submitReview);
+
+            // エリアタブ
+            document.querySelectorAll('.area-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    selectArea(this.dataset.area);
+                });
+            });
+
+            // ショップ検索
+            document.getElementById('shop-search').addEventListener('input', searchShops);
+
+            // ショップ選択
+            document.querySelectorAll('input[name="selected-shop"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    if (this.checked) {
+                        formState.data.selectedShop = this.value;
+                        updateUI();
+                    }
+                });
+            });
+        }
+
+        // UI更新
+        function updateUI() {
+            // ステップインジケーター更新
+            stepIndicators.forEach((indicator, index) => {
+                indicator.classList.toggle('active', index + 1 === formState.currentStep);
+            });
+
+            // フォームステップ表示
+            formSteps.forEach((step, index) => {
+                step.classList.toggle('active', index + 1 === formState.currentStep);
+            });
+
+            // プログレスバー更新
+            const progress = (formState.currentStep / formState.totalSteps) * 100;
+            progressBar.style.width = `${progress}%`;
+
+            // ナビゲーションボタン表示制御
+            prevBtn.style.display = formState.currentStep === 1 ? 'none' : 'flex';
+            nextBtn.style.display = formState.currentStep === formState.totalSteps ? 'none' : 'flex';
+            submitBtn.style.display = formState.currentStep === formState.totalSteps ? 'flex' : 'none';
+        }
+
+        // 次のステップ
+        function nextStep() {
+            if (validateCurrentStep()) {
+                formState.currentStep++;
+                updateUI();
+                scrollToTop();
+            }
+        }
+
+        // 前のステップ
+        function previousStep() {
+            formState.currentStep--;
+            updateUI();
+            scrollToTop();
+        }
+
+        // 現在のステップのバリデーション
+        function validateCurrentStep() {
+            switch (formState.currentStep) {
+                case 1:
+                    if (!formState.data.selectedShop) {
+                        alert('ダイビングショップを選択してください。');
+                        return false;
+                    }
+                    break;
+                case 2:
+                    const requiredFields = ['experience-date', 'time-slot', 'course-type', 'participants', 'weather', 'sea-condition'];
+                    for (const field of requiredFields) {
+                        if (!document.getElementById(field).value) {
+                            alert('必須項目をすべて入力してください。');
+                            return false;
+                        }
+                    }
+                    break;
+                case 3:
+                    if (!validateRatings()) {
+                        alert('すべての評価項目に星評価をつけてください。');
+                        return false;
+                    }
+                    break;
+                case 4:
+                    if (!document.getElementById('good-points').value.trim()) {
+                        alert('「良かった点・印象的だった体験」は必須入力です。');
+                        return false;
+                    }
+                    break;
+            }
+            return true;
+        }
+
+        // 評価バリデーション
+        function validateRatings() {
+            const ratingGroups = document.querySelectorAll('.star-rating');
+            for (const group of ratingGroups) {
+                if (!group.dataset.selectedValue) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        // エリア選択
+        function selectArea(area) {
+            document.querySelectorAll('.area-tab').forEach(tab => {
+                tab.classList.toggle('selected', tab.dataset.area === area);
+            });
+            
+            document.querySelectorAll('.shop-list').forEach(list => {
+                list.classList.toggle('active', list.id === `shops-${area}`);
+            });
+        }
+
+        // ショップ検索
+        function searchShops(event) {
+            const query = event.target.value.toLowerCase();
+            const activeShopList = document.querySelector('.shop-list.active');
+            const shopItems = activeShopList.querySelectorAll('.shop-item');
+
+            shopItems.forEach(item => {
+                const shopName = item.querySelector('h4').textContent.toLowerCase();
+                const isMatch = shopName.includes(query);
+                item.style.display = isMatch ? 'block' : 'none';
+            });
+        }
+
+        // 星評価設定
+        function setupStarRatings() {
+            document.querySelectorAll('.star-rating').forEach(rating => {
+                const stars = rating.querySelectorAll('.star');
+                
+                stars.forEach(star => {
+                    star.addEventListener('click', function() {
+                        const value = parseInt(this.dataset.value);
+                        rating.dataset.selectedValue = value;
+                        
+                        stars.forEach((s, index) => {
+                            s.classList.toggle('active', index < value);
+                        });
+                    });
+                    
+                    star.addEventListener('mouseenter', function() {
+                        const value = parseInt(this.dataset.value);
+                        stars.forEach((s, index) => {
+                            s.style.color = index < value ? '#fbbf24' : '#d1d5db';
+                        });
+                    });
+                });
+                
+                rating.addEventListener('mouseleave', function() {
+                    const selectedValue = parseInt(rating.dataset.selectedValue) || 0;
+                    stars.forEach((s, index) => {
+                        s.style.color = index < selectedValue ? '#fbbf24' : '#d1d5db';
+                    });
+                });
+            });
+        }
+
+        // 文字カウンター設定
+        function setupCharCounters() {
+            const textareas = [
+                { id: 'good-points', counterId: 'good-points-count' },
+                { id: 'improvement-points', counterId: 'improvement-points-count' },
+                { id: 'advice', counterId: 'advice-count' },
+                { id: 'overall-message', counterId: 'overall-message-count' }
+            ];
+
+            textareas.forEach(({ id, counterId }) => {
+                const textarea = document.getElementById(id);
+                const counter = document.getElementById(counterId);
+                
+                if (textarea && counter) {
+                    textarea.addEventListener('input', function() {
+                        counter.textContent = this.value.length;
+                    });
+                }
+            });
+        }
+
+        // ファイルアップロード設定
+        function setupFileUpload() {
+            // 写真アップロード
+            setupSingleFileUpload('photo-upload-area', 'photo-input', 'uploaded-photos', 'image', 10);
+            
+            // 動画アップロード
+            setupSingleFileUpload('video-upload-area', 'video-input', 'uploaded-videos', 'video', 1);
+        }
+
+        function setupSingleFileUpload(areaId, inputId, containerId, type, maxFiles) {
+            const uploadArea = document.getElementById(areaId);
+            const fileInput = document.getElementById(inputId);
+            const container = document.getElementById(containerId);
+
+            uploadArea.addEventListener('click', () => fileInput.click());
+            uploadArea.addEventListener('dragover', handleDragOver);
+            uploadArea.addEventListener('drop', (e) => handleDrop(e, type, maxFiles, container));
+            
+            fileInput.addEventListener('change', (e) => handleFileSelect(e, type, maxFiles, container));
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('dragover');
+        }
+
+        function handleDrop(e, type, maxFiles, container) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('dragover');
+            
+            const files = Array.from(e.dataTransfer.files);
+            processFiles(files, type, maxFiles, container);
+        }
+
+        function handleFileSelect(e, type, maxFiles, container) {
+            const files = Array.from(e.target.files);
+            processFiles(files, type, maxFiles, container);
+        }
+
+        function processFiles(files, type, maxFiles, container) {
+            const currentCount = container.children.length;
+            const allowedCount = Math.min(files.length, maxFiles - currentCount);
+            
+            for (let i = 0; i < allowedCount; i++) {
+                const file = files[i];
+                
+                if (type === 'image' && file.type.startsWith('image/')) {
+                    addFilePreview(file, container, 'image');
+                } else if (type === 'video' && file.type.startsWith('video/')) {
+                    addFilePreview(file, container, 'video');
+                }
+            }
+            
+            updatePointsPreview();
+        }
+
+        function addFilePreview(file, container, type) {
+            const fileDiv = document.createElement('div');
+            fileDiv.className = 'uploaded-file';
+            
+            const preview = document.createElement(type === 'image' ? 'img' : 'video');
+            preview.className = 'file-preview';
+            
+            if (type === 'image') {
+                preview.src = URL.createObjectURL(file);
+                preview.alt = file.name;
+            } else {
+                preview.src = URL.createObjectURL(file);
+                preview.controls = true;
+            }
+            
+            const removeBtn = document.createElement('button');
+            removeBtn.className = 'file-remove';
+            removeBtn.innerHTML = '×';
+            removeBtn.addEventListener('click', () => {
+                container.removeChild(fileDiv);
+                updatePointsPreview();
+            });
+            
+            fileDiv.appendChild(preview);
+            fileDiv.appendChild(removeBtn);
+            container.appendChild(fileDiv);
+        }
+
+        // ポイント計算更新
+        function updatePointsPreview() {
+            const photoCount = document.getElementById('uploaded-photos').children.length;
+            const videoCount = document.getElementById('uploaded-videos').children.length;
+            
+            let points = 100; // 基本投稿
+            let breakdown = '基本投稿: 100P';
+            
+            if (photoCount > 0) {
+                points += 50;
+                breakdown += ' + 写真投稿: 50P';
+            }
+            
+            if (videoCount > 0) {
+                points += 100;
+                breakdown += ' + 動画投稿: 100P';
+            }
+            
+            document.getElementById('total-points').textContent = points;
+            document.getElementById('points-breakdown').innerHTML = 
+                breakdown + ` = ${points}P<br>※高品質レビューの場合、追加ボーナスがつく場合があります`;
+        }
+
+        // フォーム送信
+        function submitReview() {
+            if (!validateCurrentStep()) return;
+            
+            // フォームデータ収集
+            const reviewData = collectFormData();
+            
+            // 送信処理（実際の実装ではAPIに送信）
+            console.log('送信データ:', reviewData);
+            
+            // 成功メッセージ表示
+            alert('口コミの投稿が完了しました！ポイントが付与されました。ありがとうございます！');
+            
+            // マイページにリダイレクト
+            window.location.href = '/member';
+        }
+
+        function collectFormData() {
+            return {
+                shopId: formState.data.selectedShop,
+                experienceDate: document.getElementById('experience-date').value,
+                timeSlot: document.getElementById('time-slot').value,
+                courseType: document.getElementById('course-type').value,
+                participants: document.getElementById('participants').value,
+                weather: document.getElementById('weather').value,
+                seaCondition: document.getElementById('sea-condition').value,
+                divePoints: document.getElementById('dive-points').value,
+                ratings: collectRatings(),
+                goodPoints: document.getElementById('good-points').value,
+                improvementPoints: document.getElementById('improvement-points').value,
+                advice: document.getElementById('advice').value,
+                overallMessage: document.getElementById('overall-message').value,
+                photoCount: document.getElementById('uploaded-photos').children.length,
+                videoCount: document.getElementById('uploaded-videos').children.length
+            };
+        }
+
+        function collectRatings() {
+            const ratings = {};
+            document.querySelectorAll('.star-rating').forEach(rating => {
+                const key = rating.dataset.rating;
+                const value = parseInt(rating.dataset.selectedValue) || 0;
+                ratings[key] = value;
+            });
+            return ratings;
+        }
+
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>

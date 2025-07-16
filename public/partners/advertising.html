@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>広告管理システム | Jiji Partners</title>
+    <meta name="description" content="Jiji Partners広告管理システム。プレミアム枠、バナー広告、検索上位表示で集客を最大化。ROI分析と効果測定機能付き。">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="../app/v28-styles.css">
+    
+    <style>
+        .ads-header {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            color: white;
+            padding: 80px 0 60px;
+        }
+        
+        .current-plan {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .plan-badge {
+            width: 80px;
+            height: 80px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            border: 3px solid rgba(255,255,255,0.3);
+        }
+        
+        .plan-details h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        
+        .plan-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .ads-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 12px;
+        }
+        
+        .stat-number {
+            font-size: 1.8rem;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .ads-content {
+            padding: 80px 0;
+            background: #f8f9ff;
+        }
+        
+        .ads-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .ads-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .ads-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f1f5f9;
+        }
+        
+        .card-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #1f2937;
+        }
+        
+        .card-icon {
+            font-size: 1.5rem;
+            color: #8b5cf6;
+        }
+        
+        .card-action {
+            color: #8b5cf6;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: color 0.3s ease;
+        }
+        
+        .card-action:hover {
+            color: #7c3aed;
+        }
+        
+        /* プレミアム枠カード */
+        .premium-ads-card {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            border: 2px solid #f59e0b;
+        }
+        
+        .ad-type {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 15px;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            transition: background 0.3s ease;
+        }
+        
+        .ad-type:hover {
+            background: #f1f5f9;
+        }
+        
+        .ad-info h4 {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+        
+        .ad-description {
+            color: #6b7280;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            margin-bottom: 8px;
+        }
+        
+        .ad-metrics {
+            display: flex;
+            gap: 15px;
+            font-size: 0.8rem;
+            color: #8b5cf6;
+        }
+        
+        .ad-price {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .price-amount {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #f59e0b;
+        }
+        
+        .price-unit {
+            font-size: 0.8rem;
+            color: #6b7280;
+        }
+        
+        .btn-advertise {
+            padding: 8px 16px;
+            background: #8b5cf6;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: background 0.3s ease;
+        }
+        
+        .btn-advertise:hover {
+            background: #7c3aed;
+        }
+        
+        .btn-advertise.active {
+            background: #10b981;
+        }
+        
+        /* 効果測定カード */
+        .performance-chart {
+            height: 200px;
+            background: #f8fafc;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6b7280;
+            margin-bottom: 20px;
+        }
+        
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .metric-row:last-child {
+            border-bottom: none;
+        }
+        
+        .metric-label {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+        
+        .metric-value {
+            font-weight: 600;
+            color: #1f2937;
+        }
+        
+        .metric-change {
+            font-size: 0.8rem;
+            margin-left: 8px;
+        }
+        
+        .change-positive {
+            color: #10b981;
+        }
+        
+        .change-negative {
+            color: #ef4444;
+        }
+        
+        /* バナー管理カード */
+        .banner-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .banner-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            transition: background 0.3s ease;
+        }
+        
+        .banner-item:hover {
+            background: #f9fafb;
+        }
+        
+        .banner-preview {
+            width: 80px;
+            height: 60px;
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .banner-info {
+            flex: 1;
+        }
+        
+        .banner-title {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 5px;
+        }
+        
+        .banner-details {
+            color: #6b7280;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+        
+        .banner-status {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        
+        .status-active {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .status-inactive {
+            background: #f3f4f6;
+            color: #374151;
+        }
+        
+        .banner-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .btn-banner {
+            padding: 6px 12px;
+            border: 1px solid #d1d5db;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-banner:hover {
+            background: #f9fafb;
+        }
+        
+        /* ROI分析カード */
+        .roi-summary {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .roi-metric {
+            text-align: center;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 8px;
+        }
+        
+        .roi-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #8b5cf6;
+            margin-bottom: 5px;
+        }
+        
+        .roi-label {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+        
+        .campaign-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .campaign-item {
+            padding: 15px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .campaign-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .campaign-name {
+            font-weight: 600;
+            color: #1f2937;
+        }
+        
+        .campaign-roi {
+            font-weight: 700;
+            color: #10b981;
+            font-size: 0.9rem;
+        }
+        
+        .campaign-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            font-size: 0.8rem;
+            color: #6b7280;
+        }
+        
+        @media (max-width: 768px) {
+            .current-plan {
+                flex-direction: column;
+                text-align: center;
+                gap: 20px;
+            }
+            
+            .ads-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .ad-type {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+            
+            .roi-summary {
+                grid-template-columns: 1fr;
+            }
+            
+            .campaign-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ヘッダー -->
+    <header class="main-header">
+        <nav class="main-nav">
+            <a href="/" class="main-logo">
+                <h1>🌊 Jiji</h1>
+                <span>Partners</span>
+            </a>
+            
+            <ul class="main-nav-menu">
+                <li><a href="/partners/dashboard">ダッシュボード</a></li>
+                <li><a href="/partners/advertising" class="active">広告管理</a></li>
+                <li><a href="/partners/analytics">分析レポート</a></li>
+                <li><a href="/partners/reviews">口コミ管理</a></li>
+                <li><a href="/partners/bookings">予約管理</a></li>
+                <li><a href="/partners/settings">設定</a></li>
+            </ul>
+            
+            <div class="main-nav-buttons">
+                <a href="/partners/upgrade" class="btn btn-primary">
+                    <i class="fas fa-crown"></i> プランアップグレード
+                </a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- 広告管理ヘッダー -->
+    <section class="ads-header">
+        <div class="container">
+            <div class="current-plan">
+                <div class="plan-badge">
+                    👑
+                </div>
+                <div class="plan-details">
+                    <h1>広告管理システム</h1>
+                    <div class="plan-status">
+                        <i class="fas fa-star"></i>
+                        プレミアムプラン
+                    </div>
+                </div>
+            </div>
+            
+            <div class="ads-stats">
+                <div class="stat-item">
+                    <span class="stat-number">2,845</span>
+                    <span class="stat-label">今月の表示数</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">127</span>
+                    <span class="stat-label">クリック数</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">4.5%</span>
+                    <span class="stat-label">CTR</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">¥15,000</span>
+                    <span class="stat-label">今月の広告費</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">320%</span>
+                    <span class="stat-label">ROI</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 広告管理コンテンツ -->
+    <section class="ads-content">
+        <div class="container">
+            <h2 class="section-title">📈 広告キャンペーン管理</h2>
+            <p class="section-subtitle">
+                プレミアム枠、バナー広告、検索上位表示で集客を最大化
+            </p>
+            
+            <div class="ads-grid">
+                <!-- プレミアム枠広告 -->
+                <div class="ads-card premium-ads-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-crown card-icon"></i>
+                            プレミアム枠広告
+                        </div>
+                        <a href="/partners/advertising/premium" class="card-action">設定</a>
+                    </div>
+                    
+                    <div class="ad-type">
+                        <div class="ad-info">
+                            <h4>検索結果トップ表示</h4>
+                            <div class="ad-description">
+                                検索結果の最上位に固定表示。目立つバッジ付きで高い注目度を実現。
+                            </div>
+                            <div class="ad-metrics">
+                                <span>表示保証: 月1,000回以上</span>
+                                <span>CTR平均: 8.5%</span>
+                            </div>
+                        </div>
+                        <div class="ad-price">
+                            <div class="price-amount">¥8,000</div>
+                            <div class="price-unit">/ 月</div>
+                            <button class="btn-advertise active">適用中</button>
+                        </div>
+                    </div>
+                    
+                    <div class="ad-type">
+                        <div class="ad-info">
+                            <h4>おすすめショップ枠</h4>
+                            <div class="ad-description">
+                                ホームページのおすすめセクションに優先表示。新規ユーザーへの露出増加。
+                            </div>
+                            <div class="ad-metrics">
+                                <span>表示保証: 月500回以上</span>
+                                <span>CTR平均: 6.2%</span>
+                            </div>
+                        </div>
+                        <div class="ad-price">
+                            <div class="price-amount">¥5,000</div>
+                            <div class="price-unit">/ 月</div>
+                            <button class="btn-advertise">申し込み</button>
+                        </div>
+                    </div>
+                    
+                    <div class="ad-type">
+                        <div class="ad-info">
+                            <h4>エリア特集ページ</h4>
+                            <div class="ad-description">
+                                石垣島・宮古島などエリア特集ページでの優先表示。地域検索で有利。
+                            </div>
+                            <div class="ad-metrics">
+                                <span>表示保証: 月300回以上</span>
+                                <span>CTR平均: 7.1%</span>
+                            </div>
+                        </div>
+                        <div class="ad-price">
+                            <div class="price-amount">¥3,000</div>
+                            <div class="price-unit">/ 月</div>
+                            <button class="btn-advertise">申し込み</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- バナー広告管理 -->
+                <div class="ads-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-image card-icon"></i>
+                            バナー広告管理
+                        </div>
+                        <a href="/partners/advertising/banners" class="card-action">新規作成</a>
+                    </div>
+                    
+                    <div class="banner-list">
+                        <div class="banner-item">
+                            <div class="banner-preview">
+                                サマー<br>キャンペーン
+                            </div>
+                            <div class="banner-info">
+                                <div class="banner-title">夏季限定キャンペーン</div>
+                                <div class="banner-details">サイズ: 728x90 | 期間: 7/1-8/31</div>
+                                <span class="banner-status status-active">配信中</span>
+                            </div>
+                            <div class="banner-actions">
+                                <button class="btn-banner">編集</button>
+                                <button class="btn-banner">停止</button>
+                            </div>
+                        </div>
+                        
+                        <div class="banner-item">
+                            <div class="banner-preview">
+                                初心者<br>歓迎
+                            </div>
+                            <div class="banner-info">
+                                <div class="banner-title">初心者向けコース</div>
+                                <div class="banner-details">サイズ: 300x250 | 期間: 通年</div>
+                                <span class="banner-status status-pending">審査中</span>
+                            </div>
+                            <div class="banner-actions">
+                                <button class="btn-banner">編集</button>
+                                <button class="btn-banner">削除</button>
+                            </div>
+                        </div>
+                        
+                        <div class="banner-item">
+                            <div class="banner-preview">
+                                春の<br>特別割引
+                            </div>
+                            <div class="banner-info">
+                                <div class="banner-title">春季キャンペーン</div>
+                                <div class="banner-details">サイズ: 728x90 | 期間: 終了</div>
+                                <span class="banner-status status-inactive">停止中</span>
+                            </div>
+                            <div class="banner-actions">
+                                <button class="btn-banner">再開</button>
+                                <button class="btn-banner">複製</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 効果測定レポート -->
+                <div class="ads-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-chart-line card-icon"></i>
+                            効果測定レポート
+                        </div>
+                        <a href="/partners/advertising/reports" class="card-action">詳細レポート</a>
+                    </div>
+                    
+                    <div class="performance-chart">
+                        📊 過去30日間のクリック数推移グラフ<br>
+                        <small>（実装時はChart.jsで可視化）</small>
+                    </div>
+                    
+                    <div class="metric-row">
+                        <span class="metric-label">表示回数（インプレッション）</span>
+                        <span class="metric-value">
+                            2,845
+                            <span class="metric-change change-positive">+12.5%</span>
+                        </span>
+                    </div>
+                    
+                    <div class="metric-row">
+                        <span class="metric-label">クリック数</span>
+                        <span class="metric-value">
+                            127
+                            <span class="metric-change change-positive">+8.3%</span>
+                        </span>
+                    </div>
+                    
+                    <div class="metric-row">
+                        <span class="metric-label">クリック率（CTR）</span>
+                        <span class="metric-value">
+                            4.46%
+                            <span class="metric-change change-negative">-2.1%</span>
+                        </span>
+                    </div>
+                    
+                    <div class="metric-row">
+                        <span class="metric-label">コンバージョン数</span>
+                        <span class="metric-value">
+                            23
+                            <span class="metric-change change-positive">+15.0%</span>
+                        </span>
+                    </div>
+                    
+                    <div class="metric-row">
+                        <span class="metric-label">コンバージョン率</span>
+                        <span class="metric-value">
+                            18.1%
+                            <span class="metric-change change-positive">+5.8%</span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- ROI分析 -->
+                <div class="ads-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-calculator card-icon"></i>
+                            ROI分析
+                        </div>
+                        <a href="/partners/advertising/roi" class="card-action">詳細分析</a>
+                    </div>
+                    
+                    <div class="roi-summary">
+                        <div class="roi-metric">
+                            <div class="roi-value">320%</div>
+                            <div class="roi-label">総合ROI</div>
+                        </div>
+                        <div class="roi-metric">
+                            <div class="roi-value">¥48,000</div>
+                            <div class="roi-label">獲得売上</div>
+                        </div>
+                    </div>
+                    
+                    <div class="campaign-list">
+                        <div class="campaign-item">
+                            <div class="campaign-header">
+                                <span class="campaign-name">検索結果トップ表示</span>
+                                <span class="campaign-roi">ROI: 385%</span>
+                            </div>
+                            <div class="campaign-stats">
+                                <span>広告費: ¥8,000</span>
+                                <span>売上: ¥30,800</span>
+                                <span>利益: ¥22,800</span>
+                            </div>
+                        </div>
+                        
+                        <div class="campaign-item">
+                            <div class="campaign-header">
+                                <span class="campaign-name">夏季バナーキャンペーン</span>
+                                <span class="campaign-roi">ROI: 245%</span>
+                            </div>
+                            <div class="campaign-stats">
+                                <span>広告費: ¥5,000</span>
+                                <span>売上: ¥12,250</span>
+                                <span>利益: ¥7,250</span>
+                            </div>
+                        </div>
+                        
+                        <div class="campaign-item">
+                            <div class="campaign-header">
+                                <span class="campaign-name">エリア特集ページ</span>
+                                <span class="campaign-roi">ROI: 180%</span>
+                            </div>
+                            <div class="campaign-stats">
+                                <span>広告費: ¥3,000</span>
+                                <span>売上: ¥5,400</span>
+                                <span>利益: ¥2,400</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ターゲティング設定 -->
+                <div class="ads-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-bullseye card-icon"></i>
+                            ターゲティング設定
+                        </div>
+                        <a href="/partners/advertising/targeting" class="card-action">詳細設定</a>
+                    </div>
+                    
+                    <div class="metric-row">
+                        <span class="metric-label">地域ターゲティング</span>
+                        <span class="metric-value">石垣島周辺、関東圏</span>
+                    </div>
+                    
+                    <div class="metric-row">
+                        <span class="metric-label">年齢層</span>
+                        <span class="metric-value">25-45歳（メイン）</span>
+                    </div>
+                    
+                    <div class="metric-row">
+                        <span class="metric-label">興味・関心</span>
+                        <span class="metric-value">ダイビング、マリンスポーツ</span>
+                    </div>
+                    
+                    <div class="metric-row">
+                        <span class="metric-label">経験レベル</span>
+                        <span class="metric-value">初心者〜中級者</span>
+                    </div>
+                    
+                    <div class="metric-row">
+                        <span class="metric-label">予算帯</span>
+                        <span class="metric-value">¥10,000-50,000</span>
+                    </div>
+                </div>
+
+                <!-- 競合分析 -->
+                <div class="ads-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-chart-bar card-icon"></i>
+                            競合分析
+                        </div>
+                        <a href="/partners/advertising/competitors" class="card-action">詳細分析</a>
+                    </div>
+                    
+                    <div class="metric-row">
+                        <span class="metric-label">エリア内順位</span>
+                        <span class="metric-value">
+                            #2位
+                            <span class="metric-change change-positive">↑1</span>
+                        </span>
+                    </div>
+                    
+                    <div class="metric-row">
+                        <span class="metric-label">検索表示シェア</span>
+                        <span class="metric-value">
+                            23.5%
+                            <span class="metric-change change-positive">+3.2%</span>
+                        </span>
+                    </div>
+                    
+                    <div class="metric-row">
+                        <span class="metric-label">平均クリック単価</span>
+                        <span class="metric-value">¥118</span>
+                    </div>
+                    
+                    <div class="metric-row">
+                        <span class="metric-label">競合比較CTR</span>
+                        <span class="metric-value">
+                            +1.2%高い
+                            <span class="metric-change change-positive">優秀</span>
+                        </span>
+                    </div>
+                    
+                    <div class="metric-row">
+                        <span class="metric-label">推奨施策</span>
+                        <span class="metric-value">バナー素材の最適化</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- フッター -->
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>🌊 Jiji Partners</h3>
+                    <p>ダイビングショップの成長をサポート</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>広告サービス</h3>
+                    <ul>
+                        <li><a href="/partners/advertising/premium">プレミアム枠</a></li>
+                        <li><a href="/partners/advertising/banners">バナー広告</a></li>
+                        <li><a href="/partners/advertising/targeting">ターゲティング</a></li>
+                        <li><a href="/partners/advertising/analytics">効果測定</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>分析・レポート</h3>
+                    <ul>
+                        <li><a href="/partners/advertising/reports">広告レポート</a></li>
+                        <li><a href="/partners/advertising/roi">ROI分析</a></li>
+                        <li><a href="/partners/advertising/competitors">競合分析</a></li>
+                        <li><a href="/partners/advertising/recommendations">改善提案</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>サポート</h3>
+                    <ul>
+                        <li><a href="/partners/support">パートナーサポート</a></li>
+                        <li><a href="/partners/help">ヘルプセンター</a></li>
+                        <li><a href="/partners/contact">お問い合わせ</a></li>
+                        <li><a href="/partners/legal">利用規約</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 Jiji Partners - ダイビングショップ広告管理システム</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 広告管理ページ初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 統計数字アニメーション
+            animateStats();
+            
+            // 広告ボタンのクリックハンドラ
+            setupAdvertiseButtons();
+            
+            // バナー管理機能
+            setupBannerManagement();
+            
+            // リアルタイムデータ更新
+            // setInterval(updateAdMetrics, 300000); // 5分ごと
+        });
+
+        // 統計数字アニメーション
+        function animateStats() {
+            const statNumbers = document.querySelectorAll('.stat-number');
+            
+            statNumbers.forEach(stat => {
+                const text = stat.textContent;
+                const hasPercent = text.includes('%');
+                const hasCurrency = text.includes('¥');
+                const hasComma = text.includes(',');
+                
+                let target;
+                if (hasPercent) {
+                    target = parseFloat(text.replace('%', ''));
+                } else if (hasCurrency) {
+                    target = parseInt(text.replace('¥', '').replace(',', ''));
+                } else if (hasComma) {
+                    target = parseInt(text.replace(',', ''));
+                } else {
+                    target = parseInt(text);
+                }
+                
+                animateNumber(stat, target, 1500, hasPercent, hasCurrency, hasComma);
+            });
+        }
+
+        // 数字アニメーション
+        function animateNumber(element, target, duration, hasPercent = false, hasCurrency = false, hasComma = false) {
+            const start = 0;
+            const startTime = performance.now();
+            
+            function update(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                const easeOut = 1 - Math.pow(1 - progress, 3);
+                const current = Math.round(start + (target - start) * easeOut);
+                
+                let displayValue = current.toString();
+                
+                if (hasComma && current > 999) {
+                    displayValue = current.toLocaleString();
+                }
+                
+                if (hasCurrency) {
+                    displayValue = '¥' + displayValue;
+                }
+                
+                if (hasPercent) {
+                    displayValue = (current / 10).toFixed(1) + '%';
+                }
+                
+                element.textContent = displayValue;
+                
+                if (progress < 1) {
+                    requestAnimationFrame(update);
+                }
+            }
+            
+            requestAnimationFrame(update);
+        }
+
+        // 広告ボタンの設定
+        function setupAdvertiseButtons() {
+            document.querySelectorAll('.btn-advertise').forEach(button => {
+                if (!button.classList.contains('active')) {
+                    button.addEventListener('click', function() {
+                        const adType = this.closest('.ad-type').querySelector('h4').textContent;
+                        
+                        if (confirm(`${adType}の広告を開始しますか？`)) {
+                            this.textContent = '処理中...';
+                            this.disabled = true;
+                            
+                            // 実際の実装ではAPIコール
+                            setTimeout(() => {
+                                this.textContent = '適用中';
+                                this.classList.add('active');
+                                this.disabled = false;
+                                
+                                // 成功メッセージ
+                                showNotification(`${adType}の広告配信を開始しました。`, 'success');
+                            }, 2000);
+                        }
+                    });
+                }
+            });
+        }
+
+        // バナー管理機能
+        function setupBannerManagement() {
+            document.querySelectorAll('.btn-banner').forEach(button => {
+                button.addEventListener('click', function() {
+                    const action = this.textContent;
+                    const bannerName = this.closest('.banner-item').querySelector('.banner-title').textContent;
+                    
+                    switch(action) {
+                        case '編集':
+                            window.location.href = `/partners/advertising/banners/edit?banner=${encodeURIComponent(bannerName)}`;
+                            break;
+                        case '停止':
+                            if (confirm(`${bannerName}の配信を停止しますか？`)) {
+                                this.closest('.banner-item').querySelector('.banner-status').textContent = '停止中';
+                                this.closest('.banner-item').querySelector('.banner-status').className = 'banner-status status-inactive';
+                                showNotification(`${bannerName}の配信を停止しました。`, 'info');
+                            }
+                            break;
+                        case '再開':
+                            if (confirm(`${bannerName}の配信を再開しますか？`)) {
+                                this.closest('.banner-item').querySelector('.banner-status').textContent = '配信中';
+                                this.closest('.banner-item').querySelector('.banner-status').className = 'banner-status status-active';
+                                showNotification(`${bannerName}の配信を再開しました。`, 'success');
+                            }
+                            break;
+                        case '削除':
+                            if (confirm(`${bannerName}を削除しますか？この操作は取り消せません。`)) {
+                                this.closest('.banner-item').remove();
+                                showNotification(`${bannerName}を削除しました。`, 'warning');
+                            }
+                            break;
+                        case '複製':
+                            showNotification(`${bannerName}を複製しました。編集ページで設定を確認してください。`, 'success');
+                            break;
+                    }
+                });
+            });
+        }
+
+        // 広告メトリクス更新
+        function updateAdMetrics() {
+            console.log('広告メトリクスを更新中...');
+            // 実際の実装ではAPIから最新データを取得
+        }
+
+        // 通知表示
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.textContent = message;
+            
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 20px;
+                background: ${type === 'success' ? '#10b981' : type === 'warning' ? '#f59e0b' : type === 'error' ? '#ef4444' : '#3b82f6'};
+                color: white;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 1000;
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // アニメーション
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+            
+            // 自動削除
+            setTimeout(() => {
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, 3000);
+        }
+
+        // カードホバーエフェクト
+        document.querySelectorAll('.ads-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-5px)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
+        });
+
+        // ROI計算機能
+        function calculateROI(cost, revenue) {
+            return ((revenue - cost) / cost * 100).toFixed(1);
+        }
+
+        // 広告効果予測
+        function predictAdPerformance(budget, targetAudience, adType) {
+            // 簡易的な予測ロジック
+            const baseCTR = adType === 'premium' ? 0.085 : 0.045;
+            const estimatedImpressions = budget * 10;
+            const estimatedClicks = estimatedImpressions * baseCTR;
+            const estimatedConversions = estimatedClicks * 0.18;
+            
+            return {
+                impressions: Math.round(estimatedImpressions),
+                clicks: Math.round(estimatedClicks),
+                conversions: Math.round(estimatedConversions),
+                ctr: (baseCTR * 100).toFixed(1) + '%'
+            };
+        }
+    </script>
+</body>
+</html>

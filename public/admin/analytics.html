@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>データ分析システム | Jiji Analytics</title>
+    <meta name="description" content="Jijiプラットフォームの総合データ分析システム。ユーザー行動、ショップパフォーマンス、収益分析を統合管理。">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="../app/v28-styles.css">
+    
+    <style>
+        .analytics-header {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: white;
+            padding: 80px 0 60px;
+        }
+        
+        .analytics-overview {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .overview-icon {
+            width: 80px;
+            height: 80px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            border: 3px solid rgba(255,255,255,0.3);
+        }
+        
+        .overview-details h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        
+        .overview-subtitle {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+        
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+        
+        .kpi-item {
+            text-align: center;
+            background: rgba(255,255,255,0.1);
+            padding: 25px;
+            border-radius: 12px;
+        }
+        
+        .kpi-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 8px;
+        }
+        
+        .kpi-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+        
+        .kpi-change {
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+        
+        .change-positive { color: #10b981; }
+        .change-negative { color: #ef4444; }
+        .change-neutral { color: #94a3b8; }
+        
+        .analytics-content {
+            padding: 80px 0;
+            background: #f8fafc;
+        }
+        
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .analytics-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .analytics-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f1f5f9;
+        }
+        
+        .card-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #1f2937;
+        }
+        
+        .card-icon {
+            font-size: 1.5rem;
+            color: #0f172a;
+        }
+        
+        .time-filter {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .filter-btn {
+            padding: 6px 12px;
+            border: 1px solid #d1d5db;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+        }
+        
+        .filter-btn.active {
+            background: #0f172a;
+            color: white;
+            border-color: #0f172a;
+        }
+        
+        .filter-btn:hover {
+            background: #f9fafb;
+        }
+        
+        /* チャートエリア */
+        .chart-container {
+            height: 300px;
+            background: #f8fafc;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6b7280;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .chart-placeholder {
+            text-align: center;
+        }
+        
+        /* メトリクステーブル */
+        .metrics-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .metrics-table th,
+        .metrics-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .metrics-table th {
+            background: #f9fafb;
+            font-weight: 600;
+            color: #374151;
+            font-size: 0.9rem;
+        }
+        
+        .metrics-table td {
+            font-size: 0.9rem;
+            color: #6b7280;
+        }
+        
+        .metric-value {
+            font-weight: 600;
+            color: #1f2937;
+        }
+        
+        .trend-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.8rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        
+        .trend-up {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        .trend-down {
+            background: #fecaca;
+            color: #dc2626;
+        }
+        
+        .trend-stable {
+            background: #f3f4f6;
+            color: #374151;
+        }
+        
+        /* 大型チャートカード */
+        .chart-card-large {
+            grid-column: 1 / -1;
+        }
+        
+        .chart-large {
+            height: 400px;
+        }
+        
+        /* 分析洞察カード */
+        .insights-card {
+            background: linear-gradient(135deg, #ede9fe, #ddd6fe);
+            border: 2px solid #8b5cf6;
+        }
+        
+        .insight-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .insight-item {
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid #8b5cf6;
+        }
+        
+        .insight-type {
+            font-size: 0.8rem;
+            color: #8b5cf6;
+            font-weight: 600;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+        
+        .insight-title {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+        
+        .insight-description {
+            color: #6b7280;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            margin-bottom: 8px;
+        }
+        
+        .insight-action {
+            font-size: 0.8rem;
+            color: #7c3aed;
+            font-weight: 500;
+        }
+        
+        /* ユーザーセグメント分析 */
+        .segment-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .segment-item {
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .segment-name {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+        
+        .segment-percentage {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 5px;
+        }
+        
+        .segment-count {
+            font-size: 0.8rem;
+            color: #6b7280;
+        }
+        
+        /* 地域分析 */
+        .region-list {
+            max-height: 250px;
+            overflow-y: auto;
+        }
+        
+        .region-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .region-item:last-child {
+            border-bottom: none;
+        }
+        
+        .region-name {
+            font-weight: 500;
+            color: #1f2937;
+        }
+        
+        .region-stats {
+            display: flex;
+            gap: 15px;
+            font-size: 0.9rem;
+            color: #6b7280;
+        }
+        
+        /* 収益分析 */
+        .revenue-breakdown {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .revenue-item {
+            text-align: center;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 8px;
+        }
+        
+        .revenue-amount {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 5px;
+        }
+        
+        .revenue-label {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+        
+        /* レスポンシブデザイン */
+        @media (max-width: 768px) {
+            .analytics-overview {
+                flex-direction: column;
+                text-align: center;
+                gap: 20px;
+            }
+            
+            .kpi-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+            }
+            
+            .analytics-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .chart-card-large {
+                grid-column: 1;
+            }
+            
+            .time-filter {
+                flex-wrap: wrap;
+            }
+            
+            .revenue-breakdown {
+                grid-template-columns: 1fr;
+            }
+            
+            .segment-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ヘッダー -->
+    <header class="main-header">
+        <nav class="main-nav">
+            <a href="/" class="main-logo">
+                <h1>🌊 Jiji</h1>
+                <span>Analytics</span>
+            </a>
+            
+            <ul class="main-nav-menu">
+                <li><a href="/admin/dashboard">管理ダッシュボード</a></li>
+                <li><a href="/admin/analytics" class="active">データ分析</a></li>
+                <li><a href="/admin/users">ユーザー管理</a></li>
+                <li><a href="/admin/shops">ショップ管理</a></li>
+                <li><a href="/admin/reports">レポート</a></li>
+                <li><a href="/admin/settings">システム設定</a></li>
+            </ul>
+            
+            <div class="main-nav-buttons">
+                <a href="/admin/export" class="btn btn-primary">
+                    <i class="fas fa-download"></i> データエクスポート
+                </a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- データ分析ヘッダー -->
+    <section class="analytics-header">
+        <div class="container">
+            <div class="analytics-overview">
+                <div class="overview-icon">
+                    📊
+                </div>
+                <div class="overview-details">
+                    <h1>データ分析システム</h1>
+                    <div class="overview-subtitle">
+                        プラットフォーム全体のパフォーマンスと成長指標を可視化
+                    </div>
+                </div>
+            </div>
+            
+            <div class="kpi-grid">
+                <div class="kpi-item">
+                    <span class="kpi-value">1,247</span>
+                    <div class="kpi-label">総ユーザー数</div>
+                    <div class="kpi-change change-positive">+12.5% vs 先月</div>
+                </div>
+                <div class="kpi-item">
+                    <span class="kpi-value">89</span>
+                    <div class="kpi-label">登録ショップ数</div>
+                    <div class="kpi-change change-positive">+5.9% vs 先月</div>
+                </div>
+                <div class="kpi-item">
+                    <span class="kpi-value">¥2.4M</span>
+                    <div class="kpi-label">月間総売上</div>
+                    <div class="kpi-change change-positive">+18.3% vs 先月</div>
+                </div>
+                <div class="kpi-item">
+                    <span class="kpi-value">524</span>
+                    <div class="kpi-label">月間口コミ数</div>
+                    <div class="kpi-change change-positive">+23.1% vs 先月</div>
+                </div>
+                <div class="kpi-item">
+                    <span class="kpi-value">73.2%</span>
+                    <div class="kpi-label">ユーザー満足度</div>
+                    <div class="kpi-change change-positive">+2.1% vs 先月</div>
+                </div>
+                <div class="kpi-item">
+                    <span class="kpi-value">4.8</span>
+                    <div class="kpi-label">平均評価スコア</div>
+                    <div class="kpi-change change-neutral">±0% vs 先月</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- データ分析コンテンツ -->
+    <section class="analytics-content">
+        <div class="container">
+            <h2 class="section-title">📈 詳細分析レポート</h2>
+            <p class="section-subtitle">
+                各種指標の詳細分析と改善施策の提案
+            </p>
+            
+            <div class="analytics-grid">
+                <!-- ユーザー成長分析 -->
+                <div class="analytics-card chart-card-large">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-users card-icon"></i>
+                            ユーザー成長分析
+                        </div>
+                        <div class="time-filter">
+                            <button class="filter-btn">7日</button>
+                            <button class="filter-btn active">30日</button>
+                            <button class="filter-btn">90日</button>
+                            <button class="filter-btn">1年</button>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container chart-large">
+                        <div class="chart-placeholder">
+                            📈 ユーザー成長推移グラフ<br>
+                            <small>（実装時はChart.jsまたはD3.jsで可視化）</small><br><br>
+                            <div style="font-size: 0.8rem; text-align: left; max-width: 400px;">
+                                • 新規登録ユーザー: 月+15.2%成長<br>
+                                • アクティブユーザー: 月+8.7%成長<br>
+                                • リテンション率: 67.3%（7日）、42.1%（30日）<br>
+                                • チャーン率: 月3.2%（業界平均5.1%より良好）
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ユーザー行動分析 -->
+                <div class="analytics-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-mouse card-icon"></i>
+                            ユーザー行動分析
+                        </div>
+                    </div>
+                    
+                    <table class="metrics-table">
+                        <thead>
+                            <tr>
+                                <th>アクション</th>
+                                <th>今月</th>
+                                <th>前月比</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>ショップ検索</td>
+                                <td class="metric-value">8,924</td>
+                                <td><span class="trend-indicator trend-up">↑ +12.3%</span></td>
+                            </tr>
+                            <tr>
+                                <td>詳細ページ閲覧</td>
+                                <td class="metric-value">4,782</td>
+                                <td><span class="trend-indicator trend-up">↑ +8.7%</span></td>
+                            </tr>
+                            <tr>
+                                <td>口コミ投稿</td>
+                                <td class="metric-value">524</td>
+                                <td><span class="trend-indicator trend-up">↑ +23.1%</span></td>
+                            </tr>
+                            <tr>
+                                <td>お気に入り追加</td>
+                                <td class="metric-value">1,156</td>
+                                <td><span class="trend-indicator trend-up">↑ +15.6%</span></td>
+                            </tr>
+                            <tr>
+                                <td>LINE Bot利用</td>
+                                <td class="metric-value">3,245</td>
+                                <td><span class="trend-indicator trend-up">↑ +28.4%</span></td>
+                            </tr>
+                            <tr>
+                                <td>ポイント交換</td>
+                                <td class="metric-value">89</td>
+                                <td><span class="trend-indicator trend-down">↓ -5.2%</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- ショップパフォーマンス -->
+                <div class="analytics-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-store card-icon"></i>
+                            ショップパフォーマンス
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <div class="chart-placeholder">
+                            📊 ショップ別パフォーマンス<br>
+                            <small>（売上・口コミ・評価の相関分析）</small>
+                        </div>
+                    </div>
+                    
+                    <table class="metrics-table">
+                        <thead>
+                            <tr>
+                                <th>指標</th>
+                                <th>平均値</th>
+                                <th>トップ10%</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>月間予約数</td>
+                                <td class="metric-value">27</td>
+                                <td class="metric-value">85+</td>
+                            </tr>
+                            <tr>
+                                <td>平均評価</td>
+                                <td class="metric-value">4.3</td>
+                                <td class="metric-value">4.8+</td>
+                            </tr>
+                            <tr>
+                                <td>口コミ数</td>
+                                <td class="metric-value">15</td>
+                                <td class="metric-value">45+</td>
+                            </tr>
+                            <tr>
+                                <td>リピート率</td>
+                                <td class="metric-value">32%</td>
+                                <td class="metric-value">68%+</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 収益分析 -->
+                <div class="analytics-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-yen-sign card-icon"></i>
+                            収益分析
+                        </div>
+                    </div>
+                    
+                    <div class="revenue-breakdown">
+                        <div class="revenue-item">
+                            <div class="revenue-amount">¥1.8M</div>
+                            <div class="revenue-label">ショップ課金収入</div>
+                        </div>
+                        <div class="revenue-item">
+                            <div class="revenue-amount">¥420K</div>
+                            <div class="revenue-label">広告収入</div>
+                        </div>
+                    </div>
+                    
+                    <table class="metrics-table">
+                        <thead>
+                            <tr>
+                                <th>収益源</th>
+                                <th>金額</th>
+                                <th>構成比</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>プレミアムプラン</td>
+                                <td class="metric-value">¥890K</td>
+                                <td>37.1%</td>
+                            </tr>
+                            <tr>
+                                <td>スタンダードプラン</td>
+                                <td class="metric-value">¥645K</td>
+                                <td>26.9%</td>
+                            </tr>
+                            <tr>
+                                <td>ベーシックプラン</td>
+                                <td class="metric-value">¥265K</td>
+                                <td>11.0%</td>
+                            </tr>
+                            <tr>
+                                <td>プレミアム広告</td>
+                                <td class="metric-value">¥285K</td>
+                                <td>11.9%</td>
+                            </tr>
+                            <tr>
+                                <td>バナー広告</td>
+                                <td class="metric-value">¥135K</td>
+                                <td>5.6%</td>
+                            </tr>
+                            <tr>
+                                <td>その他</td>
+                                <td class="metric-value">¥180K</td>
+                                <td>7.5%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- ユーザーセグメント分析 -->
+                <div class="analytics-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-users-cog card-icon"></i>
+                            ユーザーセグメント分析
+                        </div>
+                    </div>
+                    
+                    <div class="segment-grid">
+                        <div class="segment-item">
+                            <div class="segment-name">初心者</div>
+                            <div class="segment-percentage">45%</div>
+                            <div class="segment-count">561 ユーザー</div>
+                        </div>
+                        <div class="segment-item">
+                            <div class="segment-name">中級者</div>
+                            <div class="segment-percentage">32%</div>
+                            <div class="segment-count">399 ユーザー</div>
+                        </div>
+                        <div class="segment-item">
+                            <div class="segment-name">上級者</div>
+                            <div class="segment-percentage">18%</div>
+                            <div class="segment-count">224 ユーザー</div>
+                        </div>
+                        <div class="segment-item">
+                            <div class="segment-name">インストラクター</div>
+                            <div class="segment-percentage">5%</div>
+                            <div class="segment-count">63 ユーザー</div>
+                        </div>
+                    </div>
+                    
+                    <table class="metrics-table">
+                        <thead>
+                            <tr>
+                                <th>セグメント</th>
+                                <th>平均利用頻度</th>
+                                <th>LTV</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>初心者</td>
+                                <td class="metric-value">2.3回/月</td>
+                                <td class="metric-value">¥45,200</td>
+                            </tr>
+                            <tr>
+                                <td>中級者</td>
+                                <td class="metric-value">4.1回/月</td>
+                                <td class="metric-value">¥78,500</td>
+                            </tr>
+                            <tr>
+                                <td>上級者</td>
+                                <td class="metric-value">6.8回/月</td>
+                                <td class="metric-value">¥124,300</td>
+                            </tr>
+                            <tr>
+                                <td>インストラクター</td>
+                                <td class="metric-value">12.1回/月</td>
+                                <td class="metric-value">¥185,700</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 地域別分析 -->
+                <div class="analytics-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-map-marked-alt card-icon"></i>
+                            地域別分析
+                        </div>
+                    </div>
+                    
+                    <div class="region-list">
+                        <div class="region-item">
+                            <span class="region-name">🗼 関東</span>
+                            <div class="region-stats">
+                                <span>487ユーザー</span>
+                                <span>39.1%</span>
+                            </div>
+                        </div>
+                        <div class="region-item">
+                            <span class="region-name">🗾 関西</span>
+                            <div class="region-stats">
+                                <span>298ユーザー</span>
+                                <span>23.9%</span>
+                            </div>
+                        </div>
+                        <div class="region-item">
+                            <span class="region-name">🏔️ 中部</span>
+                            <div class="region-stats">
+                                <span>187ユーザー</span>
+                                <span>15.0%</span>
+                            </div>
+                        </div>
+                        <div class="region-item">
+                            <span class="region-name">🌸 九州</span>
+                            <div class="region-stats">
+                                <span>134ユーザー</span>
+                                <span>10.7%</span>
+                            </div>
+                        </div>
+                        <div class="region-item">
+                            <span class="region-name">🗻 東北</span>
+                            <div class="region-stats">
+                                <span>89ユーザー</span>
+                                <span>7.1%</span>
+                            </div>
+                        </div>
+                        <div class="region-item">
+                            <span class="region-name">🏞️ 北海道</span>
+                            <div class="region-stats">
+                                <span>52ユーザー</span>
+                                <span>4.2%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI分析洞察 -->
+                <div class="analytics-card insights-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-brain card-icon"></i>
+                            AI分析洞察
+                        </div>
+                    </div>
+                    
+                    <div class="insight-list">
+                        <div class="insight-item">
+                            <div class="insight-type">成長機会</div>
+                            <div class="insight-title">初心者セグメントの拡大</div>
+                            <div class="insight-description">
+                                初心者ユーザーの獲得が加速しており、専用コンテンツ拡充により更なる成長が期待できます。
+                            </div>
+                            <div class="insight-action">推奨: 初心者向けガイドページの充実</div>
+                        </div>
+                        
+                        <div class="insight-item">
+                            <div class="insight-type">改善提案</div>
+                            <div class="insight-title">ポイント交換率の向上</div>
+                            <div class="insight-description">
+                                ポイント交換が減少傾向。より魅力的な交換特典の追加を検討する必要があります。
+                            </div>
+                            <div class="insight-action">推奨: 季節限定特典の導入</div>
+                        </div>
+                        
+                        <div class="insight-item">
+                            <div class="insight-type">注意点</div>
+                            <div class="insight-title">地域格差の是正</div>
+                            <div class="insight-description">
+                                関東・関西以外の地域でのユーザー獲得が課題。地方ショップの充実が必要です。
+                            </div>
+                            <div class="insight-action">推奨: 地方ショップ支援策の検討</div>
+                        </div>
+                        
+                        <div class="insight-item">
+                            <div class="insight-type">トレンド</div>
+                            <div class="insight-title">LINE Bot利用の急増</div>
+                            <div class="insight-description">
+                                LINE Botの利用が大幅に増加。チャットベースのサービス拡充が効果的です。
+                            </div>
+                            <div class="insight-action">推奨: Bot機能の更なる充実</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- フッター -->
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>🌊 Jiji Analytics</h3>
+                    <p>データドリブンな意思決定をサポート</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>分析機能</h3>
+                    <ul>
+                        <li><a href="/admin/analytics/users">ユーザー分析</a></li>
+                        <li><a href="/admin/analytics/shops">ショップ分析</a></li>
+                        <li><a href="/admin/analytics/revenue">収益分析</a></li>
+                        <li><a href="/admin/analytics/predictions">予測分析</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>レポート</h3>
+                    <ul>
+                        <li><a href="/admin/reports/monthly">月次レポート</a></li>
+                        <li><a href="/admin/reports/quarterly">四半期レポート</a></li>
+                        <li><a href="/admin/reports/annual">年次レポート</a></li>
+                        <li><a href="/admin/reports/custom">カスタムレポート</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>データエクスポート</h3>
+                    <ul>
+                        <li><a href="/admin/export/csv">CSV形式</a></li>
+                        <li><a href="/admin/export/excel">Excel形式</a></li>
+                        <li><a href="/admin/export/api">API接続</a></li>
+                        <li><a href="/admin/export/dashboard">ダッシュボード共有</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 Jiji Analytics - データ分析システム</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // データ分析ページ初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            // KPI数字アニメーション
+            animateKPIs();
+            
+            // 時間フィルターの設定
+            setupTimeFilters();
+            
+            // チャートの初期化（実際の実装では Chart.js を使用）
+            initializeCharts();
+            
+            // リアルタイムデータ更新
+            // setInterval(updateAnalyticsData, 300000); // 5分ごと
+        });
+
+        // KPI数字アニメーション
+        function animateKPIs() {
+            const kpiValues = document.querySelectorAll('.kpi-value');
+            
+            kpiValues.forEach(kpi => {
+                const text = kpi.textContent;
+                const hasPercent = text.includes('%');
+                const hasCurrency = text.includes('¥');
+                const hasDecimal = text.includes('.');
+                
+                let target;
+                if (hasPercent) {
+                    target = parseFloat(text.replace('%', ''));
+                } else if (hasCurrency) {
+                    const cleanText = text.replace('¥', '').replace('M', '').replace('K', '');
+                    target = parseFloat(cleanText);
+                    if (text.includes('M')) target *= 1000000;
+                    if (text.includes('K')) target *= 1000;
+                } else if (hasDecimal) {
+                    target = parseFloat(text);
+                } else {
+                    target = parseInt(text.replace(',', ''));
+                }
+                
+                animateKPINumber(kpi, target, 2000, text);
+            });
+        }
+
+        // KPI数字アニメーション関数
+        function animateKPINumber(element, target, duration, originalText) {
+            const start = 0;
+            const startTime = performance.now();
+            
+            function update(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                const easeOut = 1 - Math.pow(1 - progress, 3);
+                const current = start + (target - start) * easeOut;
+                
+                // フォーマットの復元
+                let displayValue;
+                if (originalText.includes('%')) {
+                    displayValue = current.toFixed(1) + '%';
+                } else if (originalText.includes('¥') && originalText.includes('M')) {
+                    displayValue = '¥' + (current / 1000000).toFixed(1) + 'M';
+                } else if (originalText.includes('¥') && originalText.includes('K')) {
+                    displayValue = '¥' + (current / 1000).toFixed(0) + 'K';
+                } else if (originalText.includes('¥')) {
+                    displayValue = '¥' + Math.round(current).toLocaleString();
+                } else if (originalText.includes('.')) {
+                    displayValue = current.toFixed(1);
+                } else if (current > 999) {
+                    displayValue = Math.round(current).toLocaleString();
+                } else {
+                    displayValue = Math.round(current).toString();
+                }
+                
+                element.textContent = displayValue;
+                
+                if (progress < 1) {
+                    requestAnimationFrame(update);
+                }
+            }
+            
+            requestAnimationFrame(update);
+        }
+
+        // 時間フィルターの設定
+        function setupTimeFilters() {
+            document.querySelectorAll('.time-filter').forEach(filterGroup => {
+                const buttons = filterGroup.querySelectorAll('.filter-btn');
+                
+                buttons.forEach(button => {
+                    button.addEventListener('click', function() {
+                        // アクティブ状態の切り替え
+                        buttons.forEach(btn => btn.classList.remove('active'));
+                        this.classList.add('active');
+                        
+                        // データの更新
+                        const period = this.textContent;
+                        updateChartData(period);
+                    });
+                });
+            });
+        }
+
+        // チャートデータ更新
+        function updateChartData(period) {
+            console.log(`チャートデータを${period}に更新中...`);
+            // 実際の実装ではAPIからデータを取得してチャートを更新
+        }
+
+        // チャート初期化
+        function initializeCharts() {
+            // 実際の実装では Chart.js または D3.js を使用
+            console.log('チャートを初期化中...');
+            
+            // サンプル: Chart.js の初期化例
+            /*
+            const ctx = document.getElementById('userGrowthChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['1月', '2月', '3月', '4月', '5月', '6月', '7月'],
+                    datasets: [{
+                        label: '新規ユーザー',
+                        data: [65, 89, 102, 134, 167, 198, 247],
+                        borderColor: '#0f172a',
+                        backgroundColor: 'rgba(15, 23, 42, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'ユーザー成長推移'
+                        }
+                    }
+                }
+            });
+            */
+        }
+
+        // 分析データ更新
+        function updateAnalyticsData() {
+            console.log('分析データを更新中...');
+            // 実際の実装ではAPIから最新データを取得
+            
+            // KPI値の更新
+            // updateKPIValues();
+            
+            // チャートの更新
+            // updateCharts();
+            
+            // テーブルデータの更新
+            // updateTables();
+        }
+
+        // データエクスポート機能
+        function exportData(format) {
+            const exportData = {
+                timestamp: new Date().toISOString(),
+                kpis: collectKPIData(),
+                userBehavior: collectUserBehaviorData(),
+                shopPerformance: collectShopPerformanceData(),
+                revenue: collectRevenueData(),
+                segments: collectSegmentData(),
+                regions: collectRegionData()
+            };
+            
+            switch(format) {
+                case 'csv':
+                    downloadCSV(exportData);
+                    break;
+                case 'excel':
+                    downloadExcel(exportData);
+                    break;
+                case 'json':
+                    downloadJSON(exportData);
+                    break;
+                default:
+                    console.error('Unsupported export format:', format);
+            }
+        }
+
+        // KPIデータ収集
+        function collectKPIData() {
+            const kpis = {};
+            document.querySelectorAll('.kpi-item').forEach(item => {
+                const label = item.querySelector('.kpi-label').textContent;
+                const value = item.querySelector('.kpi-value').textContent;
+                const change = item.querySelector('.kpi-change').textContent;
+                kpis[label] = { value, change };
+            });
+            return kpis;
+        }
+
+        // ユーザー行動データ収集
+        function collectUserBehaviorData() {
+            const behaviors = {};
+            document.querySelector('#user-behavior-table tbody').querySelectorAll('tr').forEach(row => {
+                const cells = row.querySelectorAll('td');
+                const action = cells[0].textContent;
+                const count = cells[1].textContent;
+                const trend = cells[2].textContent;
+                behaviors[action] = { count, trend };
+            });
+            return behaviors;
+        }
+
+        // CSV ダウンロード
+        function downloadCSV(data) {
+            let csv = 'Category,Metric,Value,Change\n';
+            
+            // KPI データ
+            Object.entries(data.kpis).forEach(([metric, values]) => {
+                csv += `KPI,${metric},"${values.value}","${values.change}"\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `jiji-analytics-${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        // 予測分析機能
+        function generatePredictions() {
+            const currentGrowthRate = 0.125; // 12.5%
+            const seasonalityFactor = 1.2; // 夏季のボーナス
+            
+            const predictions = {
+                nextMonthUsers: Math.round(1247 * (1 + currentGrowthRate)),
+                nextQuarterRevenue: Math.round(2400000 * (1 + currentGrowthRate * 3) * seasonalityFactor),
+                yearEndUsers: Math.round(1247 * Math.pow(1 + currentGrowthRate, 12)),
+                churnRisk: calculateChurnRisk()
+            };
+            
+            return predictions;
+        }
+
+        // チャーンリスク計算
+        function calculateChurnRisk() {
+            // 簡易的なリスク計算
+            const factors = {
+                lowActivity: 0.3,
+                noRecentReviews: 0.2,
+                lowRating: 0.25,
+                competitorActivity: 0.15,
+                seasonalEffect: 0.1
+            };
+            
+            return Object.values(factors).reduce((sum, factor) => sum + factor, 0);
+        }
+
+        // 異常検知
+        function detectAnomalies() {
+            const anomalies = [];
+            
+            // 急激な変化の検出
+            if (Math.abs(0.232) > 0.2) { // 口コミ数の変化が20%以上
+                anomalies.push({
+                    type: 'spike',
+                    metric: '口コミ数',
+                    severity: 'low',
+                    description: '口コミ投稿数が急増しています'
+                });
+            }
+            
+            return anomalies;
+        }
+
+        // A/Bテスト結果分析
+        function analyzeABTests() {
+            return {
+                currentTests: [
+                    {
+                        name: '新規登録フロー改善',
+                        status: 'running',
+                        conversion: { A: 0.156, B: 0.189 },
+                        significance: 0.94
+                    },
+                    {
+                        name: 'ショップ検索UI改善',
+                        status: 'completed',
+                        conversion: { A: 0.234, B: 0.267 },
+                        significance: 0.97
+                    }
+                ]
+            };
+        }
+
+        // コホート分析
+        function generateCohortAnalysis() {
+            return {
+                retention: {
+                    week1: 0.673,
+                    week2: 0.521,
+                    week4: 0.421,
+                    week8: 0.334,
+                    week12: 0.267
+                },
+                ltv: {
+                    month1: 45200,
+                    month3: 78500,
+                    month6: 124300,
+                    month12: 185700
+                }
+            };
+        }
+    </script>
+</body>
+</html>

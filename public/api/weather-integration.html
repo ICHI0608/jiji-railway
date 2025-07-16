@@ -1,0 +1,1257 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>海況・天気データ統合API | Jiji Weather System</title>
+    <meta name="description" content="リアルタイム海況・天気データ統合システム。気象庁API、海上保安庁データ、ダイビング専用指標を統合提供。">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="../app/v28-styles.css">
+    
+    <style>
+        .weather-api-header {
+            background: linear-gradient(135deg, #0369a1 0%, #0284c7 100%);
+            color: white;
+            padding: 80px 0 60px;
+        }
+        
+        .api-overview {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .api-icon {
+            width: 80px;
+            height: 80px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            border: 3px solid rgba(255,255,255,0.3);
+        }
+        
+        .api-details h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        
+        .api-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .data-sources {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+        
+        .source-item {
+            text-align: center;
+            background: rgba(255,255,255,0.1);
+            padding: 25px;
+            border-radius: 12px;
+        }
+        
+        .source-name {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .source-status {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+        
+        .source-latency {
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+        
+        .status-online { color: #10b981; }
+        .status-warning { color: #f59e0b; }
+        .status-offline { color: #ef4444; }
+        
+        .weather-content {
+            padding: 80px 0;
+            background: #f0f9ff;
+        }
+        
+        .weather-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .weather-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .weather-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f1f5f9;
+        }
+        
+        .card-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #1f2937;
+        }
+        
+        .card-icon {
+            font-size: 1.5rem;
+            color: #0369a1;
+        }
+        
+        .refresh-btn {
+            padding: 6px 12px;
+            background: #0369a1;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: background 0.3s ease;
+        }
+        
+        .refresh-btn:hover {
+            background: #0284c7;
+        }
+        
+        .refresh-btn.loading {
+            background: #94a3b8;
+            cursor: not-allowed;
+        }
+        
+        /* リアルタイムデータ表示 */
+        .realtime-data {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .data-point {
+            text-align: center;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 8px;
+            position: relative;
+        }
+        
+        .data-point.updating {
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .data-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #0369a1;
+            margin-bottom: 5px;
+        }
+        
+        .data-label {
+            font-size: 0.9rem;
+            color: #6b7280;
+            margin-bottom: 3px;
+        }
+        
+        .data-time {
+            font-size: 0.7rem;
+            color: #9ca3af;
+        }
+        
+        .data-trend {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            font-size: 0.8rem;
+        }
+        
+        .trend-up { color: #10b981; }
+        .trend-down { color: #ef4444; }
+        .trend-stable { color: #6b7280; }
+        
+        /* API エンドポイント表示 */
+        .api-endpoint {
+            background: #1f2937;
+            color: #e5e7eb;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            position: relative;
+        }
+        
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 4px 8px;
+            background: #374151;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.7rem;
+        }
+        
+        .copy-btn:hover {
+            background: #4b5563;
+        }
+        
+        /* アラート設定 */
+        .alert-config {
+            background: #fef3c7;
+            border: 2px solid #f59e0b;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .alert-title {
+            color: #92400e;
+            font-weight: 700;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .alert-settings {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .alert-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: white;
+            border-radius: 6px;
+        }
+        
+        .alert-label {
+            font-size: 0.9rem;
+            color: #374151;
+        }
+        
+        .alert-toggle {
+            width: 40px;
+            height: 20px;
+            background: #d1d5db;
+            border-radius: 10px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        
+        .alert-toggle.active {
+            background: #10b981;
+        }
+        
+        .alert-toggle::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 16px;
+            height: 16px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+        }
+        
+        .alert-toggle.active::after {
+            transform: translateX(20px);
+        }
+        
+        /* 予測データ表示 */
+        .forecast-timeline {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding: 10px 0;
+            margin-bottom: 20px;
+        }
+        
+        .forecast-item {
+            min-width: 120px;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 8px;
+            text-align: center;
+            border: 2px solid transparent;
+            transition: border-color 0.3s ease;
+        }
+        
+        .forecast-item:hover {
+            border-color: #0369a1;
+        }
+        
+        .forecast-time {
+            font-size: 0.8rem;
+            color: #6b7280;
+            margin-bottom: 8px;
+        }
+        
+        .forecast-icon {
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+        }
+        
+        .forecast-temp {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 5px;
+        }
+        
+        .forecast-conditions {
+            font-size: 0.8rem;
+            color: #6b7280;
+        }
+        
+        /* データ品質インジケーター */
+        .quality-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .quality-label {
+            font-size: 0.9rem;
+            color: #374151;
+        }
+        
+        .quality-bar {
+            flex: 1;
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .quality-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #10b981, #059669);
+            width: 92%;
+            transition: width 0.3s ease;
+        }
+        
+        .quality-percentage {
+            font-size: 0.8rem;
+            color: #10b981;
+            font-weight: 600;
+        }
+        
+        /* レスポンシブデザイン */
+        @media (max-width: 768px) {
+            .api-overview {
+                flex-direction: column;
+                text-align: center;
+                gap: 20px;
+            }
+            
+            .data-sources {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+            }
+            
+            .weather-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .realtime-data {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .alert-settings {
+                grid-template-columns: 1fr;
+            }
+            
+            .forecast-timeline {
+                gap: 5px;
+            }
+            
+            .forecast-item {
+                min-width: 100px;
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ヘッダー -->
+    <header class="main-header">
+        <nav class="main-nav">
+            <a href="/" class="main-logo">
+                <h1>🌊 Jiji</h1>
+                <span>Weather API</span>
+            </a>
+            
+            <ul class="main-nav-menu">
+                <li><a href="/weather-ocean">海況・天気</a></li>
+                <li><a href="/api/weather-integration" class="active">API統合</a></li>
+                <li><a href="/admin/analytics">データ分析</a></li>
+                <li><a href="/admin/monitoring">システム監視</a></li>
+                <li><a href="/admin/settings">設定</a></li>
+            </ul>
+            
+            <div class="main-nav-buttons">
+                <a href="/api/documentation" class="btn btn-primary">
+                    <i class="fas fa-book"></i> API文書
+                </a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- 天気API統合ヘッダー -->
+    <section class="weather-api-header">
+        <div class="container">
+            <div class="api-overview">
+                <div class="api-icon">
+                    🌡️
+                </div>
+                <div class="api-details">
+                    <h1>海況・天気データ統合システム</h1>
+                    <div class="api-status">
+                        <i class="fas fa-check-circle"></i>
+                        全システム正常稼働中
+                    </div>
+                </div>
+            </div>
+            
+            <div class="data-sources">
+                <div class="source-item">
+                    <div class="source-name">気象庁API</div>
+                    <div class="source-status status-online">● オンライン</div>
+                    <div class="source-latency">レスポンス: 120ms</div>
+                </div>
+                <div class="source-item">
+                    <div class="source-name">海上保安庁</div>
+                    <div class="source-status status-online">● オンライン</div>
+                    <div class="source-latency">レスポンス: 85ms</div>
+                </div>
+                <div class="source-item">
+                    <div class="source-name">ダイビング指標</div>
+                    <div class="source-status status-online">● オンライン</div>
+                    <div class="source-latency">更新: 15分ごと</div>
+                </div>
+                <div class="source-item">
+                    <div class="source-name">潮汐データ</div>
+                    <div class="source-status status-warning">⚠ 遅延</div>
+                    <div class="source-latency">レスポンス: 340ms</div>
+                </div>
+                <div class="source-item">
+                    <div class="source-name">衛星画像</div>
+                    <div class="source-status status-online">● オンライン</div>
+                    <div class="source-latency">更新: 30分ごと</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 天気データ統合コンテンツ -->
+    <section class="weather-content">
+        <div class="container">
+            <h2 class="section-title">🔄 リアルタイムデータ統合</h2>
+            <p class="section-subtitle">
+                複数のデータソースから統合されたリアルタイム海況・天気情報
+            </p>
+            
+            <div class="weather-grid">
+                <!-- リアルタイム海況データ -->
+                <div class="weather-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-water card-icon"></i>
+                            リアルタイム海況データ
+                        </div>
+                        <button class="refresh-btn" onclick="refreshSeaConditions()">
+                            <i class="fas fa-sync-alt"></i> 更新
+                        </button>
+                    </div>
+                    
+                    <div class="quality-indicator">
+                        <span class="quality-label">データ品質:</span>
+                        <div class="quality-bar">
+                            <div class="quality-fill"></div>
+                        </div>
+                        <span class="quality-percentage">92%</span>
+                    </div>
+                    
+                    <div class="realtime-data" id="sea-conditions">
+                        <div class="data-point">
+                            <div class="data-trend trend-up">↑</div>
+                            <div class="data-value">1.2m</div>
+                            <div class="data-label">波高</div>
+                            <div class="data-time">2分前更新</div>
+                        </div>
+                        <div class="data-point">
+                            <div class="data-trend trend-stable">→</div>
+                            <div class="data-value">25m</div>
+                            <div class="data-label">透明度</div>
+                            <div class="data-time">5分前更新</div>
+                        </div>
+                        <div class="data-point">
+                            <div class="data-trend trend-down">↓</div>
+                            <div class="data-value">北東</div>
+                            <div class="data-label">風向</div>
+                            <div class="data-time">1分前更新</div>
+                        </div>
+                        <div class="data-point">
+                            <div class="data-trend trend-up">↑</div>
+                            <div class="data-value">4m/s</div>
+                            <div class="data-label">風速</div>
+                            <div class="data-time">1分前更新</div>
+                        </div>
+                        <div class="data-point">
+                            <div class="data-trend trend-stable">→</div>
+                            <div class="data-value">26°C</div>
+                            <div class="data-label">水温</div>
+                            <div class="data-time">3分前更新</div>
+                        </div>
+                        <div class="data-point">
+                            <div class="data-trend trend-stable">→</div>
+                            <div class="data-value">1013</div>
+                            <div class="data-label">気圧 (hPa)</div>
+                            <div class="data-time">2分前更新</div>
+                        </div>
+                    </div>
+                    
+                    <div class="api-endpoint">
+                        GET /api/v1/sea-conditions/realtime
+                        <button class="copy-btn" onclick="copyToClipboard('/api/v1/sea-conditions/realtime')">コピー</button>
+                    </div>
+                </div>
+
+                <!-- 気象データ -->
+                <div class="weather-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-cloud-sun card-icon"></i>
+                            気象データ統合
+                        </div>
+                        <button class="refresh-btn" onclick="refreshWeatherData()">
+                            <i class="fas fa-sync-alt"></i> 更新
+                        </button>
+                    </div>
+                    
+                    <div class="realtime-data" id="weather-data">
+                        <div class="data-point">
+                            <div class="data-trend trend-up">↑</div>
+                            <div class="data-value">28°C</div>
+                            <div class="data-label">気温</div>
+                            <div class="data-time">リアルタイム</div>
+                        </div>
+                        <div class="data-point">
+                            <div class="data-trend trend-stable">→</div>
+                            <div class="data-value">65%</div>
+                            <div class="data-label">湿度</div>
+                            <div class="data-time">1分前更新</div>
+                        </div>
+                        <div class="data-point">
+                            <div class="data-trend trend-down">↓</div>
+                            <div class="data-value">12km</div>
+                            <div class="data-label">視程</div>
+                            <div class="data-time">5分前更新</div>
+                        </div>
+                        <div class="data-point">
+                            <div class="data-trend trend-stable">→</div>
+                            <div class="data-value">0%</div>
+                            <div class="data-label">降水確率</div>
+                            <div class="data-time">30分前更新</div>
+                        </div>
+                        <div class="data-point">
+                            <div class="data-trend trend-up">↑</div>
+                            <div class="data-value">8</div>
+                            <div class="data-label">UV指数</div>
+                            <div class="data-time">10分前更新</div>
+                        </div>
+                        <div class="data-point">
+                            <div class="data-trend trend-stable">→</div>
+                            <div class="data-value">晴れ</div>
+                            <div class="data-label">天気</div>
+                            <div class="data-time">リアルタイム</div>
+                        </div>
+                    </div>
+                    
+                    <div class="api-endpoint">
+                        GET /api/v1/weather/current?area=ishigaki
+                        <button class="copy-btn" onclick="copyToClipboard('/api/v1/weather/current?area=ishigaki')">コピー</button>
+                    </div>
+                </div>
+
+                <!-- ダイビング適性指標 -->
+                <div class="weather-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-swimming-pool card-icon"></i>
+                            ダイビング適性指標
+                        </div>
+                        <button class="refresh-btn" onclick="refreshDivingIndex()">
+                            <i class="fas fa-sync-alt"></i> 更新
+                        </button>
+                    </div>
+                    
+                    <div class="realtime-data" id="diving-index">
+                        <div class="data-point">
+                            <div class="data-trend trend-up">↑</div>
+                            <div class="data-value">9.2</div>
+                            <div class="data-label">総合スコア</div>
+                            <div class="data-time">自動計算</div>
+                        </div>
+                        <div class="data-point">
+                            <div class="data-trend trend-stable">→</div>
+                            <div class="data-value">最適</div>
+                            <div class="data-label">初心者適性</div>
+                            <div class="data-time">自動判定</div>
+                        </div>
+                        <div class="data-point">
+                            <div class="data-trend trend-up">↑</div>
+                            <div class="data-value">8.7</div>
+                            <div class="data-label">安全度</div>
+                            <div class="data-time">AI分析</div>
+                        </div>
+                        <div class="data-point">
+                            <div class="data-trend trend-stable">→</div>
+                            <div class="data-value">良好</div>
+                            <div class="data-label">生物遭遇率</div>
+                            <div class="data-time">統計予測</div>
+                        </div>
+                        <div class="data-point">
+                            <div class="data-trend trend-up">↑</div>
+                            <div class="data-value">優秀</div>
+                            <div class="data-label">撮影条件</div>
+                            <div class="data-time">光学解析</div>
+                        </div>
+                        <div class="data-point">
+                            <div class="data-trend trend-stable">→</div>
+                            <div class="data-value">快適</div>
+                            <div class="data-label">体感指数</div>
+                            <div class="data-time">複合計算</div>
+                        </div>
+                    </div>
+                    
+                    <div class="api-endpoint">
+                        GET /api/v1/diving/suitability?area=ishigaki&level=beginner
+                        <button class="copy-btn" onclick="copyToClipboard('/api/v1/diving/suitability?area=ishigaki&level=beginner')">コピー</button>
+                    </div>
+                </div>
+
+                <!-- 予測データ -->
+                <div class="weather-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-crystal-ball card-icon"></i>
+                            48時間予測データ
+                        </div>
+                        <button class="refresh-btn" onclick="refreshForecast()">
+                            <i class="fas fa-sync-alt"></i> 更新
+                        </button>
+                    </div>
+                    
+                    <div class="forecast-timeline" id="forecast-timeline">
+                        <div class="forecast-item">
+                            <div class="forecast-time">今日 15:00</div>
+                            <div class="forecast-icon">☀️</div>
+                            <div class="forecast-temp">28°C</div>
+                            <div class="forecast-conditions">最適</div>
+                        </div>
+                        <div class="forecast-item">
+                            <div class="forecast-time">今日 18:00</div>
+                            <div class="forecast-icon">🌤️</div>
+                            <div class="forecast-temp">27°C</div>
+                            <div class="forecast-conditions">良好</div>
+                        </div>
+                        <div class="forecast-item">
+                            <div class="forecast-time">明日 06:00</div>
+                            <div class="forecast-icon">🌅</div>
+                            <div class="forecast-temp">25°C</div>
+                            <div class="forecast-conditions">最適</div>
+                        </div>
+                        <div class="forecast-item">
+                            <div class="forecast-time">明日 12:00</div>
+                            <div class="forecast-icon">☀️</div>
+                            <div class="forecast-temp">29°C</div>
+                            <div class="forecast-conditions">最適</div>
+                        </div>
+                        <div class="forecast-item">
+                            <div class="forecast-time">明日 18:00</div>
+                            <div class="forecast-icon">⛅</div>
+                            <div class="forecast-temp">28°C</div>
+                            <div class="forecast-conditions">良好</div>
+                        </div>
+                    </div>
+                    
+                    <div class="api-endpoint">
+                        GET /api/v1/forecast/48h?area=ishigaki&include=diving_index
+                        <button class="copy-btn" onclick="copyToClipboard('/api/v1/forecast/48h?area=ishigaki&include=diving_index')">コピー</button>
+                    </div>
+                </div>
+
+                <!-- アラート設定 -->
+                <div class="weather-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-bell card-icon"></i>
+                            アラート・通知設定
+                        </div>
+                    </div>
+                    
+                    <div class="alert-config">
+                        <div class="alert-title">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            緊急アラート設定
+                        </div>
+                        <div class="alert-settings">
+                            <div class="alert-item">
+                                <span class="alert-label">台風接近警報</span>
+                                <div class="alert-toggle active" onclick="toggleAlert(this)"></div>
+                            </div>
+                            <div class="alert-item">
+                                <span class="alert-label">高波注意報</span>
+                                <div class="alert-toggle active" onclick="toggleAlert(this)"></div>
+                            </div>
+                            <div class="alert-item">
+                                <span class="alert-label">強風警報</span>
+                                <div class="alert-toggle active" onclick="toggleAlert(this)"></div>
+                            </div>
+                            <div class="alert-item">
+                                <span class="alert-label">雷雨警報</span>
+                                <div class="alert-toggle" onclick="toggleAlert(this)"></div>
+                            </div>
+                            <div class="alert-item">
+                                <span class="alert-label">透明度低下警告</span>
+                                <div class="alert-toggle active" onclick="toggleAlert(this)"></div>
+                            </div>
+                            <div class="alert-item">
+                                <span class="alert-label">水温急変アラート</span>
+                                <div class="alert-toggle" onclick="toggleAlert(this)"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="api-endpoint">
+                        POST /api/v1/alerts/configure
+                        <button class="copy-btn" onclick="copyToClipboard('POST /api/v1/alerts/configure')">コピー</button>
+                    </div>
+                </div>
+
+                <!-- データ統合統計 -->
+                <div class="weather-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-chart-pie card-icon"></i>
+                            データ統合統計
+                        </div>
+                    </div>
+                    
+                    <div class="realtime-data">
+                        <div class="data-point">
+                            <div class="data-value">99.7%</div>
+                            <div class="data-label">稼働率</div>
+                            <div class="data-time">過去30日</div>
+                        </div>
+                        <div class="data-point">
+                            <div class="data-value">127ms</div>
+                            <div class="data-label">平均レスポンス</div>
+                            <div class="data-time">リアルタイム</div>
+                        </div>
+                        <div class="data-point">
+                            <div class="data-value">28.4K</div>
+                            <div class="data-label">今日のAPI呼び出し</div>
+                            <div class="data-time">累計</div>
+                        </div>
+                        <div class="data-point">
+                            <div class="data-value">5</div>
+                            <div class="data-label">エリア対応数</div>
+                            <div class="data-time">現在</div>
+                        </div>
+                        <div class="data-point">
+                            <div class="data-value">12</div>
+                            <div class="data-label">データソース</div>
+                            <div class="data-time">統合済み</div>
+                        </div>
+                        <div class="data-point">
+                            <div class="data-value">3分</div>
+                            <div class="data-label">更新間隔</div>
+                            <div class="data-time">最短</div>
+                        </div>
+                    </div>
+                    
+                    <div class="api-endpoint">
+                        GET /api/v1/system/stats
+                        <button class="copy-btn" onclick="copyToClipboard('/api/v1/system/stats')">コピー</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- フッター -->
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>🌊 Jiji Weather API</h3>
+                    <p>統合海況・天気データシステム</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>API エンドポイント</h3>
+                    <ul>
+                        <li><a href="/api/v1/weather/current">現在の天気</a></li>
+                        <li><a href="/api/v1/sea-conditions">海況データ</a></li>
+                        <li><a href="/api/v1/diving/suitability">ダイビング適性</a></li>
+                        <li><a href="/api/v1/forecast">予報データ</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>データソース</h3>
+                    <ul>
+                        <li><a href="https://www.jma.go.jp/">気象庁</a></li>
+                        <li><a href="https://www.kaiho.mlit.go.jp/">海上保安庁</a></li>
+                        <li><a href="/api/marine-data">海洋データ</a></li>
+                        <li><a href="/api/satellite">衛星画像</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>開発者向け</h3>
+                    <ul>
+                        <li><a href="/api/documentation">API文書</a></li>
+                        <li><a href="/api/sdk">SDK ダウンロード</a></li>
+                        <li><a href="/api/examples">サンプルコード</a></li>
+                        <li><a href="/api/support">技術サポート</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 Jiji Weather API - 海況・天気データ統合システム</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 天気データ統合システム初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            // リアルタイム更新の開始
+            startRealTimeUpdates();
+            
+            // WebSocket接続の初期化
+            initializeWebSocket();
+            
+            // データ品質監視
+            monitorDataQuality();
+            
+            // アラート設定の読み込み
+            loadAlertSettings();
+        });
+
+        // リアルタイム更新
+        function startRealTimeUpdates() {
+            // 海況データの定期更新
+            setInterval(updateSeaConditions, 180000); // 3分ごと
+            
+            // 気象データの定期更新
+            setInterval(updateWeatherData, 300000); // 5分ごと
+            
+            // ダイビング指標の定期更新
+            setInterval(updateDivingIndex, 900000); // 15分ごと
+            
+            // 予測データの定期更新
+            setInterval(updateForecastData, 1800000); // 30分ごと
+        }
+
+        // WebSocket接続初期化
+        function initializeWebSocket() {
+            const ws = new WebSocket('wss://api.jiji-diving.com/ws/weather');
+            
+            ws.onopen = function() {
+                console.log('WebSocket接続が確立されました');
+                subscribeToUpdates();
+            };
+            
+            ws.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                handleRealTimeUpdate(data);
+            };
+            
+            ws.onclose = function() {
+                console.log('WebSocket接続が閉じられました。再接続を試行中...');
+                setTimeout(initializeWebSocket, 5000);
+            };
+        }
+
+        // リアルタイム更新の処理
+        function handleRealTimeUpdate(data) {
+            switch(data.type) {
+                case 'sea_conditions':
+                    updateSeaConditionsDisplay(data.payload);
+                    break;
+                case 'weather':
+                    updateWeatherDisplay(data.payload);
+                    break;
+                case 'diving_index':
+                    updateDivingIndexDisplay(data.payload);
+                    break;
+                case 'alert':
+                    showWeatherAlert(data.payload);
+                    break;
+                default:
+                    console.log('不明なデータタイプ:', data.type);
+            }
+        }
+
+        // 海況データ更新
+        function updateSeaConditions() {
+            const seaData = document.getElementById('sea-conditions');
+            seaData.classList.add('updating');
+            
+            // 実際の実装ではAPIからデータを取得
+            setTimeout(() => {
+                // サンプルデータの更新
+                updateDataPoint(seaData, '波高', `${(Math.random() * 2 + 0.5).toFixed(1)}m`);
+                updateDataPoint(seaData, '透明度', `${Math.floor(Math.random() * 15 + 20)}m`);
+                updateDataPoint(seaData, '水温', `${(Math.random() * 3 + 25).toFixed(1)}°C`);
+                
+                seaData.classList.remove('updating');
+                updateTimestamp(seaData);
+            }, 1000);
+        }
+
+        // 気象データ更新
+        function updateWeatherData() {
+            const weatherData = document.getElementById('weather-data');
+            weatherData.classList.add('updating');
+            
+            setTimeout(() => {
+                updateDataPoint(weatherData, '気温', `${Math.floor(Math.random() * 5 + 26)}°C`);
+                updateDataPoint(weatherData, '湿度', `${Math.floor(Math.random() * 20 + 60)}%`);
+                updateDataPoint(weatherData, '視程', `${Math.floor(Math.random() * 8 + 10)}km`);
+                
+                weatherData.classList.remove('updating');
+                updateTimestamp(weatherData);
+            }, 1200);
+        }
+
+        // ダイビング指標更新
+        function updateDivingIndex() {
+            const divingData = document.getElementById('diving-index');
+            divingData.classList.add('updating');
+            
+            setTimeout(() => {
+                updateDataPoint(divingData, '総合スコア', (Math.random() * 2 + 8).toFixed(1));
+                updateDataPoint(divingData, '安全度', (Math.random() * 1.5 + 8).toFixed(1));
+                
+                divingData.classList.remove('updating');
+                updateTimestamp(divingData);
+            }, 800);
+        }
+
+        // データポイント更新
+        function updateDataPoint(container, label, newValue) {
+            const dataPoints = container.querySelectorAll('.data-point');
+            dataPoints.forEach(point => {
+                const labelElement = point.querySelector('.data-label');
+                if (labelElement && labelElement.textContent === label) {
+                    const valueElement = point.querySelector('.data-value');
+                    if (valueElement) {
+                        const oldValue = parseFloat(valueElement.textContent);
+                        const newNumValue = parseFloat(newValue);
+                        
+                        valueElement.textContent = newValue;
+                        
+                        // トレンド矢印の更新
+                        const trendElement = point.querySelector('.data-trend');
+                        if (trendElement && !isNaN(oldValue) && !isNaN(newNumValue)) {
+                            if (newNumValue > oldValue) {
+                                trendElement.className = 'data-trend trend-up';
+                                trendElement.textContent = '↑';
+                            } else if (newNumValue < oldValue) {
+                                trendElement.className = 'data-trend trend-down';
+                                trendElement.textContent = '↓';
+                            } else {
+                                trendElement.className = 'data-trend trend-stable';
+                                trendElement.textContent = '→';
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // タイムスタンプ更新
+        function updateTimestamp(container) {
+            const timeElements = container.querySelectorAll('.data-time');
+            timeElements.forEach(element => {
+                if (element.textContent.includes('前更新')) {
+                    element.textContent = 'リアルタイム';
+                    setTimeout(() => {
+                        element.textContent = '1分前更新';
+                    }, 60000);
+                }
+            });
+        }
+
+        // 手動更新ボタン
+        function refreshSeaConditions() {
+            showRefreshFeedback('海況データを更新中...');
+            updateSeaConditions();
+        }
+
+        function refreshWeatherData() {
+            showRefreshFeedback('気象データを更新中...');
+            updateWeatherData();
+        }
+
+        function refreshDivingIndex() {
+            showRefreshFeedback('ダイビング指標を更新中...');
+            updateDivingIndex();
+        }
+
+        function refreshForecast() {
+            showRefreshFeedback('予測データを更新中...');
+            updateForecastData();
+        }
+
+        // 更新フィードバック
+        function showRefreshFeedback(message) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 20px;
+                background: #0369a1;
+                color: white;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 1000;
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+            `;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, 2000);
+        }
+
+        // アラート切り替え
+        function toggleAlert(toggle) {
+            toggle.classList.toggle('active');
+            const label = toggle.parentNode.querySelector('.alert-label').textContent;
+            const isActive = toggle.classList.contains('active');
+            
+            console.log(`${label}: ${isActive ? '有効' : '無効'}`);
+            
+            // 実際の実装ではAPIに設定を保存
+            saveAlertSetting(label, isActive);
+        }
+
+        // アラート設定保存
+        function saveAlertSetting(alertType, enabled) {
+            // 実際の実装ではAPIを呼び出し
+            console.log(`アラート設定保存: ${alertType} = ${enabled}`);
+        }
+
+        // アラート設定読み込み
+        function loadAlertSettings() {
+            // 実際の実装ではAPIから設定を読み込み
+            console.log('アラート設定を読み込み中...');
+        }
+
+        // クリップボードコピー
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showCopyFeedback();
+            }).catch(err => {
+                console.error('コピーに失敗しました:', err);
+            });
+        }
+
+        function showCopyFeedback() {
+            const feedback = document.createElement('div');
+            feedback.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                padding: 10px 20px;
+                background: #10b981;
+                color: white;
+                border-radius: 6px;
+                z-index: 1001;
+                font-size: 0.9rem;
+            `;
+            feedback.textContent = 'コピーしました！';
+            
+            document.body.appendChild(feedback);
+            
+            setTimeout(() => {
+                if (feedback.parentNode) {
+                    feedback.parentNode.removeChild(feedback);
+                }
+            }, 1500);
+        }
+
+        // データ品質監視
+        function monitorDataQuality() {
+            setInterval(() => {
+                // データ品質の計算とUI更新
+                const quality = calculateDataQuality();
+                updateQualityIndicator(quality);
+            }, 30000); // 30秒ごと
+        }
+
+        function calculateDataQuality() {
+            // 簡易的な品質計算
+            const factors = {
+                apiResponseTime: 0.25,
+                dataFreshness: 0.30,
+                sourceAvailability: 0.25,
+                dataConsistency: 0.20
+            };
+            
+            const scores = {
+                apiResponseTime: Math.random() * 0.2 + 0.8,
+                dataFreshness: Math.random() * 0.15 + 0.85,
+                sourceAvailability: Math.random() * 0.1 + 0.9,
+                dataConsistency: Math.random() * 0.1 + 0.9
+            };
+            
+            let totalScore = 0;
+            Object.keys(factors).forEach(key => {
+                totalScore += factors[key] * scores[key];
+            });
+            
+            return Math.round(totalScore * 100);
+        }
+
+        function updateQualityIndicator(quality) {
+            const qualityFill = document.querySelector('.quality-fill');
+            const qualityPercentage = document.querySelector('.quality-percentage');
+            
+            if (qualityFill && qualityPercentage) {
+                qualityFill.style.width = `${quality}%`;
+                qualityPercentage.textContent = `${quality}%`;
+                
+                // 色の変更
+                if (quality >= 90) {
+                    qualityFill.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+                } else if (quality >= 70) {
+                    qualityFill.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
+                } else {
+                    qualityFill.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+                }
+            }
+        }
+
+        // 予測データ更新
+        function updateForecastData() {
+            const timeline = document.getElementById('forecast-timeline');
+            
+            // 実際の実装ではAPIから予測データを取得
+            console.log('予測データを更新中...');
+        }
+
+        // 緊急気象アラート表示
+        function showWeatherAlert(alertData) {
+            const alert = document.createElement('div');
+            alert.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                background: #ef4444;
+                color: white;
+                padding: 15px;
+                text-align: center;
+                font-weight: 600;
+                z-index: 1002;
+                transform: translateY(-100%);
+                transition: transform 0.3s ease;
+            `;
+            alert.innerHTML = `
+                <i class="fas fa-exclamation-triangle"></i>
+                緊急気象警報: ${alertData.message}
+                <button onclick="this.parentNode.remove()" style="float: right; background: none; border: none; color: white; cursor: pointer; font-size: 1.2rem;">×</button>
+            `;
+            
+            document.body.appendChild(alert);
+            
+            setTimeout(() => {
+                alert.style.transform = 'translateY(0)';
+            }, 100);
+            
+            // 10秒後に自動消去
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    alert.style.transform = 'translateY(-100%)';
+                    setTimeout(() => {
+                        if (alert.parentNode) {
+                            alert.parentNode.removeChild(alert);
+                        }
+                    }, 300);
+                }
+            }, 10000);
+        }
+    </script>
+</body>
+</html>
