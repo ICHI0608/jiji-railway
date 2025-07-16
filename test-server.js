@@ -16,11 +16,19 @@ app.get('/api/health', (req, res) => {
     });
 });
 
-// UptimeRobot endpoints
+// UptimeRobot endpoints - GET and POST support
+app.get('/api/line-webhook', (req, res) => {
+    res.json({
+        status: 'ok',
+        message: 'LINE Bot Webhook endpoint is active (GET)',
+        timestamp: new Date().toISOString()
+    });
+});
+
 app.post('/api/line-webhook', (req, res) => {
     res.json({
         status: 'ok',
-        message: 'LINE Bot Webhook endpoint is active',
+        message: 'LINE Bot Webhook endpoint is active (POST)',
         timestamp: new Date().toISOString()
     });
 });
