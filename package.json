@@ -4,7 +4,7 @@
   "description": "🌊 Jiji AI Diving Buddy - Phase 4-A Railway Production Ready",
   "main": "server.js",
   "scripts": {
-    "start": "NODE_ENV=production node test-server.js",
+    "start": "NODE_ENV=production node app.js",
     "dev": "nodemon api-server-railway.js",
     "test": "node test-phase4a-complete.js",
     "test:api": "node test-railway-api.js",
