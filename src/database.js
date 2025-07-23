@@ -8,25 +8,55 @@ const supabase = createClient(
     process.env.SUPABASE_ANON_KEY
 );
 
-// Redis クライアント設定
-const redisClient = createRedisClient({
-    socket: {
-        host: process.env.REDIS_HOST,
-        port: process.env.REDIS_PORT,
-        tls: {
-            minVersion: 'TLSv1.2'
-        }
-    },
-    username: process.env.REDIS_USERNAME,
-    password: process.env.REDIS_PASSWORD
-});
+// Redis クライアント設定（オプショナル）
+let redisClient = null;
+let redisAvailable = false;
 
-redisClient.on('error', (err) => console.error('❌ Redis Client Error', err));
+// Redis初期化（エラー時は無効化）
+try {
+    if (process.env.REDIS_HOST) {
+        redisClient = createRedisClient({
+            socket: {
+                host: process.env.REDIS_HOST,
+                port: process.env.REDIS_PORT,
+                tls: {
+                    minVersion: 'TLSv1.2'
+                }
+            },
+            username: process.env.REDIS_USERNAME,
+            password: process.env.REDIS_PASSWORD
+        });
+        
+        redisClient.on('error', (err) => {
+            console.error('❌ Redis Client Error', err);
+            redisAvailable = false;
+        });
+        
+        redisClient.on('connect', () => {
+            console.log('✅ Redis connected');
+            redisAvailable = true;
+        });
+    } else {
+        console.log('ℹ️ Redis設定なし - キャッシュ機能無効');
+    }
+} catch (error) {
+    console.log('ℹ️ Redis初期化スキップ:', error.message);
+}
 
 // Redis接続を管理する関数
 async function ensureRedisConnection() {
-    if (!redisClient.isOpen) {
-        await redisClient.connect();
+    if (!redisClient || !redisAvailable) return false;
+    
+    try {
+        if (!redisClient.isOpen) {
+            await redisClient.connect();
+            redisAvailable = true;
+        }
+        return true;
+    } catch (error) {
+        console.log('ℹ️ Redis接続失敗 - キャッシュなしで続行');
+        redisAvailable = false;
+        return false;
     }
 }
 
@@ -77,14 +107,18 @@ async function createUserProfile(lineUserId, userData = {}) {
  */
 async function getUserProfile(lineUserId) {
     try {
-        // まずRedisキャッシュを確認
-        await ensureRedisConnection();
+        // Redisキャッシュを確認（利用可能な場合のみ）
         const cacheKey = `user_profile:${lineUserId}`;
-        const cachedProfile = await redisClient.get(cacheKey);
-
-        if (cachedProfile) {
-            console.log('✅ Redisキャッシュからプロファイル取得:', lineUserId);
-            return { success: true, data: JSON.parse(cachedProfile), fromCache: true };
+        if (await ensureRedisConnection()) {
+            try {
+                const cachedProfile = await redisClient.get(cacheKey);
+                if (cachedProfile) {
+                    console.log('✅ Redisキャッシュからプロファイル取得:', lineUserId);
+                    return { success: true, data: JSON.parse(cachedProfile), fromCache: true };
+                }
+            } catch (error) {
+                console.log('ℹ️ Redisキャッシュ取得失敗 - DB直接アクセス');
+            }
         }
 
         // キャッシュにない場合はSupabaseから取得
@@ -103,8 +137,14 @@ async function getUserProfile(lineUserId) {
             return { success: false, error: error.message };
         }
 
-        // Redisにキャッシュ（1時間）
-        await redisClient.setEx(cacheKey, 3600, JSON.stringify(data));
+        // Redisキャッシュ（利用可能な場合のみ）
+        if (await ensureRedisConnection()) {
+            try {
+                await redisClient.setEx(cacheKey, 3600, JSON.stringify(data));
+            } catch (error) {
+                console.log('ℹ️ Redisキャッシュ保存失敗');
+            }
+        }
 
         console.log('✅ ユーザープロファイル取得成功:', lineUserId);
         return { success: true, data, fromCache: false };
@@ -141,10 +181,15 @@ async function updateUserProfile(lineUserId, updates) {
             return { success: false, error: error.message };
         }
 
-        // Redisキャッシュを更新
-        await ensureRedisConnection();
+        // Redisキャッシュを更新（利用可能な場合のみ）
         const cacheKey = `user_profile:${lineUserId}`;
-        await redisClient.setEx(cacheKey, 3600, JSON.stringify(data));
+        if (await ensureRedisConnection()) {
+            try {
+                await redisClient.setEx(cacheKey, 3600, JSON.stringify(data));
+            } catch (error) {
+                console.log('ℹ️ Redisキャッシュ更新失敗');
+            }
+        }
 
         console.log('✅ ユーザープロファイル更新成功:', lineUserId);
         return { success: true, data };
@@ -260,9 +305,7 @@ async function userExists(lineUserId) {
 
 async function testDatabaseConnection() {
     try {
-        await redisClient.connect();
-        console.log('✅ Redis connected successfully');
-
+        // Supabase接続テスト
         const { data, error } = await supabase
             .from('user_profiles')
             .select('id')
@@ -274,17 +317,21 @@ async function testDatabaseConnection() {
             console.log('✅ Supabase connected successfully');
         }
 
-        await redisClient.set('test', 'connection-test');
-        const testValue = await redisClient.get('test');
-        console.log(`✅ Redis test: set 'test', got '${testValue}'`);
+        // Redis接続テスト（オプショナル）
+        if (await ensureRedisConnection()) {
+            try {
+                await redisClient.set('test', 'connection-test');
+                const testValue = await redisClient.get('test');
+                console.log(`✅ Redis test: set 'test', got '${testValue}'`);
+            } catch (error) {
+                console.log('ℹ️ Redis接続テスト失敗 - キャッシュ機能無効');
+            }
+        } else {
+            console.log('ℹ️ Redis無効 - Supabaseのみで動作');
+        }
 
     } catch (err) {
         console.error('❌ Database connection test error:', err);
-    } finally {
-        if (redisClient.isOpen) {
-            await redisClient.quit();
-            console.log('✅ Redis client connection closed.');
-        }
     }
 }
 
