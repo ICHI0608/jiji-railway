@@ -16,6 +16,15 @@ const config = {
 const client = new line.Client(config);
 const app = express();
 
+// ===== 静的ファイル配信設定 =====
+const path = require('path');
+
+// 静的ファイル（CSS、JS、画像）の配信
+app.use(express.static(path.join(__dirname, 'public')));
+
+// JSONパーサー設定
+app.use(express.json());
+
 // ===== 起動時初期化 =====
 
 async function initializeApp() {
@@ -161,14 +170,52 @@ async function handleUnfollowEvent(event) {
 
 // ===== ヘルスチェック・管理機能 =====
 
+// ===== Webページルート =====
+
+// メインページ
 app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// 主要ページルート
+app.get('/member', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'member', 'index.html'));
+});
+
+app.get('/shops-database', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'shops-database', 'index.html'));
+});
+
+app.get('/travel-guide', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'travel-guide', 'index.html'));
+});
+
+app.get('/weather-ocean', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'weather-ocean', 'index.html'));
+});
+
+app.get('/partners', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'partners.html'));
+});
+
+app.get('/about', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'about.html'));
+});
+
+app.get('/contact', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'contact.html'));
+});
+
+// API情報エンドポイント（開発・監視用）
+app.get('/api/info', (req, res) => {
     res.json({
         status: 'ok',
-        service: 'Jiji沖縄ダイビングバディ',
-        version: '2.0.0',
+        service: 'Dive Buddy\'s (Jiji)',
+        version: '2.8.3',
         features: [
-            'データベース統合版',
-            'PostgreSQL + Redis',
+            'LINE Bot完結型システム',
+            'Web知識ベース統合',
+            'dive-buddys.com完全稼働',
             '沖縄全島対応',
             '3つの顔（相談相手・コンシェルジュ・理解者）'
         ],
@@ -177,7 +224,7 @@ app.get('/', (req, res) => {
     });
 });
 
-app.get('/health', async (req, res) => {
+app.get('/api/health', async (req, res) => {
     try {
         // データベース接続確認
         await testDatabaseConnection();
