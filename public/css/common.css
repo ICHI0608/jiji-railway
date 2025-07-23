@@ -125,8 +125,14 @@ html {
     transition: width 0.3s ease;
 }
 
-.main-nav-menu a:hover::after {
+.main-nav-menu a:hover::after,
+.main-nav-menu a.active::after {
     width: 100%;
+}
+
+.main-nav-menu a.active {
+    font-weight: 700;
+    color: #ffd93d;
 }
 
 .main-nav-buttons {
@@ -190,6 +196,40 @@ html {
 .btn-large {
     padding: 18px 36px;
     font-size: 18px;
+}
+
+/* LINE Bot連携強化ボタン */
+.btn-line-connect {
+    background: linear-gradient(135deg, #00c300, #009900) !important;
+    position: relative;
+    animation: pulse-green 2s infinite;
+}
+
+.btn-line-connect:hover {
+    background: linear-gradient(135deg, #00b300, #008800) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 195, 0, 0.4);
+}
+
+.btn-line-connect::before {
+    content: '💬';
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    font-size: 12px;
+    animation: bounce 1s infinite;
+}
+
+@keyframes pulse-green {
+    0% { box-shadow: 0 0 0 0 rgba(0, 195, 0, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(0, 195, 0, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(0, 195, 0, 0); }
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-3px); }
+    60% { transform: translateY(-1px); }
 }
 
 .btn-outline {
@@ -442,4 +482,27 @@ html {
     background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* LINE Bot連携フィードバックアニメーション */
+@keyframes slideInRight {
+    from {
+        transform: translateX(300px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(300px);
+        opacity: 0;
+    }
 }

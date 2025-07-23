@@ -1,6 +1,6 @@
 /**
- * Jiji統合サイト共通JavaScript
- * Phase 6-A: 統合Webサイト構築
+ * Dive Buddy's 統合サイト共通JavaScript
+ * dive-buddys.com - あなた専属のダイビングバディ
  */
 
 // ===== 初期化 =====
@@ -13,10 +13,11 @@ document.addEventListener('DOMContentLoaded', function() {
 // ===== 共通機能初期化 =====
 function initializeCommonFeatures() {
     setupNavigation();
+    setupLineConnect();
     setupSmoothScroll();
     setupFormValidation();
     setupLoadingStates();
-    console.log('🌊 Jiji Common Features Initialized');
+    console.log('🌺 Dive Buddy\'s Common Features Initialized');
 }
 
 // ===== ナビゲーション設定 =====
@@ -57,6 +58,66 @@ function setupNavigation() {
             }
         });
     }
+}
+
+// ===== LINE Bot連携強化 =====
+function setupLineConnect() {
+    const lineButtons = document.querySelectorAll('.btn-line-connect');
+    
+    lineButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            // クリック追跡
+            if (typeof gtag !== 'undefined') {
+                gtag('event', 'line_bot_connect', {
+                    'event_category': 'engagement',
+                    'event_label': 'header_button'
+                });
+            }
+            
+            // フィードバック表示
+            showLineConnectFeedback();
+        });
+    });
+}
+
+function showLineConnectFeedback() {
+    // LINE Bot連携後のフィードバック表示
+    const feedback = document.createElement('div');
+    feedback.className = 'line-connect-feedback';
+    feedback.innerHTML = `
+        <div class="feedback-content">
+            <i class="fab fa-line"></i>
+            <p>Jijiがあなた専属のダイビングバディとしてサポートします！</p>
+            <small>🌺 Dive Buddy's - 初心者ダイバーの仲間・相談相手・理解者</small>
+        </div>
+    `;
+    
+    // スタイル追加
+    feedback.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #00c300, #009900);
+        color: white;
+        padding: 20px;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 195, 0, 0.3);
+        z-index: 10000;
+        max-width: 300px;
+        animation: slideInRight 0.5s ease;
+    `;
+    
+    document.body.appendChild(feedback);
+    
+    // 3秒後に自動削除
+    setTimeout(() => {
+        feedback.style.animation = 'slideOutRight 0.5s ease';
+        setTimeout(() => {
+            if (feedback.parentNode) {
+                feedback.parentNode.removeChild(feedback);
+            }
+        }, 500);
+    }, 3000);
 }
 
 // ===== スムーススクロール =====
