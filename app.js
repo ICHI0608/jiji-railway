@@ -39,7 +39,7 @@ async function initializeApp() {
 
 // ===== LINE Webhook処理 =====
 
-app.post('/webhook', line.middleware(config), async (req, res) => {
+app.post('/api/line-webhook', line.middleware(config), async (req, res) => {
     try {
         const events = req.body.events;
         console.log(`📥 Webhook受信: ${events.length}件のイベント`);
