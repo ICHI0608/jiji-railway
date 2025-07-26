@@ -1683,15 +1683,122 @@ function generateSlug(title) {
         .replace(/^-|-$/g, '');   // 先頭・末尾のハイフン除去
 }
 
+// ===== 管理画面ルーティング =====
+
+// 管理画面ダッシュボード
+app.get('/admin', (req, res) => {
+    res.redirect('/admin/dashboard');
+});
+
+app.get('/admin/dashboard', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/admin/dashboard.html'));
+});
+
+// 記事作成・編集
+app.get('/admin/blog-editor', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/admin/blog-editor.html'));
+});
+
+// 記事管理リスト
+app.get('/admin/blog-list', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/admin/blog-list.html'));
+});
+
+// ===== フロントエンドページルーティング =====
+
+// ホームページ
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/index.html'));
+});
+
+// サービス概要
+app.get('/about', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/about.html'));
+});
+
+// ショップデータベース
+app.get('/shops-database', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/shops-database/index.html'));
+});
+
+// 旅行ガイド
+app.get('/travel-guide', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/travel-guide/index.html'));
+});
+
+// エリア別ガイド
+app.get('/travel-guide/ishigaki', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/travel-guide/ishigaki.html'));
+});
+
+app.get('/travel-guide/miyako', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/travel-guide/miyako.html'));
+});
+
+// 海況・天気
+app.get('/weather-ocean', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/weather-ocean/index.html'));
+});
+
+// 会員システム
+app.get('/member', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/member/index.html'));
+});
+
+// お問い合わせ
+app.get('/contact', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/contact/index.html'));
+});
+
 // ===== エラーハンドリング =====
 
 // 404エラー
 app.use((req, res) => {
-    res.status(404).json({
-        error: 'Not Found',
-        message: 'このエンドポイントは存在しません',
-        available_endpoints: ['/', '/health', '/stats', '/webhook']
-    });
+    // HTMLページへのアクセスの場合
+    if (req.accepts('html')) {
+        res.status(404).send(`
+            <!DOCTYPE html>
+            <html lang="ja">
+            <head>
+                <meta charset="UTF-8">
+                <title>ページが見つかりません | Dive Buddy's</title>
+                <style>
+                    body { font-family: 'Noto Sans JP', sans-serif; text-align: center; padding: 50px; }
+                    .container { max-width: 600px; margin: 0 auto; }
+                    .error-code { font-size: 6rem; font-weight: bold; color: #2563eb; margin-bottom: 20px; }
+                    .error-message { font-size: 1.5rem; margin-bottom: 30px; color: #374151; }
+                    .links { margin: 30px 0; }
+                    .links a { color: #2563eb; text-decoration: none; margin: 0 10px; }
+                    .links a:hover { text-decoration: underline; }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="error-code">404</div>
+                    <div class="error-message">お探しのページが見つかりません</div>
+                    <div class="links">
+                        <a href="/">ホーム</a> |
+                        <a href="/admin/dashboard">管理画面</a> |
+                        <a href="/shops-database">ショップDB</a> |
+                        <a href="/travel-guide">旅行ガイド</a>
+                    </div>
+                    <p>URL をご確認いただくか、上記のリンクからお探しのページにアクセスしてください。</p>
+                </div>
+            </body>
+            </html>
+        `);
+    } else {
+        // JSON APIアクセスの場合
+        res.status(404).json({
+            error: 'Not Found',
+            message: 'このエンドポイントは存在しません',
+            available_endpoints: {
+                pages: ['/', '/admin/dashboard', '/admin/blog-editor', '/admin/blog-list', '/shops-database', '/travel-guide', '/weather-ocean'],
+                api: ['/api/health', '/api/stats', '/api/blog/articles', '/api/shops', '/api/weather'],
+                webhook: ['/webhook']
+            }
+        });
+    }
 });
 
 // 一般的なエラーハンドリング
