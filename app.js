@@ -124,9 +124,14 @@ async function initializeApp() {
     console.log('🚀 Jiji沖縄ダイビングバディ初期化開始...');
     
     try {
-        // データベース接続確認
+        // データベース接続確認（警告のみ、エラーでも続行）
         console.log('💾 データベース接続確認中...');
-        await testDatabaseConnection();
+        try {
+            await testDatabaseConnection();
+            console.log('✅ データベース接続成功');
+        } catch (dbError) {
+            console.warn('⚠️ データベース接続失敗（続行）:', dbError.message);
+        }
         
         console.log('🤖 Jijiペルソナ設定完了');
         console.log(`📍 対応エリア: ${JIJI_PERSONA_CONFIG.coverage_areas.join('、')}`);
@@ -135,7 +140,9 @@ async function initializeApp() {
         return true;
     } catch (error) {
         console.error('❌ 初期化エラー:', error);
-        return false;
+        // 管理画面は動作可能なので警告のみ
+        console.warn('⚠️ 一部機能制限で続行します');
+        return true;
     }
 }
 
@@ -1683,73 +1690,6 @@ function generateSlug(title) {
         .replace(/^-|-$/g, '');   // 先頭・末尾のハイフン除去
 }
 
-// ===== 管理画面ルーティング =====
-
-// 管理画面ダッシュボード
-app.get('/admin', (req, res) => {
-    res.redirect('/admin/dashboard');
-});
-
-app.get('/admin/dashboard', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public/admin/dashboard.html'));
-});
-
-// 記事作成・編集
-app.get('/admin/blog-editor', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public/admin/blog-editor.html'));
-});
-
-// 記事管理リスト
-app.get('/admin/blog-list', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public/admin/blog-list.html'));
-});
-
-// ===== フロントエンドページルーティング =====
-
-// ホームページ
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public/index.html'));
-});
-
-// サービス概要
-app.get('/about', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public/about.html'));
-});
-
-// ショップデータベース
-app.get('/shops-database', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public/shops-database/index.html'));
-});
-
-// 旅行ガイド
-app.get('/travel-guide', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public/travel-guide/index.html'));
-});
-
-// エリア別ガイド
-app.get('/travel-guide/ishigaki', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public/travel-guide/ishigaki.html'));
-});
-
-app.get('/travel-guide/miyako', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public/travel-guide/miyako.html'));
-});
-
-// 海況・天気
-app.get('/weather-ocean', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public/weather-ocean/index.html'));
-});
-
-// 会員システム
-app.get('/member', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public/member/index.html'));
-});
-
-// お問い合わせ
-app.get('/contact', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public/contact/index.html'));
-});
-
 // ===== エラーハンドリング =====
 
 // 404エラー
@@ -1827,13 +1767,8 @@ process.on('SIGTERM', () => {
 const PORT = process.env.PORT || 3000;
 
 async function startServer() {
-    // 初期化
-    const initialized = await initializeApp();
-    
-    if (!initialized) {
-        console.error('❌ 初期化に失敗しました。終了します。');
-        process.exit(1);
-    }
+    // 初期化（エラーでも続行）
+    await initializeApp();
 
     // サーバー起動
     app.listen(PORT, () => {
@@ -1841,8 +1776,8 @@ async function startServer() {
         console.log('🚀 Jiji沖縄ダイビングバディ起動完了！');
         console.log('🤖 Database統合版 v2.0.0');
         console.log('=====================================');
-        console.log(`📡 サーバー: http://localhost:${PORT}`);
-        console.log(`🤖 Webhook: http://localhost:${PORT}/webhook`);
+        console.log(`📡 サーバー: ${BASE_URL}`);
+        console.log(`🤖 Webhook: ${BASE_URL}/webhook`);
         console.log(`💾 データベース: PostgreSQL + Redis`);
         console.log(`🏝️ 対応エリア: ${JIJI_PERSONA_CONFIG.coverage_areas.join('、')}`);
         console.log('=====================================🎉\n');
