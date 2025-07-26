@@ -2,14 +2,32 @@ const express = require('express');
 const line = require('@line/bot-sdk');
 require('dotenv').config();
 
-// 本番環境での設定
-const isProduction = process.env.NODE_ENV === 'production';
-const DOMAIN = isProduction ? 'dive-buddys.com' : 'localhost:3000';
-const PROTOCOL = isProduction ? 'https' : 'http';
+// 環境設定
+const NODE_ENV = process.env.NODE_ENV || 'development';
+const SITE_STATUS = process.env.SITE_STATUS || 'public';
+const isProduction = NODE_ENV === 'production';
+const isStaging = NODE_ENV === 'staging';
+const isPrivate = SITE_STATUS === 'private';
+
+// URL設定（非公開環境対応）
+let DOMAIN, PROTOCOL;
+if (isProduction && !isPrivate) {
+    DOMAIN = 'dive-buddys.com';
+    PROTOCOL = 'https';
+} else if (isStaging || isPrivate) {
+    // Railway提供の非公開URLを使用（実際のURLは動的取得）
+    DOMAIN = process.env.RAILWAY_STATIC_URL || 'jiji-diving-bot-staging.railway.app';
+    PROTOCOL = 'https';
+} else {
+    DOMAIN = 'localhost:3000';
+    PROTOCOL = 'http';
+}
+
 const BASE_URL = `${PROTOCOL}://${DOMAIN}`;
 
 console.log(`🌊 Dive Buddy's 起動中...`);
-console.log(`📍 環境: ${process.env.NODE_ENV || 'development'}`);
+console.log(`📍 環境: ${NODE_ENV}`);
+console.log(`🔒 公開状態: ${isPrivate ? '非公開（テスト環境）' : '公開'}`);
 console.log(`🌐 ベースURL: ${BASE_URL}`);
 
 // 分割されたモジュールをインポート
@@ -47,8 +65,8 @@ const blogService = new BlogAPIService();
 // ===== 静的ファイル配信設定 =====
 const path = require('path');
 
-// セキュリティヘッダー設定（本番環境）
-if (isProduction) {
+// セキュリティヘッダー設定（本番・ステージング環境）
+if (isProduction || isStaging) {
     app.use((req, res, next) => {
         // HTTPSリダイレクト
         if (req.header('x-forwarded-proto') !== 'https') {
@@ -63,6 +81,33 @@ if (isProduction) {
         res.setHeader('X-XSS-Protection', '1; mode=block');
         res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
         
+        // 非公開環境のアクセス制御
+        if (isPrivate) {
+            res.setHeader('X-Robots-Tag', 'noindex, nofollow, noarchive, nosnippet');
+        }
+        
+        next();
+    });
+}
+
+// 非公開環境用アクセス制御
+if (isPrivate) {
+    app.use('/admin', (req, res, next) => {
+        // 管理画面は制限なし（テスト用）
+        next();
+    });
+    
+    app.use('/api', (req, res, next) => {
+        // API も制限なし（テスト用）
+        next();
+    });
+    
+    // 一般ページに非公開通知を追加
+    app.use((req, res, next) => {
+        if (req.path.endsWith('.html') || req.path === '/') {
+            res.locals.siteStatus = 'private';
+            res.locals.environment = NODE_ENV;
+        }
         next();
     });
 }

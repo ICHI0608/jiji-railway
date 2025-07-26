@@ -11,9 +11,13 @@ restartPolicyMaxRetries = 10
 [environments.production]
 variables = { NODE_ENV = "production" }
 
-[environments.production.domains]
-# カスタムドメイン設定
-domains = ["dive-buddys.com", "www.dive-buddys.com"]
+# 非公開テスト環境用設定
+[environments.staging]
+variables = { NODE_ENV = "staging", SITE_STATUS = "private" }
+
+# 将来の本番ドメイン設定（現在は非活性）
+# [environments.production.domains]
+# domains = ["dive-buddys.com", "www.dive-buddys.com"]
 
 [environments.production.services.web]
 # HTTPSリダイレクト強制
