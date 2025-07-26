@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dive Buddy's - 沖縄ダイビングで最高の思い出を💙</title>
+    <style>
+        /* リセット & ベースフォント */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Hiragino Sans', 'ヒラギノ角ゴシック', 'Yu Gothic', 'Meiryo', sans-serif;
+            line-height: 1.6;
+            background: linear-gradient(135deg, #FFB6C1 0%, #87CEEB 50%, #DDA0DD 100%);
+            min-height: 100vh;
+        }
+
+        /* カラー変数 - ゆめか向け調整 */
+        :root {
+            --ocean-blue: #4A90A4;      /* 柔らかい海の青 */
+            --coral-pink: #FF6B9D;      /* コーラルピンク */
+            --mint-green: #4ECDC4;      /* ミントグリーン */
+            --soft-white: #FFF8F5;      /* 温かみのある白 */
+            --lavender: #DDA0DD;        /* ラベンダー */
+            --sunset-peach: #FFAB91;    /* サンセットピーチ */
+            --deep-navy: #2C3E50;       /* 読みやすい濃い色 */
+        }
+
+        /* キラキラエフェクト */
+        .sparkle {
+            position: relative;
+        }
+
+        .sparkle::before,
+        .sparkle::after {
+            content: '✨';
+            position: absolute;
+            font-size: 1.2em;
+            animation: sparkle 2s infinite;
+        }
+
+        .sparkle::before {
+            top: -10px;
+            left: -15px;
+            animation-delay: 0s;
+        }
+
+        .sparkle::after {
+            bottom: -10px;
+            right: -15px;
+            animation-delay: 1s;
+        }
+
+        @keyframes sparkle {
+            0%, 100% { opacity: 0; transform: scale(0.5); }
+            50% { opacity: 1; transform: scale(1); }
+        }
+
+        /* ヘッダー - より可愛らしく */
+        .header {
+            background: linear-gradient(135deg, rgba(255, 248, 245, 0.95) 0%, rgba(255, 182, 193, 0.9) 100%);
+            padding: 20px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(15px);
+            box-shadow: 0 4px 20px rgba(255, 107, 157, 0.2);
+        }
+
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .logo-section h1 {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            font-size: 28px;
+            color: var(--coral-pink);
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.8);
+            letter-spacing: 0.05em;
+        }
+
+        .logo-section .tagline {
+            font-size: 14px;
+            color: var(--deep-navy);
+            margin-top: 2px;
+            font-weight: 500;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 25px;
+            align-items: center;
+        }
+
+        .nav-menu a {
+            text-decoration: none;
+            color: var(--ocean-blue);
+            font-size: 15px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            padding: 8px 15px;
+            border-radius: 20px;
+        }
+
+        .nav-menu a:hover {
+            color: var(--coral-pink);
+            background: rgba(255, 255, 255, 0.7);
+            transform: translateY(-2px);
+        }
+
+        .cta-button {
+            background: linear-gradient(135deg, var(--coral-pink), var(--sunset-peach));
+            color: white;
+            padding: 12px 25px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 107, 157, 0.4);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(255, 107, 157, 0.6);
+            color: white;
+        }
+
+        /* キュートな雲の装飾 */
+        .clouds {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 300px;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .cloud {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 50px;
+            opacity: 0.8;
+        }
+
+        .cloud1 { width: 180px; height: 60px; top: 120px; left: 15%; animation: float1 8s infinite ease-in-out; }
+        .cloud2 { width: 220px; height: 70px; top: 180px; right: 20%; animation: float2 10s infinite ease-in-out; }
+        .cloud3 { width: 140px; height: 45px; top: 100px; right: 45%; animation: float1 6s infinite ease-in-out; }
+
+        @keyframes float1 {
+            0%, 100% { transform: translateX(0px) translateY(0px); }
+            50% { transform: translateX(20px) translateY(-10px); }
+        }
+
+        @keyframes float2 {
+            0%, 100% { transform: translateX(0px) translateY(0px); }
+            50% { transform: translateX(-25px) translateY(-15px); }
+        }
+
+        /* メインコンテナ */
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* ヒーローセクション - より女性らしく */
+        .hero-section {
+            margin: 40px 0;
+            position: relative;
+        }
+
+        .hero-image-container {
+            width: 100%;
+            height: 350px;
+            border: 3px solid var(--coral-pink);
+            border-radius: 25px;
+            background: linear-gradient(135deg, var(--soft-white) 0%, rgba(255, 182, 193, 0.1) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            margin-bottom: 40px;
+            overflow: hidden;
+            box-shadow: 0 8px 30px rgba(255, 107, 157, 0.2);
+        }
+
+        .hero-image-placeholder {
+            font-size: 20px;
+            color: var(--coral-pink);
+            text-align: center;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Jijiキャラクター - より可愛く */
+        .jiji-character {
+            position: absolute;
+            top: -30px;
+            left: 60px;
+            z-index: 20;
+        }
+
+        .jiji-avatar {
+            width: 90px;
+            height: 90px;
+            background: linear-gradient(135deg, var(--mint-green), var(--ocean-blue));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            animation: bouncing 3s ease-in-out infinite;
+            box-shadow: 0 6px 25px rgba(78, 205, 196, 0.4);
+            border: 4px solid white;
+        }
+
+        .speech-bubble {
+            position: absolute;
+            top: -15px;
+            left: 110px;
+            background: var(--soft-white);
+            padding: 20px;
+            border-radius: 20px;
+            border: 3px solid var(--coral-pink);
+            font-size: 13px;
+            color: var(--deep-navy);
+            line-height: 1.5;
+            width: 200px;
+            box-shadow: 0 6px 20px rgba(255, 107, 157, 0.2);
+        }
+
+        .speech-bubble::before {
+            content: '';
+            position: absolute;
+            left: -12px;
+            top: 35px;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 12px 12px 12px 0;
+            border-color: transparent var(--coral-pink) transparent transparent;
+        }
+
+        .speech-bubble::after {
+            content: '';
+            position: absolute;
+            left: -8px;
+            top: 38px;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 9px 9px 9px 0;
+            border-color: transparent var(--soft-white) transparent transparent;
+        }
+
+        @keyframes bouncing {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+        }
+
+        /* ヒーローテキスト - より感情的に */
+        .hero-content {
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        .hero-title {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            font-size: 38px;
+            font-weight: bold;
+            color: var(--deep-navy);
+            margin-bottom: 15px;
+            line-height: 1.3;
+        }
+
+        .gradient-accent {
+            background: linear-gradient(135deg, var(--coral-pink), var(--sunset-peach));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 18px;
+            color: var(--ocean-blue);
+            margin-bottom: 35px;
+            line-height: 1.8;
+            font-weight: 500;
+        }
+
+        /* CTAボタン - より魅力的に */
+        .cta-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--coral-pink), var(--sunset-peach));
+            color: white;
+            padding: 15px 35px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-size: 17px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(255, 107, 157, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(255, 107, 157, 0.6);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, var(--mint-green), var(--ocean-blue));
+            color: white;
+            padding: 15px 35px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-size: 17px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(78, 205, 196, 0.4);
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(78, 205, 196, 0.6);
+        }
+
+        /* 機能紹介セクション - カード型でキュート */
+        .features-section {
+            margin: 100px 0;
+        }
+
+        .section-title {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            font-size: 28px;
+            font-weight: bold;
+            color: var(--deep-navy);
+            text-align: center;
+            margin-bottom: 60px;
+            position: relative;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 40px;
+            margin-top: 40px;
+        }
+
+        .feature-card {
+            background: linear-gradient(145deg, var(--soft-white) 0%, rgba(255, 182, 193, 0.1) 100%);
+            border-radius: 25px;
+            padding: 35px 25px;
+            text-align: center;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid rgba(255, 107, 157, 0.2);
+            box-shadow: 0 8px 30px rgba(255, 107, 157, 0.15);
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 107, 157, 0.1), transparent);
+            transform: rotate(45deg);
+            transition: all 0.6s ease;
+            opacity: 0;
+        }
+
+        .feature-card:hover::before {
+            opacity: 1;
+            animation: shimmer 1.5s ease-in-out;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 15px 40px rgba(255, 107, 157, 0.25);
+            border-color: var(--coral-pink);
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 25px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            position: relative;
+            z-index: 1;
+        }
+
+        .feature-card:nth-child(1) .feature-icon { 
+            background: linear-gradient(135deg, var(--coral-pink), var(--sunset-peach)); 
+        }
+        .feature-card:nth-child(2) .feature-icon { 
+            background: linear-gradient(135deg, var(--mint-green), var(--ocean-blue)); 
+        }
+        .feature-card:nth-child(3) .feature-icon { 
+            background: linear-gradient(135deg, var(--lavender), var(--coral-pink)); 
+        }
+
+        .feature-card h3 {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--deep-navy);
+            margin-bottom: 18px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .feature-card p {
+            font-size: 15px;
+            color: var(--ocean-blue);
+            margin-bottom: 25px;
+            line-height: 1.7;
+            position: relative;
+            z-index: 1;
+        }
+
+        .feature-image-placeholder {
+            width: 100%;
+            height: 80px;
+            border: 2px dashed var(--coral-pink);
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            color: var(--coral-pink);
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .feature-button {
+            background: linear-gradient(135deg, var(--sunset-peach), var(--coral-pink));
+            color: white;
+            padding: 10px 25px;
+            border: none;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 1;
+            box-shadow: 0 4px 12px rgba(255, 107, 157, 0.3);
+        }
+
+        .feature-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 18px rgba(255, 107, 157, 0.4);
+        }
+
+        /* 価格表示 - ゆめかが気になる要素 */
+        .price-highlight {
+            background: linear-gradient(135deg, var(--coral-pink), var(--sunset-peach));
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 14px;
+            display: inline-block;
+            margin-top: 10px;
+            box-shadow: 0 3px 10px rgba(255, 107, 157, 0.3);
+        }
+
+        /* 安心感アピール */
+        .safety-badge {
+            background: var(--mint-green);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+            display: inline-block;
+            margin: 5px;
+        }
+
+        /* 波の装飾 - より優雅に */
+        .wave-decoration {
+            position: relative;
+            margin-top: 80px;
+        }
+
+        .wave-decoration::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 120px;
+            background: linear-gradient(135deg, var(--lavender), var(--mint-green));
+            opacity: 0.3;
+            clip-path: polygon(0 60%, 15% 40%, 35% 55%, 55% 35%, 75% 50%, 95% 30%, 100% 45%, 100% 100%, 0 100%);
+        }
+
+        /* フッター - より温かみのある */
+        .footer {
+            background: linear-gradient(135deg, var(--soft-white), rgba(255, 182, 193, 0.2));
+            padding: 50px 0;
+            text-align: center;
+            margin-top: 100px;
+            position: relative;
+            border-top: 3px solid var(--coral-pink);
+        }
+
+        .footer-title {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            font-size: 18px;
+            color: var(--coral-pink);
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .footer-subtitle {
+            font-size: 14px;
+            color: var(--deep-navy);
+            line-height: 1.6;
+        }
+
+        /* ハート装飾 */
+        .heart-decoration {
+            color: var(--coral-pink);
+            font-size: 1.2em;
+            animation: heartbeat 2s infinite;
+        }
+
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* レスポンシブ */
+        @media (max-width: 768px) {
+            .header-container {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .nav-menu {
+                gap: 15px;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .hero-title {
+                font-size: 30px;
+            }
+
+            .hero-subtitle {
+                font-size: 16px;
+            }
+
+            .jiji-character {
+                position: relative;
+                left: 0;
+                top: 0;
+                text-align: center;
+                margin-bottom: 30px;
+            }
+
+            .speech-bubble {
+                position: relative;
+                left: 0;
+                margin-top: 20px;
+                width: 100%;
+                max-width: 280px;
+            }
+
+            .speech-bubble::before,
+            .speech-bubble::after {
+                display: none;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- キュートな雲の装飾 -->
+    <div class="clouds">
+        <div class="cloud cloud1"></div>
+        <div class="cloud cloud2"></div>
+        <div class="cloud cloud3"></div>
+    </div>
+
+    <!-- ヘッダー -->
+    <header class="header">
+        <div class="header-container">
+            <div class="logo-section sparkle">
+                <h1>Dive Buddy's</h1>
+                <div class="tagline">あなた専属の沖縄ダイビングバディ <span class="heart-decoration">💕</span></div>
+            </div>
+            <nav>
+                <ul class="nav-menu">
+                    <li><a href="#shops">🏪 ショップ検索</a></li>
+                    <li><a href="#weather">🌊 海況情報</a></li>
+                    <li><a href="#travel">✈️ 旅行サポート</a></li>
+                    <li><a href="#blog">📝 ブログ</a></li>
+                    <li><a href="#member" class="cta-button">👤 会員登録</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- メインコンテンツ -->
+    <main class="main-container">
+        <!-- ヒーローセクション -->
+        <section class="hero-section">
+            <!-- Jijiキャラクター -->
+            <div class="jiji-character">
+                <div class="jiji-avatar">🤿</div>
+                <div class="speech-bubble">
+                    こんにちは！Jijiです💙<br>
+                    沖縄の海での素敵な思い出作り、<br>
+                    一緒にお手伝いさせてください✨
+                </div>
+            </div>
+
+            <!-- メイン画像エリア -->
+            <div class="hero-image-container">
+                <div class="hero-image-placeholder">
+                    【 沖縄の美しい海中写真 】<br>
+                    <small>インスタ映え確実！色とりどりの魚たちと透明度抜群の青い海 🐠🌺</small>
+                </div>
+            </div>
+
+            <!-- ヒーローテキスト -->
+            <div class="hero-content">
+                <h2 class="hero-title">
+                    初心者女性ダイバーの<br>
+                    <span class="gradient-accent">『不安』を『最高の思い出』に</span>
+                </h2>
+                <p class="hero-subtitle">
+                    沖縄の美しい海で、あなただけの特別な体験を💙<br>
+                    女性一人参加でも安心！AI「Jiji」が最適なプランをご提案します✨
+                </p>
+                <div class="cta-buttons">
+                    <a href="#" class="btn-primary">💬 Jijiに相談してみる</a>
+                    <a href="#" class="btn-secondary">🏪 ショップを見てみる</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- 機能紹介セクション -->
+        <section class="features-section">
+            <h2 class="section-title">Dive Buddy's で叶える3つの素敵体験 <span class="heart-decoration">💖</span></h2>
+            <div class="features-grid">
+                <!-- AI相談システム -->
+                <div class="feature-card">
+                    <div class="feature-icon">💬</div>
+                    <h3>24時間安心サポート</h3>
+                    <p>「一人参加で大丈夫？」「泳げないけど平気？」どんな小さな不安でも、いつでもJijiに相談できます</p>
+                    <div class="safety-badge">👥 女性一人参加OK</div>
+                    <div class="safety-badge">🔰 初心者大歓迎</div>
+                    <div class="feature-image-placeholder">
+                        【 優しいLINE相談画面 】
+                    </div>
+                    <div class="price-highlight">相談無料 💕</div>
+                    <br><br>
+                    <button class="feature-button">今すぐ相談する</button>
+                </div>
+
+                <!-- ショップデータベース -->
+                <div class="feature-card">
+                    <div class="feature-icon">🏖️</div>
+                    <h3>厳選79店舗から安心チョイス</h3>
+                    <p>女性スタッフ在籍、写真撮影サービス、更衣室完備など、女性目線で選んだ安心ショップだけをご紹介</p>
+                    <div class="safety-badge">📸 写真撮影無料</div>
+                    <div class="safety-badge">👩 女性スタッフ在籍</div>
+                    <div class="feature-image-placeholder">
+                        【 可愛いショップ紹介画面 】
+                    </div>
+                    <div class="price-highlight">体験ダイビング ¥8,000〜</div>
+                    <br><br>
+                    <button class="feature-button">ショップを探す</button>
+                </div>
+
+                <!-- 海況情報 -->
+                <div class="feature-card">
+                    <div class="feature-icon">🌊</div>
+                    <h3>ベストタイミングをお知らせ</h3>
+                    <p>「今日の海はどう？」「明日潜れる？」リアルタイム海況で、一番キレイな海に案内します</p>
+                    <div class="safety-badge">🌤️ 天気予報連動</div>
+                    <div class="safety-badge">📱 プッシュ通知</div>
+                    <div class="feature-image-placeholder">
+                        【 分かりやすい海況情報 】
+                    </div>
+                    <div class="price-highlight">情報チェック無料 🆓</div>
+                    <br><br>
+                    <button class="feature-button">海況を見る</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 波の装飾 -->
+    <div class="wave-decoration"></div>
+
+    <!-- フッター -->
+    <footer class="footer">
+        <div class="footer-title">Dive Buddy's - あなたの沖縄ダイビング体験をサポート <span class="heart-decoration">💕</span></div>
+        <div class="footer-subtitle">
+            初心者女性ダイバーの『できない』を『できる』に変える魔法の存在<br>
+            安心・安全・楽しい沖縄ダイビングをお約束します ✨
+        </div>
+    </footer>
+
+    <script>
+        // 女性向けインタラクション追加
+        document.addEventListener('DOMContentLoaded', function() {
+            // ボタンクリック時のキュートなフィードバック
+            const buttons = document.querySelectorAll('button, .btn-primary, .btn-secondary');
+            buttons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // ハートエフェクト
+                    const heart = document.createElement('span');
+                    heart.innerHTML = '💖';
+                    heart.style.position = 'absolute';
+                    heart.style.fontSize = '20px';
+                    heart.style.pointerEvents = 'none';
+                    heart.style.animation = 'heartFloat 1s ease-out forwards';
+                    
+                    const rect = this.getBoundingClientRect();
+                    heart.style.left = (rect.left + rect.width/2) + 'px';
+                    heart.style.top = rect.top + 'px';
+                    
+                    document.body.appendChild(heart);
+                    
+                    setTimeout(() => {
+                        document.body.removeChild(heart);
+                    }, 1000);
+                    
+                    // 機能説明（より女性向けに）
+                    const text = this.textContent;
+                    if (text.includes('Jiji') || text.includes('相談')) {
+                        alert('💬 LINEでJijiに相談できます！\n「一人参加は不安...」「予算はいくら？」など、なんでも聞いてくださいね💕');
+                    } else if (text.includes('ショップ') || text.includes('探す')) {
+                        alert('🏖️ 女性に優しいショップを厳選！\n写真撮影無料、女性スタッフ在籍など、安心ポイントでご紹介します✨');
+                    } else if (text.includes('海況') || text.includes('見る')) {
+                        alert('🌊 今日の海の状態をチェック！\nベストタイミングで最高にキレイな海をご案内します💙');
+                    } else if (text.includes('会員')) {
+                        alert('👤 会員登録でもっとお得に！\nポイントが貯まって、素敵な特典と交換できます🎁');
+                    }
+                });
+            });
+
+            // ハートフロートアニメーション
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes heartFloat {
+                    0% { transform: translateY(0) scale(1); opacity: 1; }
+                    100% { transform: translateY(-50px) scale(1.5); opacity: 0; }
+                }
+            `;
+            document.head.appendChild(style);
+
+            // スクロール時のキラキラエフェクト
+            window.addEventListener('scroll', function() {
+                const header = document.querySelector('.header');
+                const scrolled = window.pageYOffset;
+                const rate = scrolled * 0.01;
+                
+                header.style.background = `linear-gradient(135deg, 
+                    rgba(255, 248, 245, ${Math.min(0.95 + rate, 1)}) 0%, 
+                    rgba(255, 182, 193, ${Math.min(0.9 + rate, 1)}) 100%)`;
+            });
+
+            // ランダムなキラキラエフェクト
+            setInterval(() => {
+                const sparkle = document.createElement('span');
+                sparkle.innerHTML = '✨';
+                sparkle.style.position = 'fixed';
+                sparkle.style.fontSize = '20px';
+                sparkle.style.pointerEvents = 'none';
+                sparkle.style.zIndex = '1000';
+                sparkle.style.left = Math.random() * window.innerWidth + 'px';
+                sparkle.style.top = Math.random() * window.innerHeight + 'px';
+                sparkle.style.animation = 'sparkleFloat 3s ease-out forwards';
+                
+                document.body.appendChild(sparkle);
+                
+                setTimeout(() => {
+                    if (document.body.contains(sparkle)) {
+                        document.body.removeChild(sparkle);
+                    }
+                }, 3000);
+            }, 5000);
+
+            // スパークルフロートアニメーション
+            const sparkleStyle = document.createElement('style');
+            sparkleStyle.textContent = `
+                @keyframes sparkleFloat {
+                    0% { transform: translateY(0) rotate(0deg) scale(0); opacity: 1; }
+                    50% { transform: translateY(-30px) rotate(180deg) scale(1); opacity: 1; }
+                    100% { transform: translateY(-60px) rotate(360deg) scale(0); opacity: 0; }
+                }
+            `;
+            document.head.appendChild(sparkleStyle);
+        });
+    </script>
+</body>
+</html>

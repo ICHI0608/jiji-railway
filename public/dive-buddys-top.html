@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dive Buddy's - あなた専属の沖縄ダイビングバディ</title>
+    <style>
+        /* リセット & ベースフォント */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Hiragino Sans', 'ヒラギノ角ゴシック', 'Yu Gothic', 'Meiryo', sans-serif;
+            line-height: 1.6;
+            background: linear-gradient(180deg, #87CEEB 0%, #1E7AC7 70%, #0F4C75 100%);
+            min-height: 100vh;
+        }
+
+        /* カラー変数 */
+        :root {
+            --ocean-blue: #1E7AC7;
+            --sky-blue: #87CEEB;
+            --coral-white: #FFF8F0;
+            --sand-beige: #F5E6D3;
+            --sunset-orange: #FF6B35;
+            --jiji-teal: #20B2AA;
+            --deep-navy: #0F4C75;
+        }
+
+        /* ヘッダー */
+        .header {
+            background: linear-gradient(180deg, rgba(255, 248, 240, 0.95) 0%, rgba(255, 248, 240, 0.85) 100%);
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .logo-section h1 {
+            font-family: 'Times New Roman', serif;
+            font-size: 24px;
+            color: var(--ocean-blue);
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+
+        .logo-section .tagline {
+            font-size: 12px;
+            color: var(--deep-navy);
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .nav-menu a {
+            text-decoration: none;
+            color: var(--ocean-blue);
+            font-size: 16px;
+            transition: color 0.3s ease;
+        }
+
+        .nav-menu a:hover {
+            color: var(--jiji-teal);
+        }
+
+        .cta-button {
+            background: var(--sunset-orange);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: transform 0.3s ease;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            color: white;
+        }
+
+        /* 雲の装飾 */
+        .clouds {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 200px;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .cloud {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50px;
+            opacity: 0.7;
+        }
+
+        .cloud1 { width: 160px; height: 50px; top: 100px; left: 200px; }
+        .cloud2 { width: 200px; height: 60px; top: 150px; right: 200px; opacity: 0.2; }
+        .cloud3 { width: 120px; height: 40px; top: 80px; left: 50%; opacity: 0.25; }
+
+        /* メインコンテナ */
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* ヒーローセクション */
+        .hero-section {
+            margin: 40px 0;
+            position: relative;
+        }
+
+        .hero-image-container {
+            width: 100%;
+            height: 300px;
+            border: 2px dashed var(--ocean-blue);
+            border-radius: 15px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .hero-image-placeholder {
+            font-size: 18px;
+            color: var(--ocean-blue);
+            text-align: center;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        /* Jijiキャラクター */
+        .jiji-character {
+            position: absolute;
+            top: -20px;
+            left: 80px;
+            z-index: 20;
+        }
+
+        .jiji-avatar {
+            width: 80px;
+            height: 80px;
+            background: var(--jiji-teal);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            animation: floating 3s ease-in-out infinite;
+            box-shadow: 0 4px 20px rgba(32, 178, 170, 0.3);
+        }
+
+        .speech-bubble {
+            position: absolute;
+            top: -10px;
+            left: 100px;
+            background: var(--coral-white);
+            padding: 15px;
+            border-radius: 15px;
+            border: 2px solid var(--jiji-teal);
+            font-size: 12px;
+            color: var(--ocean-blue);
+            line-height: 1.4;
+            width: 180px;
+        }
+
+        .speech-bubble::before {
+            content: '';
+            position: absolute;
+            left: -10px;
+            top: 30px;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 10px 10px 10px 0;
+            border-color: transparent var(--jiji-teal) transparent transparent;
+        }
+
+        @keyframes floating {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* ヒーローテキスト */
+        .hero-content {
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        .hero-title {
+            font-family: 'Times New Roman', serif;
+            font-size: 36px;
+            font-weight: bold;
+            color: var(--deep-navy);
+            margin-bottom: 10px;
+        }
+
+        .gradient-accent {
+            color: var(--sunset-orange);
+        }
+
+        .hero-subtitle {
+            font-size: 16px;
+            color: var(--ocean-blue);
+            margin-bottom: 30px;
+            line-height: 1.8;
+        }
+
+        /* CTAボタン */
+        .cta-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary {
+            background: var(--jiji-teal);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(32, 178, 170, 0.3);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--ocean-blue);
+            padding: 12px 30px;
+            border: 2px solid var(--ocean-blue);
+            border-radius: 25px;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background: var(--ocean-blue);
+            color: white;
+            transform: translateY(-3px);
+        }
+
+        /* 機能紹介セクション */
+        .features-section {
+            margin: 80px 0;
+        }
+
+        .section-title {
+            font-family: 'Times New Roman', serif;
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--deep-navy);
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .feature-card {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, rgba(245, 230, 211, 0.8) 100%);
+            border-radius: 12px;
+            padding: 30px 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--ocean-blue);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(30, 122, 199, 0.15);
+        }
+
+        .feature-card:hover::before {
+            opacity: 0.05;
+        }
+
+        .feature-icon {
+            width: 50px;
+            height: 50px;
+            margin: 0 auto 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+        }
+
+        .feature-card:nth-child(1) .feature-icon { background: var(--jiji-teal); }
+        .feature-card:nth-child(2) .feature-icon { background: var(--ocean-blue); }
+        .feature-card:nth-child(3) .feature-icon { background: var(--sky-blue); }
+
+        .feature-card h3 {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--ocean-blue);
+            margin-bottom: 15px;
+        }
+
+        .feature-card p {
+            font-size: 14px;
+            color: var(--deep-navy);
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .feature-image-placeholder {
+            width: 100%;
+            height: 60px;
+            border: 1px dashed var(--ocean-blue);
+            border-radius: 8px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: var(--ocean-blue);
+            margin-bottom: 15px;
+        }
+
+        .feature-button {
+            background: var(--sunset-orange);
+            color: white;
+            padding: 8px 20px;
+            border: none;
+            border-radius: 15px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .feature-button:hover {
+            transform: translateY(-2px);
+        }
+
+        /* 波の装飾 */
+        .wave-decoration {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100px;
+            background: var(--sand-beige);
+            opacity: 0.6;
+            clip-path: polygon(0 50%, 25% 30%, 50% 50%, 75% 20%, 100% 40%, 100% 100%, 0 100%);
+        }
+
+        /* フッター */
+        .footer {
+            background: var(--sand-beige);
+            padding: 40px 0;
+            text-align: center;
+            margin-top: 80px;
+            position: relative;
+        }
+
+        .footer-title {
+            font-family: 'Times New Roman', serif;
+            font-size: 16px;
+            color: var(--ocean-blue);
+            margin-bottom: 10px;
+        }
+
+        .footer-subtitle {
+            font-size: 12px;
+            color: var(--deep-navy);
+        }
+
+        /* レスポンシブ */
+        @media (max-width: 768px) {
+            .header-container {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .nav-menu {
+                gap: 20px;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .hero-title {
+                font-size: 28px;
+            }
+
+            .hero-subtitle {
+                font-size: 14px;
+            }
+
+            .jiji-character {
+                position: relative;
+                left: 0;
+                top: 0;
+                text-align: center;
+                margin-bottom: 20px;
+            }
+
+            .speech-bubble {
+                position: relative;
+                left: 0;
+                margin-top: 15px;
+                width: 100%;
+            }
+
+            .speech-bubble::before {
+                display: none;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 雲の装飾 -->
+    <div class="clouds">
+        <div class="cloud cloud1"></div>
+        <div class="cloud cloud2"></div>
+        <div class="cloud cloud3"></div>
+    </div>
+
+    <!-- ヘッダー -->
+    <header class="header">
+        <div class="header-container">
+            <div class="logo-section">
+                <h1>Dive Buddy's</h1>
+                <div class="tagline">あなた専属の沖縄ダイビングバディ</div>
+            </div>
+            <nav>
+                <ul class="nav-menu">
+                    <li><a href="#shops">🏪 ショップ検索</a></li>
+                    <li><a href="#weather">🌊 海況情報</a></li>
+                    <li><a href="#travel">✈️ 旅行サポート</a></li>
+                    <li><a href="#blog">📝 ブログ</a></li>
+                    <li><a href="#member" class="cta-button">👤 会員登録</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- メインコンテンツ -->
+    <main class="main-container">
+        <!-- ヒーローセクション -->
+        <section class="hero-section">
+            <!-- Jijiキャラクター -->
+            <div class="jiji-character">
+                <div class="jiji-avatar">🤿</div>
+                <div class="speech-bubble">
+                    こんにちは！Jijiです<br>
+                    沖縄ダイビングのことなら<br>
+                    何でも聞いてくださいね！
+                </div>
+            </div>
+
+            <!-- メイン画像エリア -->
+            <div class="hero-image-container">
+                <div class="hero-image-placeholder">
+                    【 沖縄の美しい海中写真 】<br>
+                    <small>色とりどりの魚たちと透明度抜群の青い海</small>
+                </div>
+            </div>
+
+            <!-- ヒーローテキスト -->
+            <div class="hero-content">
+                <h2 class="hero-title">
+                    初心者ダイバーの<br>
+                    <span class="gradient-accent">『不安』を『感動』に</span>
+                </h2>
+                <p class="hero-subtitle">
+                    沖縄の美しい海で、あなただけの特別な体験を。<br>
+                    AI「Jiji」が最適なダイビングプランをご提案します。
+                </p>
+                <div class="cta-buttons">
+                    <a href="#" class="btn-primary">🤖 Jijiに相談する</a>
+                    <a href="#" class="btn-secondary">🏪 ショップを探す</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- 機能紹介セクション -->
+        <section class="features-section">
+            <h2 class="section-title">Dive Buddy's で叶える3つの体験</h2>
+            <div class="features-grid">
+                <!-- AI相談システム -->
+                <div class="feature-card">
+                    <div class="feature-icon">🤖</div>
+                    <h3>AI相談システム</h3>
+                    <p>24時間いつでも、あなたの不安に寄り添います</p>
+                    <div class="feature-image-placeholder">
+                        【 LINE Bot会話画面イメージ 】
+                    </div>
+                    <button class="feature-button">相談する</button>
+                </div>
+
+                <!-- ショップデータベース -->
+                <div class="feature-card">
+                    <div class="feature-icon">🏪</div>
+                    <h3>厳選ショップデータベース</h3>
+                    <p>沖縄全域79店舗から、あなたにピッタリを発見</p>
+                    <div class="feature-image-placeholder">
+                        【 ショップ一覧・検索画面 】
+                    </div>
+                    <button class="feature-button">検索する</button>
+                </div>
+
+                <!-- 海況情報 -->
+                <div class="feature-card">
+                    <div class="feature-icon">🌊</div>
+                    <h3>リアルタイム海況情報</h3>
+                    <p>今日潜れる？明日は？最新情報でベストタイミング</p>
+                    <div class="feature-image-placeholder">
+                        【 天気・海況データ画面 】
+                    </div>
+                    <button class="feature-button">確認する</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 波の装飾 -->
+    <div class="wave-decoration"></div>
+
+    <!-- フッター -->
+    <footer class="footer">
+        <div class="footer-title">Dive Buddy's - あなた専属の沖縄ダイビングバディ</div>
+        <div class="footer-subtitle">初心者ダイバーの『できない』を『できる』に変える魔法の存在</div>
+    </footer>
+
+    <script>
+        // シンプルなインタラクション追加
+        document.addEventListener('DOMContentLoaded', function() {
+            // ボタンクリック時の簡単なフィードバック
+            const buttons = document.querySelectorAll('button, .btn-primary, .btn-secondary');
+            buttons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // 簡易的なクリックエフェクト
+                    this.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        this.style.transform = '';
+                    }, 150);
+                    
+                    // アラートで機能を説明（実装前の仮動作）
+                    const text = this.textContent;
+                    if (text.includes('Jiji')) {
+                        alert('LINE Botで相談機能（実装予定）');
+                    } else if (text.includes('ショップ')) {
+                        alert('ショップ検索機能（実装予定）');
+                    } else if (text.includes('確認') || text.includes('海況')) {
+                        alert('海況情報機能（実装予定）');
+                    } else if (text.includes('会員')) {
+                        alert('会員登録機能（実装予定）');
+                    }
+                });
+            });
+
+            // ページスクロール時のヘッダー透明度調整
+            window.addEventListener('scroll', function() {
+                const header = document.querySelector('.header');
+                const scrolled = window.pageYOffset;
+                const rate = scrolled * 0.01;
+                
+                header.style.backgroundColor = `rgba(255, 248, 240, ${Math.min(0.95 + rate, 1)})`;
+            });
+        });
+    </script>
+</body>
+</html>

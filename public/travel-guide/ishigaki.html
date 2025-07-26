@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>石垣島ダイビング完全ガイド | Dive Buddy's</title>
+    <meta name="description" content="石垣島ダイビングの完全ガイド。マンタポイント、44店舗のショップ情報、旅行計画からアクセス方法まで詳しく解説。">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="../app/v28-styles.css">
+    
+    <style>
+        .area-header {
+            background: linear-gradient(135deg, #0ea5e9 0%, #059669 100%);
+            color: white;
+            padding: 80px 0 60px;
+            text-align: center;
+        }
+        
+        .area-title {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+        
+        .area-subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .info-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .info-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .info-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: #0ea5e9;
+        }
+        
+        .info-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+        
+        .info-description {
+            color: #6b7280;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .detail-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .detail-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .detail-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .highlight-stats {
+            background: #f0f9ff;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            margin: 40px 0;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #0ea5e9;
+            display: block;
+        }
+        
+        .stat-label {
+            color: #6b7280;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+        
+        .blog-section {
+            padding: 80px 0;
+            background: #f8f9ff;
+        }
+        
+        .blog-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .blog-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .blog-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .blog-image {
+            height: 200px;
+            background: linear-gradient(135deg, #0ea5e9, #059669);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            color: white;
+        }
+        
+        .blog-content {
+            padding: 25px;
+        }
+        
+        .blog-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        
+        .blog-excerpt {
+            color: #6b7280;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        
+        .blog-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+            color: #9ca3af;
+        }
+        
+        .btn-read-more {
+            background: #0ea5e9;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 20px;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        
+        .btn-read-more:hover {
+            background: #0284c7;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- ヘッダー -->
+    <header class="main-header">
+        <nav class="main-nav">
+            <a href="/" class="main-logo">
+                <h1>🌺 Dive Buddy's</h1>
+                <span>石垣島ガイド</span>
+            </a>
+            
+            <ul class="main-nav-menu">
+                <li><a href="/">ホーム</a></li>
+                <li><a href="/about">サービス</a></li>
+                <li><a href="/member">会員システム</a></li>
+                <li><a href="/shops-database">ショップDB</a></li>
+                <li><a href="/travel-guide" class="active">旅行ガイド</a></li>
+                <li><a href="/weather-ocean">海況・天気</a></li>
+                <li><a href="/partners">ショップ向け</a></li>
+                <li><a href="/contact">お問い合わせ</a></li>
+            </ul>
+            
+            <div class="main-nav-buttons">
+                <a href="/member" class="btn btn-secondary">
+                    <i class="fas fa-user-plus"></i> 会員登録
+                </a>
+                <a href="https://line.me/ti/p/@2007331165" class="btn btn-primary btn-line-connect" target="_blank">
+                    <i class="fab fa-line"></i> Jijiに相談
+                </a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- 石垣島ヘッダー -->
+    <section class="area-header">
+        <div class="container">
+            <h1 class="area-title">🏝️ 石垣島ダイビング完全ガイド</h1>
+            <p class="area-subtitle">
+                マンタ遭遇率90%のダイビングメッカ。八重山諸島の玄関口として、44店舗のダイビングショップと豊富な観光資源を誇る石垣島の魅力を徹底解説。
+            </p>
+        </div>
+    </section>
+
+    <!-- 基本情報 -->
+    <section class="planning-section" style="background: white;">
+        <div class="container">
+            <h2 class="section-title">📋 石垣島ダイビング基本情報</h2>
+            
+            <div class="highlight-stats">
+                <h3 style="margin-bottom: 30px; color: #2c3e50;">🎯 石垣島ダイビング統計</h3>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-number">44</span>
+                        <div class="stat-label">登録ショップ数</div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">90%</span>
+                        <div class="stat-label">マンタ遭遇率</div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">30+</span>
+                        <div class="stat-label">ダイビングポイント</div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">26°C</span>
+                        <div class="stat-label">年間平均水温</div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">25m</span>
+                        <div class="stat-label">平均透明度</div>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-number">365</span>
+                        <div class="stat-label">年間潜水可能日数</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-grid">
+                <div class="info-card">
+                    <div class="info-icon">🐋</div>
+                    <h3 class="info-title">代表的なダイビングポイント</h3>
+                    <p class="info-description">世界屈指のマンタポイントと多様な海中景観</p>
+                    <ul class="detail-list">
+                        <li><span>マンタシティ</span><span>遭遇率90%</span></li>
+                        <li><span>マンタスクランブル</span><span>クリーニングステーション</span></li>
+                        <li><span>川平石崎</span><span>地形・サンゴ</span></li>
+                        <li><span>竹富南</span><span>ドロップオフ</span></li>
+                        <li><span>米原</span><span>ビーチダイビング</span></li>
+                    </ul>
+                </div>
+                
+                <div class="info-card">
+                    <div class="info-icon">✈️</div>
+                    <h3 class="info-title">アクセス・交通情報</h3>
+                    <p class="info-description">各主要都市からの直行便と島内移動手段</p>
+                    <ul class="detail-list">
+                        <li><span>東京から</span><span>3時間20分</span></li>
+                        <li><span>大阪から</span><span>2時間40分</span></li>
+                        <li><span>那覇経由</span><span>1時間</span></li>
+                        <li><span>レンタカー</span><span>主要移動手段</span></li>
+                        <li><span>路線バス</span><span>空港〜市街地</span></li>
+                    </ul>
+                </div>
+                
+                <div class="info-card">
+                    <div class="info-icon">🏨</div>
+                    <h3 class="info-title">宿泊・滞在情報</h3>
+                    <p class="info-description">ダイバー向け宿泊施設と滞在オプション</p>
+                    <ul class="detail-list">
+                        <li><span>リゾートホテル</span><span>15,000〜30,000円</span></li>
+                        <li><span>ビジネスホテル</span><span>6,000〜12,000円</span></li>
+                        <li><span>ダイバー向け民宿</span><span>3,000〜8,000円</span></li>
+                        <li><span>ゲストハウス</span><span>2,500〜5,000円</span></li>
+                        <li><span>推奨滞在日数</span><span>3〜5日間</span></li>
+                    </ul>
+                </div>
+                
+                <div class="info-card">
+                    <div class="info-icon">💰</div>
+                    <h3 class="info-title">ダイビング料金相場</h3>
+                    <p class="info-description">体験ダイビングからライセンス取得まで</p>
+                    <ul class="detail-list">
+                        <li><span>体験ダイビング（1日）</span><span>12,000〜15,000円</span></li>
+                        <li><span>ファンダイビング（2本）</span><span>13,000〜16,000円</span></li>
+                        <li><span>OWライセンス取得</span><span>45,000〜55,000円</span></li>
+                        <li><span>AOWライセンス取得</span><span>35,000〜45,000円</span></li>
+                        <li><span>器材レンタルフルセット</span><span>3,000〜5,000円</span></li>
+                    </ul>
+                </div>
+                
+                <div class="info-card">
+                    <div class="info-icon">🌊</div>
+                    <h3 class="info-title">海況・シーズン情報</h3>
+                    <p class="info-description">月別の海況とダイビングコンディション</p>
+                    <ul class="detail-list">
+                        <li><span>春（3-5月）</span><span>水温22-26°C、透明度良好</span></li>
+                        <li><span>夏（6-8月）</span><span>水温28-30°C、マンタシーズン</span></li>
+                        <li><span>秋（9-11月）</span><span>水温26-28°C、台風注意</span></li>
+                        <li><span>冬（12-2月）</span><span>水温22-24°C、北風強い</span></li>
+                        <li><span>ベストシーズン</span><span>4-6月、9-11月</span></li>
+                    </ul>
+                </div>
+                
+                <div class="info-card">
+                    <div class="info-icon">🎯</div>
+                    <h3 class="info-title">観光・グルメ情報</h3>
+                    <p class="info-description">ダイビング以外の石垣島の魅力</p>
+                    <ul class="detail-list">
+                        <li><span>川平湾</span><span>グラスボート観光</span></li>
+                        <li><span>石垣牛</span><span>A5ランク和牛</span></li>
+                        <li><span>ユーグレナモール</span><span>ショッピング・グルメ</span></li>
+                        <li><span>竹富島日帰り</span><span>離島観光</span></li>
+                        <li><span>星空観測</span><span>日本最南端天文台</span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 関連ブログ記事 -->
+    <section class="blog-section">
+        <div class="container">
+            <h2 class="section-title">📝 石垣島ダイビング記事</h2>
+            <p class="section-subtitle">
+                実際の体験談と詳細情報で石垣島ダイビングを完全攻略
+            </p>
+            
+            <div class="blog-grid">
+                <div class="blog-card">
+                    <div class="blog-image">🐋</div>
+                    <div class="blog-content">
+                        <h3 class="blog-title">石垣島のマンタポイント完全ガイド</h3>
+                        <p class="blog-excerpt">遭遇率90%を誇るマンタポイントの攻略法と最適なシーズンを詳しく解説。初心者からベテランまで必見の情報です。</p>
+                        <div class="blog-meta">
+                            <span>2025年7月25日</span>
+                            <a href="/blog/article/article_001" class="btn-read-more">詳しく読む</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="blog-card">
+                    <div class="blog-image">🏪</div>
+                    <div class="blog-content">
+                        <h3 class="blog-title">石垣島おすすめダイビングショップ5選</h3>
+                        <p class="blog-excerpt">44店舗の中から厳選したおすすめショップを紹介。サービス内容、料金、特徴を比較してお気に入りを見つけよう。</p>
+                        <div class="blog-meta">
+                            <span>2025年7月24日</span>
+                            <a href="/blog/article/ishigaki-shops" class="btn-read-more">詳しく読む</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="blog-card">
+                    <div class="blog-image">🌺</div>
+                    <div class="blog-content">
+                        <h3 class="blog-title">石垣島3泊4日ダイビング旅行プラン</h3>
+                        <p class="blog-excerpt">初回訪問者向けの完璧な旅行プラン。ダイビング、観光、グルメをバランス良く楽しむ秘訣をお教えします。</p>
+                        <div class="blog-meta">
+                            <span>2025年7月23日</span>
+                            <a href="/blog/article/ishigaki-plan" class="btn-read-more">詳しく読む</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 40px;">
+                <a href="/blog?category=diving_spots&tags=石垣島" class="btn btn-primary">
+                    石垣島の記事をもっと見る
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- フッター -->
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>🏝️ 石垣島ダイビング</h3>
+                    <p>八重山諸島の中心地で最高のダイビング体験を</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>ダイビング情報</h3>
+                    <ul>
+                        <li><a href="/shops-database?area=石垣島">ショップ検索</a></li>
+                        <li><a href="/weather-ocean?area=石垣島">海況情報</a></li>
+                        <li><a href="/travel-guide/flights.html?destination=ishigaki">航空券検索</a></li>
+                        <li><a href="/travel-guide/transport.html?area=ishigaki">交通情報</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>エリアガイド</h3>
+                    <ul>
+                        <li><a href="/travel-guide/miyako">宮古島</a></li>
+                        <li><a href="/travel-guide/okinawa-main">沖縄本島</a></li>
+                        <li><a href="/travel-guide/other-islands">その他離島</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>サポート</h3>
+                    <ul>
+                        <li><a href="https://line.me/ti/p/@2007331165" target="_blank">LINE Bot相談</a></li>
+                        <li><a href="/contact">お問い合わせ</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 Dive Buddy's - 石垣島ダイビング完全ガイド</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // ページローディング時の統計カウントアップアニメーション
+        document.addEventListener('DOMContentLoaded', function() {
+            const statNumbers = document.querySelectorAll('.stat-number');
+            
+            statNumbers.forEach(stat => {
+                const target = stat.textContent;
+                const isPercentage = target.includes('%');
+                const isTemperature = target.includes('°C');
+                const numericValue = parseInt(target.replace(/[^0-9]/g, ''));
+                
+                if (!isNaN(numericValue)) {
+                    let current = 0;
+                    const increment = numericValue / 30;
+                    
+                    const timer = setInterval(() => {
+                        current += increment;
+                        if (current >= numericValue) {
+                            current = numericValue;
+                            clearInterval(timer);
+                        }
+                        
+                        let displayValue = Math.floor(current).toString();
+                        if (isPercentage) displayValue += '%';
+                        if (isTemperature) displayValue += '°C';
+                        if (target.includes('+')) displayValue += '+';
+                        
+                        stat.textContent = displayValue;
+                    }, 50);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

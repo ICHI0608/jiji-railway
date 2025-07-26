@@ -3,10 +3,23 @@ const { createClient: createRedisClient } = require('redis');
 require('dotenv').config();
 
 // Supabase クライアント設定
-const supabase = createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_ANON_KEY
-);
+let supabase = null;
+let supabaseAvailable = false;
+
+try {
+    if (process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY) {
+        supabase = createClient(
+            process.env.SUPABASE_URL,
+            process.env.SUPABASE_ANON_KEY
+        );
+        supabaseAvailable = true;
+    } else {
+        console.log('ℹ️ Supabase設定なし - データベース機能無効');
+    }
+} catch (error) {
+    console.error('❌ Supabase初期化エラー:', error.message);
+    supabaseAvailable = false;
+}
 
 // Redis クライアント設定（オプショナル）
 let redisClient = null;
@@ -69,6 +82,11 @@ async function ensureRedisConnection() {
  * @returns {Object} 作成結果
  */
 async function createUserProfile(lineUserId, userData = {}) {
+    if (!supabaseAvailable || !supabase) {
+        console.log('ℹ️ Profile作成スキップ (DB無効):', lineUserId);
+        return { success: true, data: null, skipped: true };
+    }
+    
     try {
         const profileData = {
             line_user_id: lineUserId,
@@ -106,6 +124,11 @@ async function createUserProfile(lineUserId, userData = {}) {
  * @returns {Object} ユーザープロファイル
  */
 async function getUserProfile(lineUserId) {
+    if (!supabaseAvailable || !supabase) {
+        console.log('ℹ️ Profile取得スキップ (DB無効):', lineUserId);
+        return { success: false, error: 'USER_NOT_FOUND', skipped: true };
+    }
+    
     try {
         // Redisキャッシュを確認（利用可能な場合のみ）
         const cacheKey = `user_profile:${lineUserId}`;
@@ -212,6 +235,11 @@ async function updateUserProfile(lineUserId, updates) {
  * @returns {Object} 保存結果
  */
 async function saveConversation(lineUserId, messageType, content, sessionId = null, metadata = {}) {
+    if (!supabaseAvailable || !supabase) {
+        console.log('ℹ️ 会話保存スキップ (DB無効):', lineUserId, messageType);
+        return { success: true, data: null, skipped: true };
+    }
+    
     try {
         const conversationData = {
             line_user_id: lineUserId,
@@ -250,6 +278,11 @@ async function saveConversation(lineUserId, messageType, content, sessionId = nu
  * @returns {Object} 会話履歴
  */
 async function getConversationHistory(lineUserId, limit = 50, sessionId = null) {
+    if (!supabaseAvailable || !supabase) {
+        console.log('ℹ️ 会話履歴取得スキップ (DB無効):', lineUserId);
+        return { success: true, data: [], skipped: true };
+    }
+    
     try {
         let query = supabase
             .from('conversations')
@@ -306,15 +339,20 @@ async function userExists(lineUserId) {
 async function testDatabaseConnection() {
     try {
         // Supabase接続テスト
-        const { data, error } = await supabase
-            .from('user_profiles')
-            .select('id')
-            .limit(1);
+        if (supabaseAvailable && supabase) {
+            const { data, error } = await supabase
+                .from('user_profiles')
+                .select('id')
+                .limit(1);
 
-        if (error && error.code !== '42P01') {
-            console.error('❌ Supabase connection error:', error);
+            if (error && error.code !== '42P01') {
+                console.error('❌ Supabase connection error:', error);
+                supabaseAvailable = false;
+            } else {
+                console.log('✅ Supabase connected successfully');
+            }
         } else {
-            console.log('✅ Supabase connected successfully');
+            console.log('ℹ️ Supabaseスキップ - データベース機能無効');
         }
 
         // Redis接続テスト（オプショナル）
@@ -331,7 +369,7 @@ async function testDatabaseConnection() {
         }
 
     } catch (err) {
-        console.error('❌ Database connection test error:', err);
+        console.log('ℹ️ Database connection test skipped:', err.message);
     }
 }
 
@@ -810,6 +848,72 @@ async function createV28Tables() {
     }
 }
 
+// ===== V2.9 追加: アンケートデータ永続化関数 =====
+
+/**
+ * アンケートデータをデータベースに保存
+ * @param {string} lineUserId - LINEユーザーID
+ * @param {Object} surveyData - アンケートデータ
+ * @returns {Object} 保存結果
+ */
+async function saveSurveyToDatabase(lineUserId, surveyData) {
+    if (!supabaseAvailable || !supabase) {
+        console.log('ℹ️ アンケートDB保存スキップ (DB無効):', lineUserId);
+        return { success: true, data: null, skipped: true };
+    }
+    
+    try {
+        // まずユーザープロファイルが存在するかチェック
+        const existingProfile = await getUserProfile(lineUserId);
+        
+        if (existingProfile.success && !existingProfile.skipped) {
+            // 既存プロファイルを更新
+            const updateData = {
+                diving_experience: surveyData.experience,
+                license_type: surveyData.license,
+                preferences: {
+                    ...existingProfile.data?.preferences || {},
+                    survey_response: surveyData.q2_answer,
+                    survey_completed_at: new Date().toISOString()
+                },
+                updated_at: new Date().toISOString()
+            };
+            
+            const result = await updateUserProfile(lineUserId, updateData);
+            if (result.success) {
+                console.log('✅ アンケートデータ保存成功 (更新):', lineUserId);
+                return { success: true, data: result.data, action: 'updated' };
+            } else {
+                console.error('❌ アンケートデータ更新エラー:', result.error);
+                return { success: false, error: result.error };
+            }
+        } else {
+            // 新規プロファイル作成
+            const profileData = {
+                diving_experience: surveyData.experience,
+                license_type: surveyData.license,
+                preferences: {
+                    survey_response: surveyData.q2_answer,
+                    survey_completed_at: new Date().toISOString()
+                }
+            };
+            
+            const result = await createUserProfile(lineUserId, profileData);
+            if (result.success) {
+                console.log('✅ アンケートデータ保存成功 (新規):', lineUserId);
+                return { success: true, data: result.data, action: 'created' };
+            } else {
+                console.error('❌ アンケートプロファイル作成エラー:', result.error);
+                return { success: false, error: result.error };
+            }
+        }
+        
+    } catch (err) {
+        console.error('❌ アンケートデータ保存例外:', err);
+        return { success: false, error: err.message };
+    }
+}
+
 // データベース接続テストを実行（コメントアウトして関数実行を無効化）
 // testDatabaseConnection();
 
@@ -839,6 +943,8 @@ module.exports = {
     updateMemberTotalPoints,
     // V2.8: テーブル作成
     createV28Tables,
+    // V2.9: アンケートデータ永続化
+    saveSurveyToDatabase,
     // ユーティリティ
     userExists,
     calculateCompletionRate,

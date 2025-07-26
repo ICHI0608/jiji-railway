@@ -20,6 +20,10 @@ const {
     createMemberProfile
 } = require('./database');
 
+// V2.8 追加: アンケート・リッチメニュー統合
+const { surveyManager } = require('./survey-manager');
+const { richMenuManager } = require('./rich-menu-manager');
+
 // OpenAI設定
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
@@ -247,6 +251,12 @@ async function processUserMessage(lineUserId, messageText, sessionId = null) {
     try {
         console.log(`📨 V2.8 メッセージ受信: ${lineUserId} - ${messageText}`);
 
+        // 🔍 V2.8: アンケート・リッチメニュー処理の優先判定
+        const specialResponse = await handleSpecialMessages(lineUserId, messageText);
+        if (specialResponse) {
+            return specialResponse;
+        }
+
         // 1. ユーザー存在確認・新規登録
         const exists = await userExists(lineUserId);
         if (!exists) {
@@ -260,37 +270,63 @@ async function processUserMessage(lineUserId, messageText, sessionId = null) {
             
             // V2.8: 会員プロフィール作成
             await createMemberProfile(lineUserId);
+            
+            // 🔥 新規ユーザーは必須アンケート開始
+            const surveyResponse = await surveyManager.startSurvey(lineUserId, true);
+            return formatResponseMessage(surveyResponse);
         }
 
         // 2. ユーザーメッセージをデータベースに保存
-        await saveConversation(lineUserId, 'user', messageText, sessionId, {
-            v28_enabled: true,
-            knowledge_base_integrated: true
-        });
+        let userProfile = null;
+        let conversationHistory = [];
+        let currentPoints = 0;
+        let webKnowledge = { shops: '', travel: '', weather: '', diving: '' };
+        
+        try {
+            await saveConversation(lineUserId, 'user', messageText, sessionId, {
+                v28_enabled: true,
+                knowledge_base_integrated: true
+            });
 
-        // 3. ユーザープロファイル取得
-        const profileResult = await getUserProfile(lineUserId);
-        const userProfile = profileResult.success ? profileResult.data : null;
+            // 3. ユーザープロファイル取得
+            const profileResult = await getUserProfile(lineUserId);
+            userProfile = profileResult.success ? profileResult.data : null;
 
-        // 4. 会話履歴取得と分析（最新20件）
-        const historyResult = await getConversationHistory(lineUserId, 20);
-        const conversationHistory = historyResult.success ? historyResult.data : [];
+            // 4. 会話履歴取得と分析（最新20件）
+            const historyResult = await getConversationHistory(lineUserId, 20);
+            conversationHistory = historyResult.success ? historyResult.data : [];
+
+            // 6. V2.8: ユーザーポイント残高取得
+            const pointBalance = await getUserPointBalance(lineUserId);
+            currentPoints = pointBalance.success ? pointBalance.data : 0;
+        } catch (dbError) {
+            console.error('❌ データベース処理エラー（処理継続）:', dbError.message);
+        }
         
         // 過去体験の抽出
         const pastExperiences = extractPastExperiences(conversationHistory);
         const divingPlans = extractDivingPlans(conversationHistory);
 
         // 5. V2.8: Web知識ベース統合参照
-        const webKnowledge = await webKnowledgeBase.gatherKnowledge(messageText, userProfile);
-
-        // 6. V2.8: ユーザーポイント残高取得
-        const pointBalance = await getUserPointBalance(lineUserId);
-        const currentPoints = pointBalance.success ? pointBalance.data : 0;
+        try {
+            webKnowledge = await webKnowledgeBase.gatherKnowledge(messageText, userProfile);
+        } catch (kbError) {
+            console.error('❌ 知識ベース処理エラー（処理継続）:', kbError.message);
+        }
 
         // 7. プロファイル情報の自動更新チェック
-        const updatedProfile = await checkAndUpdateProfile(lineUserId, messageText, userProfile);
+        let updatedProfile = userProfile;
+        try {
+            updatedProfile = await checkAndUpdateProfile(lineUserId, messageText, userProfile);
+        } catch (profileError) {
+            console.error('❌ プロファイル更新エラー（処理継続）:', profileError.message);
+        }
 
-        // 8. V2.8: 統合AI応答生成（Web知識ベース統合）
+        // 8. 重複回答分析（新機能）
+        const recentResponses = extractRecentResponses(conversationHistory, 5);
+        const conversationContext = analyzeConversationContext(conversationHistory, messageText);
+        
+        // 9. V2.8: 統合AI応答生成（Web知識ベース統合 + 重複防止）
         const aiResponse = await generateV28AIResponse(
             messageText, 
             updatedProfile || userProfile, 
@@ -298,23 +334,196 @@ async function processUserMessage(lineUserId, messageText, sessionId = null) {
             pastExperiences, 
             divingPlans,
             webKnowledge,
-            currentPoints
+            currentPoints,
+            recentResponses,
+            conversationContext
         );
 
         // 9. AI応答をデータベースに保存
-        await saveConversation(lineUserId, 'assistant', aiResponse, sessionId, {
-            v28_enabled: true,
-            knowledge_base_used: webKnowledge.categories_matched,
-            knowledge_references: webKnowledge.total_references
-        });
+        try {
+            await saveConversation(lineUserId, 'assistant', aiResponse, sessionId, {
+                v28_enabled: true,
+                knowledge_base_used: webKnowledge.categories_matched,
+                knowledge_references: webKnowledge.total_references
+            });
+        } catch (saveError) {
+            console.error('❌ AI応答保存エラー（処理継続）:', saveError.message);
+        }
 
-        console.log(`🤖 V2.8 AI応答生成完了: ${lineUserId} (知識ベース: ${webKnowledge.total_references}件参照)`);
+        console.log(`🤖 V2.8 AI応答生成完了: ${lineUserId} (知識ベース: ${webKnowledge.total_references || 0}件参照)`);
         return aiResponse;
 
     } catch (error) {
         console.error('❌ V2.8 メッセージ処理エラー:', error);
         return 'すみません、一時的にエラーが発生しました。僕がもう一度確認してみますね。🙏';
     }
+}
+
+/**
+ * 過去の応答を抽出して重複防止に活用
+ * @param {Array} conversationHistory - 会話履歴
+ * @param {number} limit - 取得する応答数
+ * @returns {Array} 最近の応答情報
+ */
+function extractRecentResponses(conversationHistory, limit = 5) {
+    const recentResponses = conversationHistory
+        .filter(conv => conv.message_type === 'assistant')
+        .slice(-limit)
+        .map(conv => ({
+            content: conv.message_content,
+            timestamp: conv.timestamp,
+            length: conv.message_content.length,
+            keywords: extractKeywords(conv.message_content)
+        }));
+    
+    return recentResponses;
+}
+
+/**
+ * 会話の文脈を分析
+ * @param {Array} conversationHistory - 会話履歴
+ * @param {string} currentMessage - 現在のメッセージ
+ * @returns {Object} 文脈情報
+ */
+function analyzeConversationContext(conversationHistory, currentMessage) {
+    const recentMessages = conversationHistory.slice(-10); // 最新10件
+    
+    // 話題の継続性を分析
+    const topicContinuity = analyzeTopic(recentMessages, currentMessage);
+    
+    // 質問の種類を判定
+    const questionType = classifyQuestion(currentMessage);
+    
+    // 会話の段階を判定
+    const conversationStage = determineConversationStage(recentMessages);
+    
+    return {
+        topicContinuity,
+        questionType,
+        conversationStage,
+        messageCount: conversationHistory.length,
+        recentTopic: extractMainTopic(recentMessages)
+    };
+}
+
+/**
+ * メッセージからキーワードを抽出
+ * @param {string} message - メッセージ
+ * @returns {Array} キーワード配列
+ */
+function extractKeywords(message) {
+    const keywords = [];
+    const patterns = [
+        /石垣島|宮古島|沖縄本島|久米島|西表島|与那国島/g,
+        /ダイビング|シュノーケル|体験|ライセンス/g,
+        /初心者|経験者|上級者/g,
+        /マンタ|ウミガメ|サンゴ|魚/g,
+        /予約|料金|アクセス|宿泊/g
+    ];
+    
+    patterns.forEach(pattern => {
+        const matches = message.match(pattern);
+        if (matches) keywords.push(...matches);
+    });
+    
+    return [...new Set(keywords)]; // 重複除去
+}
+
+/**
+ * 話題の継続性を分析
+ * @param {Array} recentMessages - 最近のメッセージ
+ * @param {string} currentMessage - 現在のメッセージ
+ * @returns {Object} 話題継続性情報
+ */
+function analyzeTopic(recentMessages, currentMessage) {
+    const currentKeywords = extractKeywords(currentMessage);
+    let continuityScore = 0;
+    let mainTopic = null;
+    
+    if (recentMessages.length > 0) {
+        const recentKeywords = recentMessages
+            .map(msg => extractKeywords(msg.message_content))
+            .flat();
+        
+        // 共通キーワードの数で継続性を判定
+        const commonKeywords = currentKeywords.filter(kw => 
+            recentKeywords.includes(kw)
+        );
+        
+        continuityScore = commonKeywords.length / Math.max(currentKeywords.length, 1);
+        mainTopic = findMostFrequentTopic(recentKeywords);
+    }
+    
+    return {
+        score: continuityScore,
+        mainTopic,
+        isTopicShift: continuityScore < 0.3
+    };
+}
+
+/**
+ * 質問の種類を分類
+ * @param {string} message - メッセージ
+ * @returns {string} 質問タイプ
+ */
+function classifyQuestion(message) {
+    if (message.includes('？') || message.includes('?')) {
+        if (message.match(/どこ|場所|エリア/)) return 'location';
+        if (message.match(/いつ|時期|季節/)) return 'timing';
+        if (message.match(/いくら|料金|値段|費用/)) return 'price';
+        if (message.match(/どう|方法|やり方/)) return 'howto';
+        if (message.match(/なに|何|どんな/)) return 'what';
+        return 'general_question';
+    }
+    
+    if (message.match(/教えて|知りたい|聞きたい/)) return 'information_request';
+    if (message.match(/予約|申し込み|手続き/)) return 'booking';
+    if (message.match(/不安|心配|大丈夫/)) return 'concern';
+    
+    return 'statement';
+}
+
+/**
+ * 会話の段階を判定
+ * @param {Array} recentMessages - 最近のメッセージ
+ * @returns {string} 会話段階
+ */
+function determineConversationStage(recentMessages) {
+    const messageCount = recentMessages.length;
+    
+    if (messageCount <= 2) return 'initial';
+    if (messageCount <= 5) return 'exploration';
+    if (messageCount <= 10) return 'planning';
+    return 'detailed_consultation';
+}
+
+/**
+ * 主要な話題を抽出
+ * @param {Array} messages - メッセージ配列
+ * @returns {string} 主要話題
+ */
+function extractMainTopic(messages) {
+    const allKeywords = messages
+        .map(msg => extractKeywords(msg.message_content))
+        .flat();
+    
+    return findMostFrequentTopic(allKeywords);
+}
+
+/**
+ * 最も頻出する話題を特定
+ * @param {Array} keywords - キーワード配列
+ * @returns {string} 主要話題
+ */
+function findMostFrequentTopic(keywords) {
+    const frequency = {};
+    keywords.forEach(kw => {
+        frequency[kw] = (frequency[kw] || 0) + 1;
+    });
+    
+    return Object.keys(frequency).reduce((a, b) => 
+        frequency[a] > frequency[b] ? a : b, null
+    );
 }
 
 /**
@@ -487,16 +696,18 @@ async function checkAndUpdateProfile(lineUserId, messageText, currentProfile) {
  * @param {number} currentPoints - 現在のポイント残高
  * @returns {string} AI応答
  */
-async function generateV28AIResponse(currentMessage, userProfile, conversationHistory, pastExperiences, divingPlans, webKnowledge, currentPoints) {
+async function generateV28AIResponse(currentMessage, userProfile, conversationHistory, pastExperiences, divingPlans, webKnowledge, currentPoints, recentResponses = [], conversationContext = {}) {
     try {
-        // V2.8: 拡張システムプロンプト生成
+        // V2.8: 拡張システムプロンプト生成（重複防止・文脈考慮）
         const systemPrompt = generateV28SystemPrompt(
             userProfile, 
             conversationHistory, 
             pastExperiences, 
             divingPlans, 
             webKnowledge, 
-            currentPoints
+            currentPoints,
+            recentResponses,
+            conversationContext
         );
 
         const response = await openai.chat.completions.create({
@@ -529,9 +740,18 @@ async function generateV28AIResponse(currentMessage, userProfile, conversationHi
  * @param {number} currentPoints - 現在のポイント残高
  * @returns {string} システムプロンプト
  */
-function generateV28SystemPrompt(userProfile, conversationHistory, pastExperiences, divingPlans, webKnowledge, currentPoints) {
-    // 基本的なJijiペルソナ
-    const basePersona = generateSystemPrompt(userProfile, conversationHistory, pastExperiences, divingPlans);
+function generateV28SystemPrompt(userProfile, conversationHistory, pastExperiences, divingPlans, webKnowledge, currentPoints, recentResponses = [], conversationContext = {}) {
+    // 会話分析結果を使用した高度なペルソナ生成
+    const { generateAdvancedSystemPrompt } = require('./jiji-persona');
+    
+    // 基本的なJijiペルソナ（高度版）
+    const basePersona = generateAdvancedSystemPrompt(
+        userProfile, 
+        conversationHistory, 
+        pastExperiences, 
+        divingPlans,
+        conversationContext
+    );
     
     // V2.8: Web知識ベース統合情報
     let knowledgeBaseInfo = '';
@@ -655,7 +875,112 @@ function generateV28SystemPrompt(userProfile, conversationHistory, pastExperienc
 
 `;
 
-    return basePersona + knowledgeBaseInfo + pointInfo + v28Instructions;
+    // 重複防止・文脈考慮情報
+    let conversationEnhancement = '';
+    
+    if (recentResponses.length > 0) {
+        conversationEnhancement += `
+
+=== 重複防止・会話継続性向上指示 ===
+
+最近の応答履歴（重複回避のため）:
+`;
+        recentResponses.forEach((response, index) => {
+            conversationEnhancement += `
+${index + 1}. [${response.timestamp}] (${response.length}文字)
+   キーワード: ${response.keywords.join(', ')}
+   内容要約: ${response.content.substring(0, 100)}...
+`;
+        });
+        
+        conversationEnhancement += `
+
+重要な指示:
+- 上記の応答内容と同じ情報を繰り返さない
+- 同じキーワードでも異なる角度からアプローチ
+- 新しい価値のある情報を提供
+- 会話の発展を意識した応答
+`;
+    }
+    
+    if (conversationContext.questionType) {
+        conversationEnhancement += `
+
+=== 文脈情報 ===
+
+現在の会話状況:
+- 質問タイプ: ${conversationContext.questionType}
+- 会話段階: ${conversationContext.conversationStage}
+- 主要話題: ${conversationContext.recentTopic || '新規話題'}
+- 話題継続性: ${conversationContext.topicContinuity?.score || 0}
+- 話題変更: ${conversationContext.topicContinuity?.isTopicShift ? 'あり' : 'なし'}
+
+応答指針:
+- ${getResponseGuideline(conversationContext)}
+- 話題変更の場合は自然な移行を心がける
+- 会話段階に応じて情報の詳細度を調整
+- ユーザーの興味に合わせて関連情報を提案
+`;
+    }
+
+    return basePersona + knowledgeBaseInfo + pointInfo + v28Instructions + conversationEnhancement;
+}
+
+/**
+ * 文脈に基づいた応答指針を生成
+ * @param {Object} conversationContext - 会話文脈
+ * @returns {string} 応答指針
+ */
+function getResponseGuideline(conversationContext) {
+    const { questionType, conversationStage, topicContinuity } = conversationContext;
+    
+    let guideline = '';
+    
+    // 質問タイプ別の指針
+    switch (questionType) {
+        case 'location':
+            guideline = '具体的な場所情報と特徴を詳しく説明';
+            break;
+        case 'timing':
+            guideline = '季節やタイミングの詳細とメリット・デメリットを説明';
+            break;
+        case 'price':
+            guideline = '料金体系と価値、コストパフォーマンスを重視';
+            break;
+        case 'concern':
+            guideline = '不安に共感し、具体的な解決策と安心材料を提供';
+            break;
+        case 'booking':
+            guideline = '手続きの流れを分かりやすく段階的に説明';
+            break;
+        default:
+            guideline = '相手のニーズに合わせた情報を提供';
+    }
+    
+    // 会話段階による調整
+    switch (conversationStage) {
+        case 'initial':
+            guideline += '、基本的な情報から始めて親しみやすく';
+            break;
+        case 'exploration':
+            guideline += '、興味を引く情報で関心を深める';
+            break;
+        case 'planning':
+            guideline += '、具体的で実用的な情報を中心に';
+            break;
+        case 'detailed_consultation':
+            guideline += '、専門的で詳細な情報まで含めて';
+            break;
+    }
+    
+    // 話題継続性による調整
+    if (topicContinuity?.isTopicShift) {
+        guideline += '、話題の変化を自然に受け入れて新しい方向性を提示';
+    } else {
+        guideline += '、これまでの話題を発展させて深堀り';
+    }
+    
+    return guideline;
 }
 
 /**
@@ -748,6 +1073,118 @@ function checkReminderNeeded(messageText) {
     return null;
 }
 
+/**
+ * LINE Bot応答品質テストシステム
+ */
+async function testConversationQuality() {
+    console.log('🧪 LINE Bot品質テスト開始...');
+    
+    const testScenarios = [
+        {
+            name: '初回利用者テスト',
+            userId: 'test_user_001',
+            messages: [
+                'はじめまして！ダイビングに興味があります',
+                'マンタが見たいのですが、どこがおすすめですか？',
+                '初心者でも大丈夫でしょうか？'
+            ]
+        },
+        {
+            name: '継続利用者テスト',
+            userId: 'test_user_002', 
+            messages: [
+                '前回の石垣島でマンタ見れました！',
+                'また石垣島に行きたいのですが、違うポイントはありますか？',
+                '今度は宮古島も考えています'
+            ]
+        },
+        {
+            name: '重複防止テスト',
+            userId: 'test_user_003',
+            messages: [
+                'マンタが見たいです',
+                'マンタについて教えて',
+                'マンタはどこで見れますか？'
+            ]
+        }
+    ];
+    
+    for (const scenario of testScenarios) {
+        console.log(`\n📋 ${scenario.name} 実行中...`);
+        
+        for (let i = 0; i < scenario.messages.length; i++) {
+            const message = scenario.messages[i];
+            console.log(`💬 メッセージ ${i+1}: ${message}`);
+            
+            try {
+                const response = await processUserMessage(scenario.userId, message);
+                console.log(`🤖 応答: ${response.substring(0, 100)}...`);
+                
+                // 品質チェック
+                const quality = analyzeResponseQuality(response, scenario.messages.slice(0, i));
+                console.log(`📊 品質スコア: ${quality.overallScore}/100`);
+                
+            } catch (error) {
+                console.error(`❌ テストエラー: ${error.message}`);
+            }
+            
+            // 次のメッセージまで少し待機
+            await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+    }
+    
+    console.log('✅ LINE Bot品質テスト完了');
+}
+
+/**
+ * 応答品質を分析
+ * @param {string} response - AI応答
+ * @param {Array} previousMessages - 過去のメッセージ
+ * @returns {Object} 品質分析結果
+ */
+function analyzeResponseQuality(response, previousMessages) {
+    let score = 0;
+    const analysis = {
+        length: response.length,
+        hasEmoji: /[\u{1F300}-\u{1F9FF}]/u.test(response),
+        hasSpecificLocation: /石垣島|宮古島|沖縄本島|慶良間|青の洞窟/.test(response),
+        hasPersonality: /はいさい|Jiji/.test(response),
+        isDuplicate: false,
+        continuity: false
+    };
+    
+    // 長さチェック（適切な長さ）
+    if (analysis.length >= 50 && analysis.length <= 300) score += 20;
+    
+    // 絵文字使用
+    if (analysis.hasEmoji) score += 15;
+    
+    // 具体的な場所言及
+    if (analysis.hasSpecificLocation) score += 20;
+    
+    // ペルソナ表現
+    if (analysis.hasPersonality) score += 15;
+    
+    // 重複チェック
+    analysis.isDuplicate = previousMessages.some(msg => 
+        response.includes(msg.substring(0, 30))
+    );
+    if (!analysis.isDuplicate) score += 20;
+    
+    // 継続性チェック
+    if (previousMessages.length > 0) {
+        analysis.continuity = previousMessages.some(msg => 
+            response.includes('前回') || response.includes('先ほど')
+        );
+        if (analysis.continuity) score += 10;
+    }
+    
+    return {
+        overallScore: score,
+        details: analysis
+    };
+}
+
 module.exports = {
     processUserMessage,
     extractPastExperiences,
@@ -759,5 +1196,261 @@ module.exports = {
     // V2.8 追加
     generateV28AIResponse,
     generateV28SystemPrompt,
-    WebKnowledgeBase
+    WebKnowledgeBase,
+    // 品質テスト機能
+    testConversationQuality,
+    analyzeResponseQuality,
+    extractRecentResponses,
+    analyzeConversationContext,
+    // V2.8 アンケート・リッチメニュー追加
+    handleSpecialMessages,
+    formatResponseMessage
 };
+
+/**
+ * 🔍 V2.8: 特別メッセージ処理（アンケート・リッチメニュー）
+ * @param {string} userId - ユーザーID
+ * @param {string} messageText - メッセージテキスト
+ * @returns {string|null} 特別処理の応答またはnull
+ */
+async function handleSpecialMessages(userId, messageText) {
+    try {
+        // アンケート関連の処理
+        if (await isInSurveyMode(userId)) {
+            console.log(`📋 アンケート回答処理: ${userId} - ${messageText}`);
+            const surveyResponse = await surveyManager.processAnswer(userId, messageText);
+            return formatResponseMessage(surveyResponse);
+        }
+        
+        // リッチメニューアクション処理
+        const menuActions = [
+            '体験相談', 'ショップDB', 'アンケート開始', 
+            '旅行計画', '海況情報', 'ヘルプ'
+        ];
+        
+        if (menuActions.includes(messageText)) {
+            console.log(`🎨 リッチメニューアクション: ${userId} - ${messageText}`);
+            
+            if (messageText === 'アンケート開始') {
+                const surveyResponse = await surveyManager.startSurvey(userId, false);
+                return formatResponseMessage(surveyResponse);
+            }
+            
+            const menuResponse = await richMenuManager.handleMenuAction(userId, messageText);
+            return formatResponseMessage(menuResponse);
+        }
+        
+        // アンケート更新確認
+        if (messageText === 'survey_update_yes') {
+            const surveyResponse = await surveyManager.startSurvey(userId, false);
+            return formatResponseMessage(surveyResponse);
+        }
+        
+        if (messageText === 'survey_update_no') {
+            return '了解しました！何か他にお手伝いできることがあれば、気軽に話しかけてくださいね🌊';
+        }
+        
+        // ショップマッチング処理
+        if (messageText.includes('ショップをマッチング') || messageText.includes('マッチング')) {
+            console.log(`🎯 ショップマッチング要求: ${userId}`);
+            return await generateShopMatching(userId);
+        }
+        
+        return null; // 特別処理対象外
+        
+    } catch (error) {
+        console.error('❌ 特別メッセージ処理エラー:', error);
+        return null;
+    }
+}
+
+/**
+ * アンケート実行中かどうか判定
+ * @param {string} userId - ユーザーID
+ * @returns {boolean} アンケート中かどうか
+ */
+async function isInSurveyMode(userId) {
+    try {
+        const survey = await surveyManager.getUserSurvey(userId);
+        return survey && !survey.survey_completed && survey.current_question !== 'completed';
+    } catch (error) {
+        console.error('❌ アンケート状態確認エラー:', error);
+        return false;
+    }
+}
+
+/**
+ * 応答メッセージのフォーマット処理
+ * @param {Object} response - 応答オブジェクト
+ * @returns {string} フォーマット済みメッセージ
+ */
+function formatResponseMessage(response) {
+    if (typeof response === 'string') {
+        return response;
+    }
+    
+    if (response && response.message) {
+        return response.message;
+    }
+    
+    return 'すみません、応答の準備でエラーが発生しました。もう一度お試しください。';
+}
+
+/**
+ * 🎯 ショップマッチング機能
+ * @param {string} userId - ユーザーID
+ * @returns {string} マッチング結果
+ */
+async function generateShopMatching(userId) {
+    try {
+        console.log(`🎯 ショップマッチング開始: ${userId}`);
+        
+        // ユーザープロファイル取得
+        const profileResult = await getUserProfile(userId);
+        const userProfile = profileResult.success ? profileResult.data : null;
+        
+        // アンケート結果取得
+        const survey = await surveyManager.getUserSurvey(userId);
+        
+        // 会話履歴取得
+        const historyResult = await getConversationHistory(userId, 20);
+        const conversationHistory = historyResult.success ? historyResult.data : [];
+        
+        // 会話分析（既存システム活用）
+        const conversationContext = analyzeConversationContext(conversationHistory, '');
+        
+        // マッチング判定
+        const matchingCriteria = generateMatchingCriteria(survey, conversationContext, userProfile);
+        
+        // ショップ3選を取得（実装は後で詳細化）
+        const selectedShops = await findBestShops(matchingCriteria);
+        
+        return formatShopMatchingResponse(selectedShops, matchingCriteria);
+        
+    } catch (error) {
+        console.error('❌ ショップマッチングエラー:', error);
+        return 'ショップマッチングでエラーが発生しました。少し時間をおいてもう一度お試しください。';
+    }
+}
+
+/**
+ * マッチング条件生成
+ * @param {Object} survey - アンケート結果
+ * @param {Object} conversationContext - 会話分析結果
+ * @param {Object} userProfile - ユーザープロファイル
+ * @returns {Object} マッチング条件
+ */
+function generateMatchingCriteria(survey, conversationContext, userProfile) {
+    const criteria = {
+        experience_level: 'beginner',
+        preferred_areas: [],
+        interests: [],
+        safety_priority: false,
+        budget_conscious: false,
+        group_friendly: false
+    };
+    
+    // アンケート結果から判定
+    if (survey) {
+        if (survey.license_type === 'aow_plus') {
+            criteria.experience_level = 'advanced';
+        } else if (survey.license_type === 'owd') {
+            criteria.experience_level = 'intermediate';
+        }
+        
+        if (survey.experience_level === 'okinawa_experienced') {
+            criteria.experience_level = 'experienced';
+        }
+        
+        // Q2回答分析
+        if (survey.q2_response) {
+            const q2 = JSON.parse(survey.q2_response);
+            if (q2.safety_concerns) criteria.safety_priority = true;
+            if (q2.budget_concerns) criteria.budget_conscious = true;
+            if (q2.big_creatures) criteria.interests.push('manta', 'big_fish');
+            if (q2.healing_creatures) criteria.interests.push('turtle', 'coral');
+        }
+    }
+    
+    // 会話履歴から補強（70%ウェイト）
+    if (conversationContext.recentKeywords) {
+        const keywords = conversationContext.recentKeywords;
+        
+        if (keywords.includes('石垣島') || keywords.includes('マンタ')) {
+            criteria.preferred_areas.push('ishigaki');
+        }
+        if (keywords.includes('宮古島') || keywords.includes('地形')) {
+            criteria.preferred_areas.push('miyako');
+        }
+        if (keywords.includes('青の洞窟') || keywords.includes('沖縄本島')) {
+            criteria.preferred_areas.push('okinawa_main');
+        }
+        
+        if (keywords.includes('予算') || keywords.includes('安い')) {
+            criteria.budget_conscious = true;
+        }
+        if (keywords.includes('家族') || keywords.includes('グループ')) {
+            criteria.group_friendly = true;
+        }
+    }
+    
+    return criteria;
+}
+
+/**
+ * 最適ショップ検索（サンプル実装）
+ * @param {Object} criteria - マッチング条件
+ * @returns {Array} ショップリスト
+ */
+async function findBestShops(criteria) {
+    // 実際の実装では詳細なデータベース検索を行う
+    // ここではサンプルデータを返す
+    
+    const sampleShops = [
+        {
+            name: '石垣マリンプロ',
+            url: 'https://example-ishigaki-marine.com',
+            reason: criteria.experience_level === 'advanced' ? 
+                'AOW向け上級ポイント対応・マンタ遭遇率95%' : 
+                '初心者専門・安全第一の丁寧指導'
+        },
+        {
+            name: 'ダイビングサービス海風',
+            url: 'https://example-umikaze.com', 
+            reason: criteria.group_friendly ? 
+                '家族向けプラン豊富・グループ割引あり' : 
+                '少人数制で個別サポート充実'
+        },
+        {
+            name: '宮古島マリンクラブ',
+            url: 'https://example-miyako-marine.com',
+            reason: criteria.interests.includes('地形') ? 
+                '地形ダイビング専門・洞窟ガイド経験豊富' : 
+                '透明度抜群のポイント案内・初心者歓迎'
+        }
+    ];
+    
+    return sampleShops;
+}
+
+/**
+ * ショップマッチング結果フォーマット
+ * @param {Array} shops - ショップリスト
+ * @param {Object} criteria - マッチング条件
+ * @returns {string} フォーマット済み応答
+ */
+function formatShopMatchingResponse(shops, criteria) {
+    let response = `🏪 あなたにピッタリのショップを3つ厳選しました！\n\n`;
+    
+    shops.forEach((shop, index) => {
+        response += `【${index + 1}位】🌊 ${shop.name}\n`;
+        response += `URL: ${shop.url}\n`;
+        response += `💡 マッチング理由: ${shop.reason}\n\n`;
+    });
+    
+    response += `詳しく聞きたいショップがあれば、\n`;
+    response += `「${shops[0].name}について詳しく」と送ってくださいね✨\n\n`;
+    response += `予約や相談は各ショップに直接お問い合わせください🤿`;
+    
+    return response;
+}

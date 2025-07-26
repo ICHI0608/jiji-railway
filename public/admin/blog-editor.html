@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>記事作成・編集 | Dive Buddy's管理画面</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background: #f8fafc;
+            color: #374151;
+            line-height: 1.6;
+        }
+
+        .admin-header {
+            background: #1f2937;
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .admin-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .admin-logo {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .admin-links {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .admin-links a {
+            color: #9ca3af;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .admin-links a:hover, .admin-links a.active {
+            background: #374151;
+            color: white;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .editor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .editor-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .editor-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+
+        .btn-success {
+            background: #059669;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #047857;
+        }
+
+        .editor-form {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+        }
+
+        .main-editor {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .sidebar {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            height: fit-content;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #374151;
+        }
+
+        .form-input, .form-textarea, .form-select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-input:focus, .form-textarea:focus, .form-select:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .content-editor {
+            min-height: 500px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.9rem;
+        }
+
+        .sidebar-section {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .sidebar-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .sidebar-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #1f2937;
+        }
+
+        .tag-input-container {
+            position: relative;
+        }
+
+        .tag-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 10;
+            display: none;
+        }
+
+        .tag-suggestion {
+            padding: 0.5rem;
+            cursor: pointer;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .tag-suggestion:hover {
+            background: #f3f4f6;
+        }
+
+        .selected-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .tag-item {
+            background: #e0e7ff;
+            color: #3730a3;
+            padding: 0.25rem 0.75rem;
+            border-radius: 16px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tag-remove {
+            cursor: pointer;
+            color: #6366f1;
+            font-weight: bold;
+        }
+
+        .tag-remove:hover {
+            color: #4f46e5;
+        }
+
+        .preview-section {
+            background: #f8fafc;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .preview-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #1f2937;
+        }
+
+        .preview-content {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            min-height: 200px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .status-draft {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-published {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .char-counter {
+            font-size: 0.8rem;
+            color: #6b7280;
+            text-align: right;
+            margin-top: 0.25rem;
+        }
+
+        .help-text {
+            font-size: 0.85rem;
+            color: #6b7280;
+            margin-top: 0.25rem;
+        }
+
+        @media (max-width: 1024px) {
+            .editor-form {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 1rem;
+            }
+            
+            .editor-header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: stretch;
+            }
+            
+            .editor-actions {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 管理画面ヘッダー -->
+    <header class="admin-header">
+        <nav class="admin-nav">
+            <div class="admin-logo">
+                🌊 Dive Buddy's 管理画面
+            </div>
+            <div class="admin-links">
+                <a href="/admin/dashboard">ダッシュボード</a>
+                <a href="/admin/blog-editor.html" class="active">記事作成</a>
+                <a href="/admin/blog-list">記事管理</a>
+                <a href="/admin/analytics">分析</a>
+                <a href="/">サイトへ戻る</a>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container">
+        <!-- エディターヘッダー -->
+        <div class="editor-header">
+            <h1 class="editor-title">📝 記事作成・編集</h1>
+            <div class="editor-actions">
+                <button type="button" class="btn btn-secondary" onclick="saveDraft()">
+                    <i class="fas fa-save"></i> 下書き保存
+                </button>
+                <button type="button" class="btn btn-primary" onclick="previewArticle()">
+                    <i class="fas fa-eye"></i> プレビュー
+                </button>
+                <button type="button" class="btn btn-success" onclick="publishArticle()">
+                    <i class="fas fa-rocket"></i> 公開
+                </button>
+            </div>
+        </div>
+
+        <!-- エディターフォーム -->
+        <form class="editor-form" id="article-form">
+            <!-- メインエディター -->
+            <div class="main-editor">
+                <div class="form-group">
+                    <label class="form-label">記事タイトル *</label>
+                    <input type="text" class="form-input" id="article-title" name="title" 
+                           placeholder="例：石垣島のマンタポイント完全ガイド" required>
+                    <div class="char-counter" id="title-counter">0 / 50文字</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">URL スラッグ</label>
+                    <input type="text" class="form-input" id="article-slug" name="slug" 
+                           placeholder="例：ishigaki-manta-guide（自動生成されます）">
+                    <div class="help-text">SEO用のURL。空欄の場合はタイトルから自動生成されます。</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">記事抜粋 *</label>
+                    <textarea class="form-textarea" id="article-excerpt" name="excerpt" 
+                              placeholder="記事の概要を150文字程度で説明してください。検索結果にも表示されます。" required></textarea>
+                    <div class="char-counter" id="excerpt-counter">0 / 150文字</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">記事本文 *</label>
+                    <textarea class="form-textarea content-editor" id="article-content" name="content" 
+                              placeholder="記事の本文をMarkdown形式で入力してください。
+
+## 見出し2
+### 見出し3
+
+**太字** *斜体*
+
+- リスト項目1
+- リスト項目2
+
+[リンクテキスト](URL)" required></textarea>
+                    <div class="char-counter" id="content-counter">0文字</div>
+                    <div class="help-text">Markdown記法に対応しています。見出し、リスト、リンクなどが使用できます。</div>
+                </div>
+
+                <!-- プレビューセクション -->
+                <div class="preview-section" id="preview-section" style="display: none;">
+                    <div class="preview-title">📖 プレビュー</div>
+                    <div class="preview-content" id="preview-content">
+                        <!-- プレビュー内容がここに表示されます -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- サイドバー -->
+            <div class="sidebar">
+                <!-- 公開設定 -->
+                <div class="sidebar-section">
+                    <h3 class="sidebar-title">📋 公開設定</h3>
+                    
+                    <div class="form-group">
+                        <label class="form-label">ステータス</label>
+                        <select class="form-select" id="article-status" name="status">
+                            <option value="draft">下書き</option>
+                            <option value="published">公開</option>
+                            <option value="scheduled">公開予約</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">注目記事</label>
+                        <select class="form-select" id="article-featured" name="featured">
+                            <option value="false">通常記事</option>
+                            <option value="true">注目記事</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">作成者</label>
+                        <input type="text" class="form-input" id="article-author" name="author" 
+                               value="Jiji編集部" placeholder="作成者名">
+                    </div>
+                </div>
+
+                <!-- カテゴリ・タグ -->
+                <div class="sidebar-section">
+                    <h3 class="sidebar-title">🏷️ カテゴリ・タグ</h3>
+                    
+                    <div class="form-group">
+                        <label class="form-label">カテゴリ *</label>
+                        <select class="form-select" id="article-category" name="category" required>
+                            <option value="">カテゴリを選択</option>
+                            <option value="diving_spots">ダイビングスポット 🐠</option>
+                            <option value="marine_life">海洋生物 🐢</option>
+                            <option value="travel_tips">旅行Tips ✈️</option>
+                            <option value="equipment">器材・装備 ⚙️</option>
+                            <option value="beginner_guide">初心者ガイド 🔰</option>
+                            <option value="seasonal_info">季節情報 🌺</option>
+                            <option value="shop_review">ショップ情報 🏪</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">タグ</label>
+                        <div class="tag-input-container">
+                            <input type="text" class="form-input" id="tag-input" 
+                                   placeholder="タグを入力してEnterを押すか、下から選択">
+                            <div class="tag-suggestions" id="tag-suggestions"></div>
+                        </div>
+                        <div class="selected-tags" id="selected-tags"></div>
+                        <div class="help-text">3-6個のタグを選択してください。エリア名は必須です。</div>
+                    </div>
+                </div>
+
+                <!-- アイキャッチ画像 -->
+                <div class="sidebar-section">
+                    <h3 class="sidebar-title">🖼️ アイキャッチ画像</h3>
+                    
+                    <div class="form-group">
+                        <label class="form-label">画像URL</label>
+                        <input type="url" class="form-input" id="featured-image" name="featured_image" 
+                               placeholder="/images/blog/article-image.jpg">
+                        <div class="help-text">後で画像アップロード機能を実装予定です。</div>
+                    </div>
+                </div>
+
+                <!-- SEO設定 -->
+                <div class="sidebar-section">
+                    <h3 class="sidebar-title">🔍 SEO設定</h3>
+                    
+                    <div class="form-group">
+                        <label class="form-label">メタディスクリプション</label>
+                        <textarea class="form-textarea" id="meta-description" name="meta_description" 
+                                  placeholder="検索エンジン向けの説明文（120-150文字）"></textarea>
+                        <div class="char-counter" id="meta-counter">0 / 150文字</div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // 利用可能タグリスト
+        const availableTags = [
+            // エリア関連
+            '石垣島', '宮古島', '沖縄本島', '久米島', '西表島', '与那国島', '慶良間諸島',
+            // ダイビング関連
+            '体験ダイビング', 'ファンダイビング', 'ライセンス取得', 'アドバンス',
+            // 海洋生物
+            'マンタ', 'ウミガメ', 'クマノミ', 'ジンベエザメ', 'ハンマーヘッド',
+            // ダイビングスタイル
+            'ボートダイビング', 'ビーチダイビング', '洞窟ダイビング', '地形ダイビング',
+            // 季節
+            '春ダイビング', '夏ダイビング', '秋ダイビング', '冬ダイビング',
+            // レベル
+            '初心者', '中級者', '上級者', 'インストラクター',
+            // その他
+            '水中写真', '安全', 'お得情報', '最新情報'
+        ];
+
+        let selectedTags = [];
+
+        // 文字カウンター
+        function setupCharCounters() {
+            const counters = [
+                { input: 'article-title', counter: 'title-counter', max: 50 },
+                { input: 'article-excerpt', counter: 'excerpt-counter', max: 150 },
+                { input: 'article-content', counter: 'content-counter', max: null },
+                { input: 'meta-description', counter: 'meta-counter', max: 150 }
+            ];
+
+            counters.forEach(({ input, counter, max }) => {
+                const inputEl = document.getElementById(input);
+                const counterEl = document.getElementById(counter);
+                
+                if (inputEl && counterEl) {
+                    inputEl.addEventListener('input', () => {
+                        const length = inputEl.value.length;
+                        if (max) {
+                            counterEl.textContent = `${length} / ${max}文字`;
+                            counterEl.style.color = length > max ? '#dc2626' : '#6b7280';
+                        } else {
+                            counterEl.textContent = `${length}文字`;
+                        }
+                    });
+                }
+            });
+        }
+
+        // スラッグ自動生成
+        function setupSlugGeneration() {
+            const titleInput = document.getElementById('article-title');
+            const slugInput = document.getElementById('article-slug');
+            
+            titleInput.addEventListener('input', () => {
+                if (!slugInput.value) {
+                    const slug = titleInput.value
+                        .toLowerCase()
+                        .replace(/[^\w\s-]/g, '')
+                        .replace(/\s+/g, '-')
+                        .replace(/--+/g, '-')
+                        .trim();
+                    slugInput.value = slug;
+                }
+            });
+        }
+
+        // タグ管理
+        function setupTagManagement() {
+            const tagInput = document.getElementById('tag-input');
+            const tagSuggestions = document.getElementById('tag-suggestions');
+            const selectedTagsContainer = document.getElementById('selected-tags');
+
+            // タグ入力イベント
+            tagInput.addEventListener('input', (e) => {
+                const query = e.target.value.toLowerCase();
+                if (query.length > 0) {
+                    const matches = availableTags.filter(tag => 
+                        tag.toLowerCase().includes(query) && !selectedTags.includes(tag)
+                    );
+                    showTagSuggestions(matches);
+                } else {
+                    hideTagSuggestions();
+                }
+            });
+
+            // Enterキーでタグ追加
+            tagInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const tag = e.target.value.trim();
+                    if (tag && !selectedTags.includes(tag)) {
+                        addTag(tag);
+                        e.target.value = '';
+                        hideTagSuggestions();
+                    }
+                }
+            });
+
+            // タグ候補表示
+            function showTagSuggestions(tags) {
+                tagSuggestions.innerHTML = '';
+                tags.forEach(tag => {
+                    const div = document.createElement('div');
+                    div.className = 'tag-suggestion';
+                    div.textContent = tag;
+                    div.addEventListener('click', () => {
+                        addTag(tag);
+                        tagInput.value = '';
+                        hideTagSuggestions();
+                    });
+                    tagSuggestions.appendChild(div);
+                });
+                tagSuggestions.style.display = tags.length > 0 ? 'block' : 'none';
+            }
+
+            function hideTagSuggestions() {
+                tagSuggestions.style.display = 'none';
+            }
+
+            // タグ追加
+            function addTag(tag) {
+                if (!selectedTags.includes(tag) && selectedTags.length < 8) {
+                    selectedTags.push(tag);
+                    renderSelectedTags();
+                }
+            }
+
+            // タグ削除
+            function removeTag(tag) {
+                selectedTags = selectedTags.filter(t => t !== tag);
+                renderSelectedTags();
+            }
+
+            // 選択タグ表示
+            function renderSelectedTags() {
+                selectedTagsContainer.innerHTML = '';
+                selectedTags.forEach(tag => {
+                    const span = document.createElement('span');
+                    span.className = 'tag-item';
+                    span.innerHTML = `
+                        ${tag} 
+                        <span class="tag-remove" onclick="removeTag('${tag}')">&times;</span>
+                    `;
+                    selectedTagsContainer.appendChild(span);
+                });
+            }
+
+            // グローバル関数として露出
+            window.removeTag = removeTag;
+        }
+
+        // プレビュー機能
+        function previewArticle() {
+            const title = document.getElementById('article-title').value;
+            const excerpt = document.getElementById('article-excerpt').value;
+            const content = document.getElementById('article-content').value;
+            const category = document.getElementById('article-category').value;
+            
+            const previewSection = document.getElementById('preview-section');
+            const previewContent = document.getElementById('preview-content');
+            
+            // 簡単なMarkdown変換
+            const htmlContent = content
+                .replace(/## (.*)/g, '<h2>$1</h2>')
+                .replace(/### (.*)/g, '<h3>$1</h3>')
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/- (.*)/g, '<li>$1</li>')
+                .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>')
+                .replace(/\n/g, '<br>');
+            
+            previewContent.innerHTML = `
+                <h1 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem; color: #1f2937;">
+                    ${title || 'タイトル未入力'}
+                </h1>
+                <p style="color: #6b7280; margin-bottom: 1.5rem; font-style: italic;">
+                    ${excerpt || '抜粋未入力'}
+                </p>
+                <div style="line-height: 1.8;">
+                    ${htmlContent || 'コンテンツ未入力'}
+                </div>
+                <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #e5e7eb;">
+                    <span style="background: #e0e7ff; color: #3730a3; padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.8rem;">
+                        カテゴリ: ${document.getElementById('article-category').selectedOptions[0]?.text || '未選択'}
+                    </span>
+                </div>
+            `;
+            
+            previewSection.style.display = 'block';
+            previewSection.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // 下書き保存
+        function saveDraft() {
+            const articleData = getArticleData();
+            articleData.status = 'draft';
+            
+            saveArticle(articleData, '下書きとして保存しました');
+        }
+
+        // 記事公開
+        function publishArticle() {
+            if (!validateForm()) {
+                alert('必須項目を入力してください。');
+                return;
+            }
+
+            const articleData = getArticleData();
+            articleData.status = 'published';
+            articleData.published_at = new Date().toISOString();
+            
+            saveArticle(articleData, '記事を公開しました！');
+        }
+
+        // フォームデータ取得
+        function getArticleData() {
+            return {
+                id: 'article_' + Date.now(),
+                title: document.getElementById('article-title').value,
+                slug: document.getElementById('article-slug').value || generateSlug(),
+                excerpt: document.getElementById('article-excerpt').value,
+                content: document.getElementById('article-content').value,
+                category: document.getElementById('article-category').value,
+                tags: selectedTags,
+                author: document.getElementById('article-author').value,
+                featured_image: document.getElementById('featured-image').value,
+                featured: document.getElementById('article-featured').value === 'true',
+                meta_description: document.getElementById('meta-description').value
+            };
+        }
+
+        // スラッグ生成
+        function generateSlug() {
+            const title = document.getElementById('article-title').value;
+            return title
+                .toLowerCase()
+                .replace(/[^\w\s-]/g, '')
+                .replace(/\s+/g, '-')
+                .replace(/--+/g, '-')
+                .trim();
+        }
+
+        // フォーム検証
+        function validateForm() {
+            const required = ['article-title', 'article-excerpt', 'article-content', 'article-category'];
+            return required.every(id => document.getElementById(id).value.trim());
+        }
+
+        // 記事保存
+        async function saveArticle(articleData, message) {
+            try {
+                console.log('保存する記事データ:', articleData);
+                
+                // API呼び出し
+                const response = await fetch('/api/blog/articles', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(articleData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert(message);
+                    
+                    // フォームをリセット（下書き保存の場合は除く）
+                    if (articleData.status === 'published') {
+                        if (confirm('記事管理ページに移動しますか？')) {
+                            // window.location.href = '/admin/blog-list.html';
+                        } else {
+                            // 新規記事作成のためフォームリセット
+                            document.getElementById('article-form').reset();
+                            selectedTags = [];
+                            renderSelectedTags();
+                            document.getElementById('preview-section').style.display = 'none';
+                        }
+                    }
+                } else {
+                    throw new Error(result.message || 'API エラーが発生しました');
+                }
+                
+            } catch (error) {
+                console.error('記事保存エラー:', error);
+                
+                // フォールバック: ローカルストレージに保存
+                const savedArticles = JSON.parse(localStorage.getItem('blog_articles') || '[]');
+                const existingIndex = savedArticles.findIndex(article => article.id === articleData.id);
+                
+                if (existingIndex >= 0) {
+                    savedArticles[existingIndex] = articleData;
+                } else {
+                    savedArticles.push(articleData);
+                }
+                
+                localStorage.setItem('blog_articles', JSON.stringify(savedArticles));
+                
+                alert(`${message}\n\n※ API接続に失敗したため、ローカルに保存されました。`);
+            }
+        }
+
+        // 初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            setupCharCounters();
+            setupSlugGeneration();
+            setupTagManagement();
+            
+            // メタディスクリプション自動設定
+            document.getElementById('article-excerpt').addEventListener('input', (e) => {
+                const metaDesc = document.getElementById('meta-description');
+                if (!metaDesc.value) {
+                    metaDesc.value = e.target.value;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

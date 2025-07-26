@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>記事管理 | Dive Buddy's管理画面</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background: #f8fafc;
+            color: #374151;
+            line-height: 1.6;
+        }
+
+        .admin-header {
+            background: #1f2937;
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .admin-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .admin-logo {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .admin-links {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .admin-links a {
+            color: #9ca3af;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .admin-links a:hover, .admin-links a.active {
+            background: #374151;
+            color: white;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .page-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+
+        .btn-danger {
+            background: #dc2626;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #b91c1c;
+        }
+
+        .btn-small {
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
+        }
+
+        .filters-section {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            align-items: end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-label {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #374151;
+            font-size: 0.9rem;
+        }
+
+        .filter-input, .filter-select {
+            padding: 0.6rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .filter-input:focus, .filter-select:focus {
+            outline: none;
+            border-color: #2563eb;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2563eb;
+            display: block;
+        }
+
+        .stat-label {
+            color: #6b7280;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        .articles-table {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .table-header {
+            background: #f8fafc;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-title {
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .table-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th,
+        .table td {
+            padding: 1rem 1.5rem;
+            text-align: left;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .table th {
+            background: #f8fafc;
+            font-weight: 600;
+            color: #374151;
+            font-size: 0.9rem;
+        }
+
+        .table tr:hover {
+            background: #f9fafb;
+        }
+
+        .article-title {
+            font-weight: 600;
+            color: #1f2937;
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .article-excerpt {
+            color: #6b7280;
+            font-size: 0.9rem;
+            max-width: 250px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-published {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-draft {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-scheduled {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .category-badge {
+            background: #e0e7ff;
+            color: #3730a3;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-icon {
+            padding: 0.5rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+            font-size: 0.8rem;
+        }
+
+        .btn-edit {
+            background: #059669;
+        }
+
+        .btn-edit:hover {
+            background: #047857;
+        }
+
+        .btn-delete {
+            background: #dc2626;
+        }
+
+        .btn-delete:hover {
+            background: #b91c1c;
+        }
+
+        .btn-view {
+            background: #2563eb;
+        }
+
+        .btn-view:hover {
+            background: #1d4ed8;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1.5rem;
+            background: white;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .pagination button {
+            padding: 0.5rem 1rem;
+            border: 1px solid #e5e7eb;
+            background: white;
+            color: #374151;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background: #f3f4f6;
+        }
+
+        .pagination button.active {
+            background: #2563eb;
+            color: white;
+            border-color: #2563eb;
+        }
+
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #6b7280;
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .modal-header {
+            margin-bottom: 1rem;
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 1.5rem;
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .page-header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: stretch;
+            }
+            
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .table-responsive {
+                overflow-x: auto;
+            }
+            
+            .table th,
+            .table td {
+                padding: 0.75rem;
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 管理画面ヘッダー -->
+    <header class="admin-header">
+        <nav class="admin-nav">
+            <div class="admin-logo">
+                🌊 Dive Buddy's 管理画面
+            </div>
+            <div class="admin-links">
+                <a href="/admin/dashboard.html">ダッシュボード</a>
+                <a href="/admin/blog-editor.html">記事作成</a>
+                <a href="/admin/blog-list.html" class="active">記事管理</a>
+                <a href="/admin/analytics.html">分析</a>
+                <a href="/">サイトへ戻る</a>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container">
+        <!-- ページヘッダー -->
+        <div class="page-header">
+            <h1 class="page-title">📝 記事管理</h1>
+            <div class="header-actions">
+                <button class="btn btn-secondary btn-small" onclick="refreshData()">
+                    <i class="fas fa-sync-alt"></i> 更新
+                </button>
+                <a href="/admin/blog-editor.html" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> 新規記事作成
+                </a>
+            </div>
+        </div>
+
+        <!-- 統計カード -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-number" id="total-articles">-</span>
+                <div class="stat-label">総記事数</div>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number" id="published-articles">-</span>
+                <div class="stat-label">公開済み</div>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number" id="draft-articles">-</span>
+                <div class="stat-label">下書き</div>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number" id="total-views">-</span>
+                <div class="stat-label">総閲覧数</div>
+            </div>
+        </div>
+
+        <!-- フィルター -->
+        <div class="filters-section">
+            <div class="filters-grid">
+                <div class="filter-group">
+                    <label class="filter-label">検索</label>
+                    <input type="text" class="filter-input" id="search-input" placeholder="タイトル・内容で検索">
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">カテゴリ</label>
+                    <select class="filter-select" id="category-filter">
+                        <option value="">すべてのカテゴリ</option>
+                        <option value="diving_spots">ダイビングスポット</option>
+                        <option value="marine_life">海洋生物</option>
+                        <option value="travel_tips">旅行Tips</option>
+                        <option value="equipment">器材・装備</option>
+                        <option value="beginner_guide">初心者ガイド</option>
+                        <option value="seasonal_info">季節情報</option>
+                        <option value="shop_review">ショップ情報</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">ステータス</label>
+                    <select class="filter-select" id="status-filter">
+                        <option value="">すべてのステータス</option>
+                        <option value="published">公開済み</option>
+                        <option value="draft">下書き</option>
+                        <option value="scheduled">公開予約</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">並び順</label>
+                    <select class="filter-select" id="sort-select">
+                        <option value="updated_at-desc">更新日時（新しい順）</option>
+                        <option value="updated_at-asc">更新日時（古い順）</option>
+                        <option value="published_at-desc">公開日時（新しい順）</option>
+                        <option value="published_at-asc">公開日時（古い順）</option>
+                        <option value="title-asc">タイトル（あいうえお順）</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">&nbsp;</label>
+                    <button class="btn btn-primary btn-small" onclick="applyFilters()">
+                        <i class="fas fa-search"></i> 検索
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 記事テーブル -->
+        <div class="articles-table">
+            <div class="table-header">
+                <div class="table-title">記事一覧</div>
+                <div class="table-actions">
+                    <select class="filter-select" id="bulk-action" style="margin-right: 0.5rem;">
+                        <option value="">一括操作</option>
+                        <option value="publish">公開</option>
+                        <option value="draft">下書きに戻す</option>
+                        <option value="delete">削除</option>
+                    </select>
+                    <button class="btn btn-secondary btn-small" onclick="executeBulkAction()">
+                        実行
+                    </button>
+                </div>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th width="40">
+                                <input type="checkbox" id="select-all" onchange="toggleSelectAll()">
+                            </th>
+                            <th width="300">タイトル</th>
+                            <th width="250">抜粋</th>
+                            <th width="120">カテゴリ</th>
+                            <th width="100">ステータス</th>
+                            <th width="100">作成者</th>
+                            <th width="120">更新日時</th>
+                            <th width="120">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="articles-tbody">
+                        <!-- 記事データがここに表示されます -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- ページネーション -->
+            <div class="pagination" id="pagination">
+                <!-- ページネーションがここに表示されます -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 削除確認モーダル -->
+    <div id="delete-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">記事削除の確認</h3>
+            </div>
+            <p>この記事を削除してもよろしいですか？</p>
+            <p><strong id="delete-article-title"></strong></p>
+            <p style="color: #dc2626; font-size: 0.9rem; margin-top: 1rem;">
+                ※ この操作は取り消すことができません。
+            </p>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeDeleteModal()">キャンセル</button>
+                <button class="btn btn-danger" onclick="confirmDelete()">削除する</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 管理データ
+        let currentPage = 1;
+        let itemsPerPage = 10;
+        let totalItems = 0;
+        let allArticles = [];
+        let filteredArticles = [];
+        let deleteArticleId = null;
+        let selectedArticles = new Set();
+
+        // カテゴリマッピング
+        const categoryNames = {
+            'diving_spots': 'ダイビングスポット',
+            'marine_life': '海洋生物',
+            'travel_tips': '旅行Tips',
+            'equipment': '器材・装備',
+            'beginner_guide': '初心者ガイド',
+            'seasonal_info': '季節情報',
+            'shop_review': 'ショップ情報'
+        };
+
+        // 初期データ読み込み
+        async function loadArticles() {
+            try {
+                console.log('記事データ読み込み開始');
+                
+                // APIから記事データを取得
+                const response = await fetch('/api/blog/articles?limit=100');
+                const result = await response.json();
+                
+                if (result.success) {
+                    allArticles = result.articles || [];
+                } else {
+                    throw new Error('API エラー');
+                }
+                
+            } catch (error) {
+                console.log('APIからの読み込みに失敗、ローカルデータを使用:', error);
+                
+                // フォールバック: ローカルストレージから読み込み
+                const savedArticles = localStorage.getItem('blog_articles');
+                if (savedArticles) {
+                    allArticles = JSON.parse(savedArticles);
+                } else {
+                    // サンプルデータ
+                    allArticles = generateSampleArticles();
+                }
+            }
+            
+            filteredArticles = [...allArticles];
+            updateStats();
+            renderArticles();
+            console.log('記事データ読み込み完了:', allArticles.length);
+        }
+
+        // サンプル記事データ生成
+        function generateSampleArticles() {
+            return [
+                {
+                    id: 'article_001',
+                    title: '石垣島のマンタポイント完全ガイド',
+                    excerpt: '石垣島の代表的なダイビングスポット、マンタポイントの攻略法を詳しく解説。',
+                    category: 'diving_spots',
+                    status: 'published',
+                    author: 'Jiji編集部',
+                    published_at: '2025-07-25T10:00:00Z',
+                    created_at: '2025-07-25T09:00:00Z',
+                    updated_at: '2025-07-25T10:00:00Z',
+                    featured: true
+                },
+                {
+                    id: 'article_002',
+                    title: '初心者必見！沖縄ダイビングの基礎知識',
+                    excerpt: 'ダイビング初心者が沖縄で安全に楽しむための基礎知識をまとめました。',
+                    category: 'beginner_guide',
+                    status: 'published',
+                    author: 'ダイビング太郎',
+                    published_at: '2025-07-24T14:30:00Z',
+                    created_at: '2025-07-24T13:30:00Z',
+                    updated_at: '2025-07-24T14:30:00Z',
+                    featured: false
+                },
+                {
+                    id: 'article_003',
+                    title: '宮古島の地形ダイビング：魔王の宮殿',
+                    excerpt: '宮古島の代表的な地形ダイビングスポット「魔王の宮殿」の魅力と注意点を詳しく解説。',
+                    category: 'diving_spots',
+                    status: 'draft',
+                    author: '宮古島ガイド',
+                    published_at: null,
+                    created_at: '2025-07-23T09:15:00Z',
+                    updated_at: '2025-07-23T16:20:00Z',
+                    featured: false
+                }
+            ];
+        }
+
+        // 統計更新
+        function updateStats() {
+            const published = allArticles.filter(a => a.status === 'published').length;
+            const draft = allArticles.filter(a => a.status === 'draft').length;
+            const totalViews = allArticles.length * 1000 + Math.floor(Math.random() * 5000);
+            
+            document.getElementById('total-articles').textContent = allArticles.length;
+            document.getElementById('published-articles').textContent = published;
+            document.getElementById('draft-articles').textContent = draft;
+            document.getElementById('total-views').textContent = totalViews.toLocaleString();
+        }
+
+        // 記事一覧レンダリング
+        function renderArticles() {
+            const tbody = document.getElementById('articles-tbody');
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const pageArticles = filteredArticles.slice(startIndex, endIndex);
+            
+            if (pageArticles.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="empty-state">
+                            <div class="empty-icon">📝</div>
+                            <div>記事が見つかりませんでした</div>
+                        </td>
+                    </tr>
+                `;
+                renderPagination();
+                return;
+            }
+            
+            tbody.innerHTML = pageArticles.map(article => `
+                <tr>
+                    <td>
+                        <input type="checkbox" class="article-checkbox" value="${article.id}" 
+                               onchange="toggleArticleSelection('${article.id}')">
+                    </td>
+                    <td>
+                        <div class="article-title" title="${article.title}">
+                            ${article.title}
+                            ${article.featured ? '<i class="fas fa-star" style="color: #f59e0b; margin-left: 0.5rem;" title="注目記事"></i>' : ''}
+                        </div>
+                    </td>
+                    <td>
+                        <div class="article-excerpt" title="${article.excerpt}">
+                            ${article.excerpt}
+                        </div>
+                    </td>
+                    <td>
+                        <span class="category-badge">
+                            ${categoryNames[article.category] || article.category}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="status-badge status-${article.status}">
+                            ${getStatusLabel(article.status)}
+                        </span>
+                    </td>
+                    <td>${article.author}</td>
+                    <td>${formatDate(article.updated_at)}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn-icon btn-view" onclick="viewArticle('${article.id}')" title="詳細表示">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn-icon btn-edit" onclick="editArticle('${article.id}')" title="編集">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-icon btn-delete" onclick="deleteArticle('${article.id}')" title="削除">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+            
+            renderPagination();
+        }
+
+        // ページネーション
+        function renderPagination() {
+            const pagination = document.getElementById('pagination');
+            const totalPages = Math.ceil(filteredArticles.length / itemsPerPage);
+            
+            if (totalPages <= 1) {
+                pagination.innerHTML = '';
+                return;
+            }
+            
+            let paginationHTML = `
+                <button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+            `;
+            
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
+                    paginationHTML += `
+                        <button onclick="changePage(${i})" ${i === currentPage ? 'class="active"' : ''}>
+                            ${i}
+                        </button>
+                    `;
+                } else if (i === currentPage - 3 || i === currentPage + 3) {
+                    paginationHTML += '<span>...</span>';
+                }
+            }
+            
+            paginationHTML += `
+                <button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            `;
+            
+            pagination.innerHTML = paginationHTML;
+        }
+
+        // ページ変更
+        function changePage(page) {
+            const totalPages = Math.ceil(filteredArticles.length / itemsPerPage);
+            if (page >= 1 && page <= totalPages) {
+                currentPage = page;
+                renderArticles();
+            }
+        }
+
+        // フィルター適用
+        function applyFilters() {
+            const search = document.getElementById('search-input').value.toLowerCase();
+            const category = document.getElementById('category-filter').value;
+            const status = document.getElementById('status-filter').value;
+            const sort = document.getElementById('sort-select').value;
+            
+            // フィルタリング
+            filteredArticles = allArticles.filter(article => {
+                const matchesSearch = !search || 
+                    article.title.toLowerCase().includes(search) ||
+                    article.excerpt.toLowerCase().includes(search);
+                const matchesCategory = !category || article.category === category;
+                const matchesStatus = !status || article.status === status;
+                
+                return matchesSearch && matchesCategory && matchesStatus;
+            });
+            
+            // ソート
+            const [sortField, sortOrder] = sort.split('-');
+            filteredArticles.sort((a, b) => {
+                let aVal = a[sortField] || '';
+                let bVal = b[sortField] || '';
+                
+                if (sortField.includes('_at')) {
+                    aVal = new Date(aVal);
+                    bVal = new Date(bVal);
+                }
+                
+                if (sortOrder === 'asc') {
+                    return aVal > bVal ? 1 : -1;
+                } else {
+                    return aVal < bVal ? 1 : -1;
+                }
+            });
+            
+            currentPage = 1;
+            renderArticles();
+        }
+
+        // 記事選択管理
+        function toggleSelectAll() {
+            const selectAll = document.getElementById('select-all');
+            const checkboxes = document.querySelectorAll('.article-checkbox');
+            
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = selectAll.checked;
+                if (selectAll.checked) {
+                    selectedArticles.add(checkbox.value);
+                } else {
+                    selectedArticles.delete(checkbox.value);
+                }
+            });
+        }
+
+        function toggleArticleSelection(articleId) {
+            if (selectedArticles.has(articleId)) {
+                selectedArticles.delete(articleId);
+            } else {
+                selectedArticles.add(articleId);
+            }
+            
+            // 全選択チェックボックスの状態更新
+            const checkboxes = document.querySelectorAll('.article-checkbox');
+            const checkedCount = document.querySelectorAll('.article-checkbox:checked').length;
+            const selectAll = document.getElementById('select-all');
+            
+            selectAll.checked = checkedCount === checkboxes.length;
+            selectAll.indeterminate = checkedCount > 0 && checkedCount < checkboxes.length;
+        }
+
+        // 一括操作
+        function executeBulkAction() {
+            const action = document.getElementById('bulk-action').value;
+            
+            if (!action || selectedArticles.size === 0) {
+                alert('操作と記事を選択してください。');
+                return;
+            }
+            
+            if (action === 'delete') {
+                if (!confirm(`${selectedArticles.size}件の記事を削除してもよろしいですか？`)) {
+                    return;
+                }
+            }
+            
+            console.log(`一括操作実行: ${action}`, Array.from(selectedArticles));
+            alert(`${selectedArticles.size}件の記事に「${action}」を実行しました。`);
+            
+            // 選択解除
+            selectedArticles.clear();
+            document.getElementById('select-all').checked = false;
+            document.querySelectorAll('.article-checkbox').forEach(cb => cb.checked = false);
+        }
+
+        // 記事操作
+        function viewArticle(articleId) {
+            window.open(`/blog/article/${articleId}`, '_blank');
+        }
+
+        function editArticle(articleId) {
+            window.location.href = `/admin/blog-editor.html?id=${articleId}`;
+        }
+
+        function deleteArticle(articleId) {
+            const article = allArticles.find(a => a.id === articleId);
+            if (article) {
+                deleteArticleId = articleId;
+                document.getElementById('delete-article-title').textContent = article.title;
+                document.getElementById('delete-modal').style.display = 'block';
+            }
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('delete-modal').style.display = 'none';
+            deleteArticleId = null;
+        }
+
+        async function confirmDelete() {
+            if (!deleteArticleId) return;
+            
+            try {
+                const response = await fetch(`/api/blog/articles/${deleteArticleId}`, {
+                    method: 'DELETE'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // ローカルからも削除
+                    allArticles = allArticles.filter(a => a.id !== deleteArticleId);
+                    const savedArticles = JSON.parse(localStorage.getItem('blog_articles') || '[]');
+                    const updatedSaved = savedArticles.filter(a => a.id !== deleteArticleId);
+                    localStorage.setItem('blog_articles', JSON.stringify(updatedSaved));
+                    
+                    closeDeleteModal();
+                    applyFilters();
+                    updateStats();
+                    alert('記事を削除しました。');
+                } else {
+                    throw new Error(result.message);
+                }
+                
+            } catch (error) {
+                console.error('削除エラー:', error);
+                alert('削除に失敗しました。');
+            }
+        }
+
+        // データ更新
+        function refreshData() {
+            loadArticles();
+        }
+
+        // ユーティリティ関数
+        function getStatusLabel(status) {
+            const labels = {
+                'published': '公開済み',
+                'draft': '下書き',
+                'scheduled': '公開予約'
+            };
+            return labels[status] || status;
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('ja-JP') + ' ' + 
+                   date.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        // イベントリスナー
+        document.addEventListener('DOMContentLoaded', function() {
+            loadArticles();
+            
+            // フィルター入力時の自動検索
+            document.getElementById('search-input').addEventListener('input', 
+                debounce(applyFilters, 300));
+            document.getElementById('category-filter').addEventListener('change', applyFilters);
+            document.getElementById('status-filter').addEventListener('change', applyFilters);
+            document.getElementById('sort-select').addEventListener('change', applyFilters);
+            
+            // モーダル外クリックで閉じる
+            document.getElementById('delete-modal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeDeleteModal();
+                }
+            });
+        });
+
+        // デバウンス関数
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+    </script>
+</body>
+</html>

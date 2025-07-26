@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>沖縄交通ルート検索 | Dive Buddy's</title>
+    <meta name="description" content="沖縄ダイビング旅行の交通手段を簡単検索。バス・タクシー・レンタカーの最適ルートとコストを比較できます。">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="../app/v28-styles.css">
+    
+    <style>
+        .transport-header {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            color: white;
+            padding: 80px 0 60px;
+            text-align: center;
+        }
+        
+        .search-section {
+            padding: 60px 0;
+            background: #f8fafc;
+        }
+        
+        .search-form {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 40px;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #374151;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .form-input, .form-select {
+            padding: 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-input:focus, .form-select:focus {
+            border-color: #059669;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
+        }
+        
+        .transport-types {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        
+        .transport-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .transport-checkbox:hover {
+            border-color: #059669;
+            background: #f0fdf4;
+        }
+        
+        .transport-checkbox input[type="checkbox"] {
+            margin: 0;
+        }
+        
+        .transport-checkbox input[type="checkbox"]:checked + .checkbox-label {
+            color: #059669;
+            font-weight: 600;
+        }
+        
+        .btn-search {
+            background: linear-gradient(135deg, #059669, #047857);
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            justify-self: center;
+        }
+        
+        .btn-search:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(5, 150, 105, 0.3);
+        }
+        
+        .btn-search:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .results-section {
+            margin-top: 40px;
+        }
+        
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .results-info {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .sort-options {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .sort-select {
+            padding: 8px 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+        
+        .route-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .route-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+        
+        .route-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .transport-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .transport-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        
+        .transport-icon.bus {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+        }
+        
+        .transport-icon.taxi {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+        
+        .transport-icon.rental_car {
+            background: linear-gradient(135deg, #059669, #047857);
+        }
+        
+        .transport-details {
+            flex: 1;
+        }
+        
+        .transport-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+        
+        .transport-company {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+        
+        .cost-info {
+            text-align: right;
+        }
+        
+        .cost-main {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #059669;
+        }
+        
+        .cost-label {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+        
+        .route-details {
+            display: grid;
+            grid-template-columns: 2fr 1fr 2fr;
+            gap: 20px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .departure-info, .arrival-info {
+            text-align: center;
+        }
+        
+        .location {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+        
+        .time-info {
+            color: #6b7280;
+            margin-top: 5px;
+            font-size: 0.9rem;
+        }
+        
+        .duration-info {
+            text-align: center;
+            position: relative;
+        }
+        
+        .duration {
+            font-weight: 600;
+            color: #6b7280;
+        }
+        
+        .route-line {
+            width: 100%;
+            height: 2px;
+            background: #e5e7eb;
+            margin: 10px 0;
+            position: relative;
+        }
+        
+        .route-line::after {
+            content: '🚗';
+            position: absolute;
+            right: -10px;
+            top: -10px;
+            background: white;
+            padding: 0 5px;
+        }
+        
+        .route-line.bus::after {
+            content: '🚌';
+        }
+        
+        .route-line.taxi::after {
+            content: '🚖';
+        }
+        
+        .route-features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .feature-tag {
+            background: #f0fdf4;
+            color: #059669;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .route-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .route-rating {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: #f59e0b;
+        }
+        
+        .btn-select {
+            background: #059669;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-select:hover {
+            background: #047857;
+            transform: translateY(-1px);
+        }
+        
+        .area-info-section {
+            margin-top: 40px;
+            padding: 30px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .area-info-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 25px;
+            color: #2c3e50;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+        }
+        
+        .info-card {
+            padding: 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .info-card:hover {
+            border-color: #059669;
+            box-shadow: 0 5px 15px rgba(5, 150, 105, 0.1);
+        }
+        
+        .info-card-title {
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .info-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .info-list li {
+            padding: 5px 0;
+            color: #6b7280;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        
+        .info-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e5e7eb;
+            border-top: 4px solid #059669;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error-message {
+            background: #fef2f2;
+            color: #dc2626;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #dc2626;
+            margin: 20px 0;
+        }
+        
+        .tips-section {
+            margin-top: 40px;
+            padding: 30px;
+            background: #f0fdf4;
+            border-radius: 15px;
+            border-left: 4px solid #059669;
+        }
+        
+        .tips-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #047857;
+        }
+        
+        .tips-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .tips-list li {
+            padding: 8px 0;
+            color: #059669;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .tips-list li::before {
+            content: '💡';
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- ヘッダー -->
+    <header class="main-header">
+        <nav class="main-nav">
+            <a href="/" class="main-logo">
+                <h1>🌺 Dive Buddy's</h1>
+                <span>交通ルート検索</span>
+            </a>
+            
+            <ul class="main-nav-menu">
+                <li><a href="/">ホーム</a></li>
+                <li><a href="/about">サービス</a></li>
+                <li><a href="/member">会員システム</a></li>
+                <li><a href="/shops-database">ショップDB</a></li>
+                <li><a href="/travel-guide">旅行ガイド</a></li>
+                <li><a href="/travel-guide/flights.html">航空券検索</a></li>
+                <li><a href="/travel-guide/transport.html" class="active">交通ルート</a></li>
+                <li><a href="/weather-ocean">海況・天気</a></li>
+                <li><a href="/partners">ショップ向け</a></li>
+                <li><a href="/contact">お問い合わせ</a></li>
+            </ul>
+            
+            <div class="main-nav-buttons">
+                <a href="/member" class="btn btn-secondary">
+                    <i class="fas fa-user-plus"></i> 会員登録
+                </a>
+                <a href="https://line.me/ti/p/@2007331165" class="btn btn-primary btn-line-connect" target="_blank">
+                    <i class="fab fa-line"></i> Jijiに相談
+                </a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- 交通ルート検索ヘッダー -->
+    <section class="transport-header">
+        <div class="container">
+            <h1 class="database-title">🚌 沖縄交通ルート検索</h1>
+            <p class="database-subtitle">
+                バス・タクシー・レンタカーの最適ルートとコストを比較。沖縄特化の交通情報で快適な移動をサポート。
+            </p>
+        </div>
+    </section>
+
+    <!-- 検索セクション -->
+    <section class="search-section">
+        <div class="container">
+            <div class="search-form">
+                <h2 class="section-title">🔍 交通ルート検索</h2>
+                
+                <form id="transport-search-form" class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-map-marker-alt"></i> エリア
+                        </label>
+                        <select class="form-select" id="area" required>
+                            <option value="">エリアを選択</option>
+                            <option value="okinawa_main">沖縄本島</option>
+                            <option value="ishigaki">石垣島</option>
+                            <option value="miyako">宮古島</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-circle"></i> 出発地
+                        </label>
+                        <input type="text" class="form-input" id="from" placeholder="例: 那覇空港" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-map-pin"></i> 目的地
+                        </label>
+                        <input type="text" class="form-input" id="to" placeholder="例: 恩納村" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-clock"></i> 出発時刻（任意）
+                        </label>
+                        <input type="time" class="form-input" id="departureTime">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-sort"></i> 優先順位
+                        </label>
+                        <select class="form-select" id="priority">
+                            <option value="balanced">総合評価</option>
+                            <option value="cost">料金重視</option>
+                            <option value="time">時間重視</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-yen-sign"></i> 予算上限（円）
+                        </label>
+                        <input type="number" class="form-input" id="budget" placeholder="例: 3000">
+                    </div>
+                </form>
+                
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="fas fa-car"></i> 交通手段
+                    </label>
+                    <div class="transport-types">
+                        <label class="transport-checkbox">
+                            <input type="checkbox" id="bus" value="bus" checked>
+                            <span class="checkbox-label">🚌 バス</span>
+                        </label>
+                        <label class="transport-checkbox">
+                            <input type="checkbox" id="taxi" value="taxi" checked>
+                            <span class="checkbox-label">🚖 タクシー</span>
+                        </label>
+                        <label class="transport-checkbox">
+                            <input type="checkbox" id="rental_car" value="rental_car" checked>
+                            <span class="checkbox-label">🚗 レンタカー</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn-search" id="search-btn">
+                    <i class="fas fa-search"></i>
+                    ルートを検索
+                </button>
+            </div>
+            
+            <!-- 検索結果セクション -->
+            <div id="results-container" style="display: none;">
+                <div class="results-header">
+                    <div class="results-info" id="results-info">
+                        検索結果: 0件
+                    </div>
+                    
+                    <div class="sort-options">
+                        <label>並び替え:</label>
+                        <select class="sort-select" id="sort-results">
+                            <option value="recommended">おすすめ順</option>
+                            <option value="price">料金順</option>
+                            <option value="time">時間順</option>
+                            <option value="rating">評価順</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- ルート一覧 -->
+                <div id="routes-list"></div>
+            </div>
+            
+            <!-- エリア交通情報 -->
+            <div id="area-info-section" class="area-info-section" style="display: none;">
+                <h3 class="area-info-title" id="area-info-title">📍 エリア交通情報</h3>
+                <div class="info-grid" id="area-info-grid"></div>
+            </div>
+            
+            <!-- 交通Tips -->
+            <div id="tips-section" class="tips-section" style="display: none;">
+                <h3 class="tips-title">💡 交通Tips</h3>
+                <ul class="tips-list" id="tips-list"></ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- フッター -->
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>🌊 Jiji知識ベース</h3>
+                    <p>LINE Bot完結型・Web知識ベース統合システム</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>交通ルート検索</h3>
+                    <ul>
+                        <li><a href="/travel-guide/transport.html">バス路線検索</a></li>
+                        <li><a href="/travel-guide/transport.html">タクシー料金比較</a></li>
+                        <li><a href="/travel-guide/transport.html">レンタカー検索</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>旅行ガイド</h3>
+                    <ul>
+                        <li><a href="/travel-guide">旅行プランナー</a></li>
+                        <li><a href="/travel-guide/flights.html">航空券検索</a></li>
+                        <li><a href="/travel-guide">宿泊施設</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>サポート</h3>
+                    <ul>
+                        <li><a href="https://line.me/ti/p/@2007331165" target="_blank">LINE Bot相談</a></li>
+                        <li><a href="/contact">お問い合わせ</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 Jiji知識ベース - 沖縄ダイビング旅行サポートシステム</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 沖縄交通ルート検索システム
+        class TransportSearchSystem {
+            constructor() {
+                this.isLoading = false;
+                this.searchResults = null;
+                this.areaInfo = null;
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+            }
+
+            setupEventListeners() {
+                // 検索ボタン
+                document.getElementById('search-btn').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.performSearch();
+                });
+
+                // エリア変更時の情報更新
+                document.getElementById('area').addEventListener('change', (e) => {
+                    this.updateAreaInfo(e.target.value);
+                });
+
+                // 結果ソート
+                document.getElementById('sort-results').addEventListener('change', (e) => {
+                    this.sortResults(e.target.value);
+                });
+            }
+
+            async performSearch() {
+                if (this.isLoading) return;
+
+                const formData = this.getFormData();
+                if (!this.validateForm(formData)) return;
+
+                try {
+                    this.setLoading(true);
+                    console.log('🚌 交通ルート検索開始:', formData);
+
+                    const searchResponse = await this.callTransportAPI('routes', formData);
+                    
+                    this.searchResults = searchResponse.data;
+                    this.displayResults();
+
+                } catch (error) {
+                    console.error('❌ 検索エラー:', error);
+                    this.showError('検索中にエラーが発生しました。しばらく後にもう一度お試しください。');
+                } finally {
+                    this.setLoading(false);
+                }
+            }
+
+            getFormData() {
+                const transportTypes = [];
+                ['bus', 'taxi', 'rental_car'].forEach(type => {
+                    if (document.getElementById(type).checked) {
+                        transportTypes.push(type);
+                    }
+                });
+
+                return {
+                    area: document.getElementById('area').value,
+                    from: document.getElementById('from').value,
+                    to: document.getElementById('to').value,
+                    transportTypes: transportTypes.join(','),
+                    departureTime: document.getElementById('departureTime').value || null,
+                    priority: document.getElementById('priority').value,
+                    budget: document.getElementById('budget').value || null
+                };
+            }
+
+            validateForm(data) {
+                if (!data.area || !data.from || !data.to) {
+                    this.showError('エリア、出発地、目的地は必須項目です。');
+                    return false;
+                }
+
+                if (!data.transportTypes) {
+                    this.showError('少なくとも1つの交通手段を選択してください。');
+                    return false;
+                }
+
+                return true;
+            }
+
+            async callTransportAPI(endpoint, params) {
+                const queryString = new URLSearchParams();
+                Object.entries(params).forEach(([key, value]) => {
+                    if (value !== null && value !== undefined && value !== '') {
+                        queryString.append(key, value);
+                    }
+                });
+
+                const response = await fetch(`/api/transport/${endpoint}?${queryString.toString()}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP Error: ${response.status}`);
+                }
+
+                const result = await response.json();
+                
+                if (!result.success) {
+                    throw new Error(result.message || 'API Error');
+                }
+
+                return result;
+            }
+
+            displayResults() {
+                const container = document.getElementById('results-container');
+                const info = document.getElementById('results-info');
+                
+                if (!this.searchResults || !this.searchResults.routes.length) {
+                    this.showError('該当するルートが見つかりませんでした。');
+                    return;
+                }
+
+                const totalRoutes = this.searchResults.routes.length;
+                info.textContent = `検索結果: ${totalRoutes}件`;
+                
+                container.style.display = 'block';
+                this.displayRoutesList();
+            }
+
+            displayRoutesList() {
+                const container = document.getElementById('routes-list');
+                container.innerHTML = '';
+
+                this.searchResults.routes.forEach(route => {
+                    const routeCard = this.createRouteCard(route);
+                    container.appendChild(routeCard);
+                });
+            }
+
+            createRouteCard(route) {
+                const card = document.createElement('div');
+                card.className = 'route-card';
+
+                const featuresHtml = route.features ? route.features.map(feature => 
+                    `<span class="feature-tag">${feature}</span>`
+                ).join('') : '';
+
+                const ratingHtml = route.rating ? `
+                    <div class="route-rating">
+                        <i class="fas fa-star"></i>
+                        <span>${route.rating.toFixed(1)}</span>
+                    </div>
+                ` : '';
+
+                const durationText = this.formatDuration(route.duration);
+                const costText = route.transportType === 'rental_car' ? 
+                    `燃料費: ¥${route.fare.toLocaleString()}` : 
+                    `¥${route.fare.toLocaleString()}`;
+
+                card.innerHTML = `
+                    <div class="route-header">
+                        <div class="transport-info">
+                            <div class="transport-icon ${route.transportType}">
+                                ${this.getTransportIcon(route.transportType)}
+                            </div>
+                            <div class="transport-details">
+                                <div class="transport-name">${this.getTransportName(route.transportType)}</div>
+                                <div class="transport-company">${route.company || ''}</div>
+                            </div>
+                        </div>
+                        <div class="cost-info">
+                            <div class="cost-main">¥${route.fare.toLocaleString()}</div>
+                            <div class="cost-label">${costText}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="route-details">
+                        <div class="departure-info">
+                            <div class="location">${route.from}</div>
+                            <div class="time-info">${route.departureTime || '時刻指定なし'}</div>
+                        </div>
+                        
+                        <div class="duration-info">
+                            <div class="duration">${durationText}</div>
+                            <div class="route-line ${route.transportType}"></div>
+                        </div>
+                        
+                        <div class="arrival-info">
+                            <div class="location">${route.to}</div>
+                            <div class="time-info">到着時刻</div>
+                        </div>
+                    </div>
+                    
+                    <div class="route-features">
+                        ${featuresHtml}
+                    </div>
+                    
+                    <div class="route-actions">
+                        ${ratingHtml}
+                        <button class="btn-select" onclick="selectRoute('${route.transportType}', '${route.company || ''}')">
+                            このルートを選択
+                        </button>
+                    </div>
+                `;
+
+                return card;
+            }
+
+            async updateAreaInfo(area) {
+                if (!area) return;
+
+                try {
+                    const response = await fetch(`/api/transport/area/${area}`);
+                    
+                    if (!response.ok) return;
+
+                    const result = await response.json();
+                    
+                    if (result.success && result.data) {
+                        this.displayAreaInfo(area, result.data);
+                    }
+
+                } catch (error) {
+                    console.error('エリア情報取得エラー:', error);
+                }
+            }
+
+            displayAreaInfo(area, areaData) {
+                const section = document.getElementById('area-info-section');
+                const title = document.getElementById('area-info-title');
+                const grid = document.getElementById('area-info-grid');
+
+                title.textContent = `📍 ${areaData.area}エリア交通情報`;
+
+                grid.innerHTML = `
+                    <div class="info-card">
+                        <div class="info-card-title">
+                            <i class="fas fa-bus"></i> バス情報
+                        </div>
+                        <ul class="info-list">
+                            <li>運行会社: ${areaData.busSystem.companies.join('、')}</li>
+                            <li>運行時間: ${areaData.busSystem.operatingHours}</li>
+                            <li>カバー範囲: ${areaData.busSystem.coverage}</li>
+                            <li>支払方法: ${areaData.busSystem.ticketTypes.join('、')}</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="info-card">
+                        <div class="info-card-title">
+                            <i class="fas fa-car"></i> レンタカー情報
+                        </div>
+                        <ul class="info-list">
+                            <li>対応会社: ${areaData.rentalCarInfo.companies.length}社</li>
+                            <li>車種: ${areaData.rentalCarInfo.vehicleTypes.join('、')}</li>
+                            <li>料金目安: ${areaData.rentalCarInfo.averageDailyRate}</li>
+                            <li>特徴: ${areaData.rentalCarInfo.features.join('、')}</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="info-card">
+                        <div class="info-card-title">
+                            <i class="fas fa-taxi"></i> タクシー情報
+                        </div>
+                        <ul class="info-list">
+                            <li>初乗り: ${areaData.taxiInfo.baseFare || 'データなし'}</li>
+                            <li>距離料金: ${areaData.taxiInfo.perKm || 'データなし'}</li>
+                            <li>運行会社: ${areaData.taxiInfo.companies ? areaData.taxiInfo.companies.join('、') : 'データなし'}</li>
+                            <li>特別サービス: ${areaData.taxiInfo.specialServices ? areaData.taxiInfo.specialServices.join('、') : 'なし'}</li>
+                        </ul>
+                    </div>
+                `;
+
+                section.style.display = 'block';
+
+                // Tips表示
+                if (areaData.tips && areaData.tips.length > 0) {
+                    this.displayTips(areaData.tips);
+                }
+            }
+
+            displayTips(tips) {
+                const section = document.getElementById('tips-section');
+                const list = document.getElementById('tips-list');
+
+                list.innerHTML = tips.map(tip => `<li>${tip}</li>`).join('');
+                section.style.display = 'block';
+            }
+
+            sortResults(sortType) {
+                if (!this.searchResults || !this.searchResults.routes.length) return;
+
+                const routes = [...this.searchResults.routes];
+
+                routes.sort((a, b) => {
+                    switch (sortType) {
+                        case 'price':
+                            return a.fare - b.fare;
+                        case 'time':
+                            return a.duration - b.duration;
+                        case 'rating':
+                            return (b.rating || 0) - (a.rating || 0);
+                        default: // recommended
+                            return this.calculateRouteScore(b) - this.calculateRouteScore(a);
+                    }
+                });
+
+                this.searchResults.routes = routes;
+                this.displayRoutesList();
+            }
+
+            calculateRouteScore(route) {
+                let score = 0;
+                
+                // 交通手段別基本スコア
+                if (route.transportType === 'bus') score += 7;
+                else if (route.transportType === 'rental_car') score += 8;
+                else if (route.transportType === 'taxi') score += 6;
+                
+                // 料金評価
+                if (route.fare < 500) score += 3;
+                else if (route.fare < 1000) score += 2;
+                else if (route.fare > 2000) score -= 1;
+                
+                // 時間評価
+                if (route.duration < 30) score += 2;
+                else if (route.duration > 90) score -= 1;
+                
+                // 評価追加
+                if (route.rating) score += route.rating;
+                
+                return score;
+            }
+
+            getTransportIcon(type) {
+                const icons = {
+                    bus: '🚌',
+                    taxi: '🚖',
+                    rental_car: '🚗'
+                };
+                return icons[type] || '🚗';
+            }
+
+            getTransportName(type) {
+                const names = {
+                    bus: 'バス',
+                    taxi: 'タクシー',
+                    rental_car: 'レンタカー'
+                };
+                return names[type] || '交通手段';
+            }
+
+            formatDuration(minutes) {
+                if (minutes < 60) {
+                    return `${minutes}分`;
+                } else {
+                    const hours = Math.floor(minutes / 60);
+                    const mins = minutes % 60;
+                    return mins > 0 ? `${hours}時間${mins}分` : `${hours}時間`;
+                }
+            }
+
+            setLoading(loading) {
+                this.isLoading = loading;
+                const btn = document.getElementById('search-btn');
+                
+                if (loading) {
+                    btn.disabled = true;
+                    btn.innerHTML = '<div class="loading-spinner"></div> 検索中...';
+                } else {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-search"></i> ルートを検索';
+                }
+            }
+
+            showError(message) {
+                const container = document.getElementById('results-container');
+                container.innerHTML = `
+                    <div class="error-message">
+                        <strong>エラー:</strong> ${message}
+                    </div>
+                `;
+                container.style.display = 'block';
+            }
+        }
+
+        // ルート選択機能
+        function selectRoute(transportType, company) {
+            alert(`${transportType} (${company}) が選択されました。\\n実際のシステムでは予約・詳細情報ページに進みます。`);
+        }
+
+        // システム初期化
+        document.addEventListener('DOMContentLoaded', () => {
+            new TransportSearchSystem();
+        });
+    </script>
+</body>
+</html>
