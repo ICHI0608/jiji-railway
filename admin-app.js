@@ -172,6 +172,21 @@ app.get('/travel-guide/flights', (req, res) => {
     res.sendFile(path.join(__dirname, 'public/travel-guide/flights.html'));
 });
 
+// 会員マイページ
+app.get('/member', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/member/index.html'));
+});
+
+// 会員登録ページ
+app.get('/member/register', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/member/register.html'));
+});
+
+// 口コミ投稿ページ
+app.get('/member/review-post', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/member/review-post.html'));
+});
+
 app.get('/shops-database/details.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'public/shops-database/details.html'));
 });
@@ -1838,6 +1853,9 @@ app.use((req, res) => {
             '/admin/blog-list',
             '/shops-database',
             '/travel-guide/flights',
+            '/member',
+            '/member/register',
+            '/member/review-post',
             '/api/shops',
             '/api/weather/forecast/:area',
             '/api/weather/marine/:area',
