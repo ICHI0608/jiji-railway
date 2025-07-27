@@ -31,15 +31,25 @@ const elementsById = {
     'statisticsContainer': null
 };
 
-// 実際のHTMLに合わせてDOM要素IDを修正
+// 新デザインHTMLに合わせてDOM要素IDを修正
 function initializeElements() {
     elementsById.loadingIndicator = document.getElementById('loading');
-    elementsById.shopsContainer = document.getElementById('shops-grid');
-    elementsById.searchKeyword = document.getElementById('shop-search');
-    elementsById.searchSuggestions = document.getElementById('search-suggestions');
-    elementsById.minPriceFilter = document.getElementById('price-filter');
-    elementsById.gradeFilter = document.getElementById('service-filter');
-    elementsById.totalCount = document.getElementById('total-count');
+    elementsById.shopsContainer = document.getElementById('shopsContainer');
+    elementsById.searchKeyword = document.getElementById('searchKeyword');
+    elementsById.searchSuggestions = document.getElementById('searchSuggestions');
+    elementsById.minPriceFilter = document.getElementById('minPriceFilter');
+    elementsById.maxPriceFilter = document.getElementById('maxPriceFilter');
+    elementsById.gradeFilter = document.getElementById('gradeFilter');
+    elementsById.beginnerFriendlyFilter = document.getElementById('beginnerFriendlyFilter');
+    elementsById.soloOkFilter = document.getElementById('soloOkFilter');
+    elementsById.femaleInstructorFilter = document.getElementById('femaleInstructorFilter');
+    elementsById.englishSupportFilter = document.getElementById('englishSupportFilter');
+    elementsById.pickupServiceFilter = document.getElementById('pickupServiceFilter');
+    elementsById.photoServiceFilter = document.getElementById('photoServiceFilter');
+    elementsById.privateGuideFilter = document.getElementById('privateGuideFilter');
+    elementsById.licenseCoursesFilter = document.getElementById('licenseCoursesFilter');
+    elementsById.sortByFilter = document.getElementById('sortByFilter');
+    elementsById.totalCount = document.getElementById('totalCount');
     elementsById.statisticsContainer = document.getElementById('statistics-container');
 }
 
