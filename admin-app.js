@@ -91,47 +91,109 @@ app.get('/admin/blog-list', (req, res) => {
 
 // ===== 管理画面用API（基本のみ） =====
 
-// 記事一覧API（モックデータ）
-app.get('/api/blog/articles', (req, res) => {
-    const mockArticles = [
-        {
-            id: 1,
-            title: "石垣島のベストダイビングスポット",
-            excerpt: "石垣島で最も美しいダイビングスポットをご紹介",
-            category: "diving_spots",
-            tags: ["石垣島", "ダイビング"],
-            created_at: "2025-07-27T00:00:00Z"
-        },
-        {
-            id: 2,
-            title: "初心者向けダイビングガイド",
-            excerpt: "ダイビング初心者が知っておくべき基本知識",
-            category: "guide",
-            tags: ["初心者", "ガイド"],
-            created_at: "2025-07-26T00:00:00Z"
-        }
-    ];
+// 記事一覧API（Supabase連携）
+app.get('/api/blog/articles', async (req, res) => {
+    if (!supabase) {
+        return res.status(503).json({
+            success: false,
+            error: 'Database not available',
+            message: 'Supabaseが設定されていません'
+        });
+    }
     
-    res.json({
-        success: true,
-        data: mockArticles,
-        total: mockArticles.length
-    });
+    try {
+        const { data: articles, error } = await supabase
+            .from('blogs')
+            .select('*')
+            .order('created_at', { ascending: false });
+        
+        if (error) {
+            console.error('記事取得エラー:', error);
+            return res.status(500).json({
+                success: false,
+                error: error.message,
+                message: '記事の取得に失敗しました'
+            });
+        }
+        
+        res.json({
+            success: true,
+            data: articles || [],
+            total: articles ? articles.length : 0
+        });
+        
+    } catch (error) {
+        console.error('API エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message,
+            message: 'サーバーエラーが発生しました'
+        });
+    }
 });
 
-// 記事作成API（ローカルストレージに保存）
-app.post('/api/blog/articles', (req, res) => {
-    console.log('📝 記事作成リクエスト:', req.body);
+// 記事作成API（Supabase連携）
+app.post('/api/blog/articles', async (req, res) => {
+    if (!supabase) {
+        return res.status(503).json({
+            success: false,
+            error: 'Database not available',
+            message: 'Supabaseが設定されていません'
+        });
+    }
     
-    res.json({
-        success: true,
-        message: '記事が正常に作成されました',
-        data: {
-            id: Math.floor(Math.random() * 1000),
-            ...req.body,
-            created_at: new Date().toISOString()
+    try {
+        const { title, excerpt, content, category, tags } = req.body;
+        
+        // 必須フィールドチェック
+        if (!title || !content) {
+            return res.status(400).json({
+                success: false,
+                error: 'Missing required fields',
+                message: 'タイトルと内容は必須です'
+            });
         }
-    });
+        
+        const articleData = {
+            title,
+            excerpt: excerpt || '',
+            content,
+            category: category || 'general',
+            tags: Array.isArray(tags) ? tags : [],
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+        };
+        
+        const { data: article, error } = await supabase
+            .from('blogs')
+            .insert([articleData])
+            .select()
+            .single();
+        
+        if (error) {
+            console.error('記事作成エラー:', error);
+            return res.status(500).json({
+                success: false,
+                error: error.message,
+                message: '記事の作成に失敗しました'
+            });
+        }
+        
+        console.log('📝 記事作成成功:', article);
+        res.json({
+            success: true,
+            message: '記事が正常に作成されました',
+            data: article
+        });
+        
+    } catch (error) {
+        console.error('API エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message,
+            message: 'サーバーエラーが発生しました'
+        });
+    }
 });
 
 // ===== メインページリダイレクト =====
