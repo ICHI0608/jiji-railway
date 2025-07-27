@@ -2,9 +2,9 @@
   "name": "jiji-diving-bot",
   "version": "4.0.1",
   "description": "🌊 Jiji AI Diving Buddy - Phase 4-A Railway Production Ready",
-  "main": "app.js",
+  "main": "admin-app.js",
   "scripts": {
-    "start": "NODE_ENV=production node app.js",
+    "start": "NODE_ENV=production node admin-app.js",
     "build": "echo 'Build complete - static files ready'",
     "dev": "nodemon api-server-railway.js",
     "test": "node test-phase4a-complete.js",
