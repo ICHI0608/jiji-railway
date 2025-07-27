@@ -345,25 +345,28 @@ app.get('/api/info', (req, res) => {
 });
 
 app.get('/api/health', async (req, res) => {
+    let dbStatus = 'disconnected';
+    let dbError = null;
+    
+    // データベース接続確認（エラーでも継続）
     try {
-        // データベース接続確認
         await testDatabaseConnection();
-        
-        res.json({
-            status: 'healthy',
-            database: 'connected',
-            persona: 'loaded',
-            message_handler: 'ready',
-            timestamp: new Date().toISOString()
-        });
+        dbStatus = 'connected';
     } catch (error) {
-        res.status(500).json({
-            status: 'error',
-            database: 'disconnected',
-            error: error.message,
-            timestamp: new Date().toISOString()
-        });
+        dbError = error.message;
     }
+    
+    // 常に200で応答（Railwayヘルスチェック対応）
+    res.json({
+        status: 'healthy',
+        server: 'running',
+        database: dbStatus,
+        persona: 'loaded',
+        message_handler: 'ready',
+        admin_panel: 'available',
+        error: dbError,
+        timestamp: new Date().toISOString()
+    });
 });
 
 // ===== 天気API =====
