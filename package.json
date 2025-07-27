@@ -1,6 +1,6 @@
 {
   "name": "jiji-diving-bot",
-  "version": "4.0.1",
+  "version": "4.0.2",
   "description": "🌊 Jiji AI Diving Buddy - Phase 4-A Railway Production Ready",
   "main": "admin-app.js",
   "scripts": {
