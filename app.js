@@ -123,27 +123,14 @@ app.use(express.json());
 async function initializeApp() {
     console.log('🚀 Jiji沖縄ダイビングバディ初期化開始...');
     
-    try {
-        // データベース接続確認（警告のみ、エラーでも続行）
-        console.log('💾 データベース接続確認中...');
-        try {
-            await testDatabaseConnection();
-            console.log('✅ データベース接続成功');
-        } catch (dbError) {
-            console.warn('⚠️ データベース接続失敗（続行）:', dbError.message);
-        }
-        
-        console.log('🤖 Jijiペルソナ設定完了');
-        console.log(`📍 対応エリア: ${JIJI_PERSONA_CONFIG.coverage_areas.join('、')}`);
-        console.log(`🎭 3つの顔: ${JIJI_PERSONA_CONFIG.personalities.join(' / ')}`);
-        
-        return true;
-    } catch (error) {
-        console.error('❌ 初期化エラー:', error);
-        // 管理画面は動作可能なので警告のみ
-        console.warn('⚠️ 一部機能制限で続行します');
-        return true;
-    }
+    // Supabase接続を完全にスキップ（管理画面動作優先）
+    console.log('💾 データベース: スタンドアロンモード');
+    console.log('🤖 Jijiペルソナ設定完了');
+    console.log(`📍 対応エリア: ${JIJI_PERSONA_CONFIG.coverage_areas.join('、')}`);
+    console.log(`🎭 3つの顔: ${JIJI_PERSONA_CONFIG.personalities.join(' / ')}`);
+    console.log('✅ 管理画面モード起動完了');
+    
+    return true;
 }
 
 // ===== LINE Webhook処理 =====
@@ -349,27 +336,16 @@ app.get('/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-app.get('/api/health', async (req, res) => {
-    let dbStatus = 'disconnected';
-    let dbError = null;
-    
-    // データベース接続確認（エラーでも継続）
-    try {
-        await testDatabaseConnection();
-        dbStatus = 'connected';
-    } catch (error) {
-        dbError = error.message;
-    }
-    
-    // 常に200で応答（Railwayヘルスチェック対応）
+app.get('/api/health', (req, res) => {
+    // 常に200で応答（Supabase接続チェック無し）
     res.json({
         status: 'healthy',
         server: 'running',
-        database: dbStatus,
+        database: 'standalone',
         persona: 'loaded',
         message_handler: 'ready',
         admin_panel: 'available',
-        error: dbError,
+        mode: 'admin_only',
         timestamp: new Date().toISOString()
     });
 });
