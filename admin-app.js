@@ -187,6 +187,21 @@ app.get('/member/review-post', (req, res) => {
     res.sendFile(path.join(__dirname, 'public/member/review-post.html'));
 });
 
+// ショップ向けページ
+app.get('/partners', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/partners.html'));
+});
+
+// ショップ管理ダッシュボード
+app.get('/partners/dashboard', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/partners/dashboard.html'));
+});
+
+// ショップ広告管理ページ
+app.get('/partners/advertising', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/partners/advertising.html'));
+});
+
 app.get('/shops-database/details.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'public/shops-database/details.html'));
 });
@@ -1856,6 +1871,9 @@ app.use((req, res) => {
             '/member',
             '/member/register',
             '/member/review-post',
+            '/partners',
+            '/partners/dashboard',
+            '/partners/advertising',
             '/api/shops',
             '/api/weather/forecast/:area',
             '/api/weather/marine/:area',
