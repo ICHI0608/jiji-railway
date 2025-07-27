@@ -15,11 +15,17 @@ const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_ANON_KEY;
 let supabase = null;
 
+console.log('🔍 環境変数デバッグ:');
+console.log('SUPABASE_URL:', supabaseUrl ? '設定済み' : '未設定');
+console.log('SUPABASE_ANON_KEY:', supabaseKey ? `設定済み(${supabaseKey.length}文字)` : '未設定');
+
 if (supabaseUrl && supabaseKey) {
     supabase = createClient(supabaseUrl, supabaseKey);
     console.log('📊 Supabase初期化完了');
 } else {
     console.warn('⚠️ Supabase設定が見つかりません（モックモードで動作）');
+    console.log('URL:', supabaseUrl);
+    console.log('Key:', supabaseKey ? supabaseKey.substring(0, 50) + '...' : 'null');
 }
 
 const app = express();
