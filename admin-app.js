@@ -162,6 +162,11 @@ app.get('/shops-database', (req, res) => {
     res.sendFile(path.join(__dirname, 'public/shops-database/index.html'));
 });
 
+// メインページ（トップページ）
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/index.html'));
+});
+
 // 航空券検索ページ
 app.get('/travel-guide/flights', (req, res) => {
     res.sendFile(path.join(__dirname, 'public/travel-guide/flights.html'));
@@ -1827,6 +1832,7 @@ app.use((req, res) => {
         error: 'Not Found',
         message: '管理画面専用モードです',
         available_endpoints: [
+            '/',
             '/admin/dashboard',
             '/admin/blog-editor', 
             '/admin/blog-list',
