@@ -33,7 +33,73 @@
     "review_count": 252,
     "incident_record": "なし",
     "jiji_grade": "S级",
-    "last_updated": "2025-07-07"
+    "last_updated": "2025-07-07",
+    "average_ratings": {
+      "overall_rating": 4.9,
+      "total_reviews": 252,
+      "beginner_friendliness": 4.8,
+      "safety_rating": 5.0,
+      "instructor_rating": 4.9,
+      "equipment_rating": 4.7
+    },
+    "reviews": [
+      {
+        "review_id": "REV_001",
+        "reviewer_name": "田中太郎",
+        "review_date": "2025-07-20",
+        "overall_rating": 5,
+        "review_text": "初心者でしたが、インストラクターの方が丁寧に教えてくださり、安心してマンタに出会えました！船も清潔で快適でした。",
+        "helpful_count": 12,
+        "beginner_friendliness": 5,
+        "safety_rating": 5,
+        "instructor_rating": 5,
+        "equipment_rating": 4
+      },
+      {
+        "review_id": "REV_002", 
+        "reviewer_name": "山田美咲",
+        "review_date": "2025-07-15",
+        "overall_rating": 5,
+        "review_text": "マンタポイントでの体験ダイビング、本当に感動しました！写真もたくさん撮ってもらえて最高の思い出になりました。",
+        "helpful_count": 8,
+        "beginner_friendliness": 5,
+        "safety_rating": 5,
+        "instructor_rating": 5,
+        "equipment_rating": 5
+      },
+      {
+        "review_id": "REV_003",
+        "reviewer_name": "佐藤健一",
+        "review_date": "2025-07-10", 
+        "overall_rating": 4,
+        "review_text": "ファンダイビングで利用。ガイドの知識が豊富で、普通なら見つけられない生物をたくさん見せてもらえました。",
+        "helpful_count": 6,
+        "beginner_friendliness": 4,
+        "safety_rating": 5,
+        "instructor_rating": 5,
+        "equipment_rating": 4
+      }
+    ],
+    "photos": [
+      {
+        "photo_id": "IMG_001",
+        "url": "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800",
+        "caption": "マンタとの遭遇シーン",
+        "category": "diving_scene"
+      },
+      {
+        "photo_id": "IMG_002", 
+        "url": "https://images.unsplash.com/photo-1583212292454-1fe6229603b7?w=800",
+        "caption": "自社ボート外観",
+        "category": "facility"
+      },
+      {
+        "photo_id": "IMG_003",
+        "url": "https://images.unsplash.com/photo-1530549387789-4c1017266635?w=800", 
+        "caption": "透明度抜群の海",
+        "category": "diving_scene"
+      }
+    ]
   },
   {
     "shop_id": "SHOP_002",
