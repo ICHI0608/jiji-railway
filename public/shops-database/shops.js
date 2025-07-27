@@ -31,6 +31,18 @@ const elementsById = {
     'statisticsContainer': null
 };
 
+// 実際のHTMLに合わせてDOM要素IDを修正
+function initializeElements() {
+    elementsById.loadingIndicator = document.getElementById('loading');
+    elementsById.shopsContainer = document.getElementById('shops-grid');
+    elementsById.searchKeyword = document.getElementById('shop-search');
+    elementsById.searchSuggestions = document.getElementById('search-suggestions');
+    elementsById.minPriceFilter = document.getElementById('price-filter');
+    elementsById.gradeFilter = document.getElementById('service-filter');
+    elementsById.totalCount = document.getElementById('total-count');
+    elementsById.statisticsContainer = document.getElementById('statistics-container');
+}
+
 // 初期化
 document.addEventListener('DOMContentLoaded', function() {
     initializeElements();
@@ -38,12 +50,7 @@ document.addEventListener('DOMContentLoaded', function() {
     loadInitialData();
 });
 
-// DOM要素初期化
-function initializeElements() {
-    Object.keys(elementsById).forEach(id => {
-        elementsById[id] = document.getElementById(id);
-    });
-}
+// 削除: 上で新しいinitializeElements関数を定義済み
 
 // イベントリスナー設定
 function setupEventListeners() {

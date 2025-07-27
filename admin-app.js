@@ -103,7 +103,310 @@ app.get('/admin/blog-list', (req, res) => {
     res.sendFile(path.join(__dirname, 'public/admin/blog-list.html'));
 });
 
+// ショップデータベースページ
+app.get('/shops-database', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/shops-database/index.html'));
+});
+
+app.get('/shops-database/details.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/shops-database/details.html'));
+});
+
 // ===== 管理画面用API（基本のみ） =====
+
+// ショップデータベースAPI
+const fs = require('fs');
+const mockShopsData = require('./mock-shops-data.json');
+
+// ショップ一覧API（検索・フィルタリング対応）
+app.get('/api/shops', async (req, res) => {
+    try {
+        const {
+            keyword, area, minPrice, maxPrice, grade, beginnerFriendly,
+            soloOk, femaleInstructor, englishSupport, pickupService,
+            photoService, privateGuide, licenseCoursesAvailable, sortBy
+        } = req.query;
+        
+        let shops = [...mockShopsData];
+        
+        // キーワード検索
+        if (keyword) {
+            const searchTerm = keyword.toLowerCase();
+            shops = shops.filter(shop => 
+                shop.shop_name.toLowerCase().includes(searchTerm) ||
+                shop.area.toLowerCase().includes(searchTerm) ||
+                shop.speciality_areas?.toLowerCase().includes(searchTerm)
+            );
+        }
+        
+        // エリアフィルター（英語→日本語マッピング）
+        if (area && area !== 'all') {
+            const areaMapping = {
+                'ishigaki': '石垣島',
+                'miyako': '宮古島', 
+                'okinawa': '沖縄本島',
+                'other': 'その他'
+            };
+            const mappedArea = areaMapping[area] || area;
+            shops = shops.filter(shop => shop.area === mappedArea);
+        }
+        
+        // 価格範囲フィルター
+        if (minPrice) {
+            shops = shops.filter(shop => 
+                shop.trial_dive_price_beach >= parseInt(minPrice)
+            );
+        }
+        if (maxPrice) {
+            shops = shops.filter(shop => 
+                shop.trial_dive_price_beach <= parseInt(maxPrice)
+            );
+        }
+        
+        // グレードフィルター
+        if (grade) {
+            shops = shops.filter(shop => shop.jiji_grade === grade);
+        }
+        
+        // Boolean フィルター
+        if (beginnerFriendly === 'true') {
+            shops = shops.filter(shop => shop.beginner_friendly === true);
+        }
+        if (soloOk === 'true') {
+            shops = shops.filter(shop => shop.solo_welcome === true);
+        }
+        if (femaleInstructor === 'true') {
+            shops = shops.filter(shop => shop.female_instructor === true);
+        }
+        if (englishSupport === 'true') {
+            shops = shops.filter(shop => shop.english_support === true);
+        }
+        if (pickupService === 'true') {
+            shops = shops.filter(shop => shop.pickup_service === true);
+        }
+        if (photoService === 'true') {
+            shops = shops.filter(shop => shop.photo_service === true);
+        }
+        if (privateGuide === 'true') {
+            shops = shops.filter(shop => shop.private_guide_available === true);
+        }
+        if (licenseCoursesAvailable === 'true') {
+            shops = shops.filter(shop => shop.license_course_available === true);
+        }
+        
+        // ソート
+        if (sortBy) {
+            switch (sortBy) {
+                case 'price':
+                    shops.sort((a, b) => a.trial_dive_price_beach - b.trial_dive_price_beach);
+                    break;
+                case 'rating':
+                    shops.sort((a, b) => b.customer_rating - a.customer_rating);
+                    break;
+                case 'reviews':
+                    shops.sort((a, b) => b.review_count - a.review_count);
+                    break;
+                case 'grade':
+                default:
+                    const gradeOrder = { 'premium': 3, 'standard': 2, 'basic': 1, 'S级': 4 };
+                    shops.sort((a, b) => (gradeOrder[b.jiji_grade] || 0) - (gradeOrder[a.jiji_grade] || 0));
+                    break;
+            }
+        }
+        
+        console.log(`🏪 ショップ検索結果: ${shops.length}件 (クエリ: ${JSON.stringify(req.query)})`);
+        
+        res.json({
+            success: true,
+            data: shops,
+            count: shops.length,
+            total: mockShopsData.length,
+            filters: req.query
+        });
+        
+    } catch (error) {
+        console.error('❌ ショップAPI エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message,
+            message: 'ショップデータの取得に失敗しました'
+        });
+    }
+});
+
+// Jiji AI推薦API
+app.get('/api/shops/recommendations', async (req, res) => {
+    try {
+        const { 
+            isBeginners, isSolo, preferFemaleInstructor, 
+            preferredArea, maxBudget 
+        } = req.query;
+        
+        let shops = [...mockShopsData];
+        let recommendations = [];
+        
+        // AI推薦ロジック
+        shops.forEach(shop => {
+            let score = 0;
+            let reasons = [];
+            
+            // 基本スコア（評価・レビュー数）
+            score += (shop.customer_rating || 0) * 20;
+            score += Math.min((shop.review_count || 0) / 10, 10);
+            
+            // 初心者向け
+            if (isBeginners === 'true' && shop.beginner_friendly) {
+                score += 25;
+                reasons.push('初心者歓迎');
+            }
+            
+            // 一人参加
+            if (isSolo === 'true' && shop.solo_welcome) {
+                score += 20;
+                reasons.push('一人参加歓迎');
+            }
+            
+            // 女性インストラクター
+            if (preferFemaleInstructor === 'true' && shop.female_instructor) {
+                score += 15;
+                reasons.push('女性インストラクター在籍');
+            }
+            
+            // エリア優先
+            if (preferredArea && shop.area === preferredArea) {
+                score += 10;
+                reasons.push(`${preferredArea}エリア`);
+            }
+            
+            // 予算内
+            if (maxBudget && shop.trial_dive_price_beach <= parseInt(maxBudget)) {
+                score += 15;
+                reasons.push('予算内');
+            }
+            
+            // グレード加点
+            const gradeBonus = { 'premium': 20, 'S级': 25, 'standard': 10, 'basic': 5 };
+            score += gradeBonus[shop.jiji_grade] || 0;
+            
+            if (score > 50) {
+                recommendations.push({
+                    ...shop,
+                    jiji_match_score: Math.min(Math.round(score), 100),
+                    recommendation_reason: reasons.join('・')
+                });
+            }
+        });
+        
+        // スコア順でソート、上位10件
+        recommendations.sort((a, b) => b.jiji_match_score - a.jiji_match_score);
+        recommendations = recommendations.slice(0, 10);
+        
+        console.log(`🤖 Jiji推薦生成完了: ${recommendations.length}件`);
+        
+        res.json({
+            success: true,
+            data: recommendations,
+            count: recommendations.length,
+            criteria: req.query
+        });
+        
+    } catch (error) {
+        console.error('❌ Jiji推薦API エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// ショップ統計API
+app.get('/api/shops/statistics', async (req, res) => {
+    try {
+        const shops = mockShopsData;
+        
+        // エリア別統計
+        const byArea = shops.reduce((acc, shop) => {
+            acc[shop.area] = (acc[shop.area] || 0) + 1;
+            return acc;
+        }, {});
+        
+        // グレード別統計
+        const byGrade = shops.reduce((acc, shop) => {
+            acc[shop.jiji_grade] = (acc[shop.jiji_grade] || 0) + 1;
+            return acc;
+        }, {});
+        
+        // 価格統計
+        const prices = shops.map(shop => shop.trial_dive_price_beach).filter(Boolean);
+        const avgPrice = Math.round(prices.reduce((a, b) => a + b, 0) / prices.length);
+        const minPrice = Math.min(...prices);
+        const maxPrice = Math.max(...prices);
+        
+        const stats = {
+            total_shops: shops.length,
+            by_area: byArea,
+            by_grade: byGrade,
+            price_stats: {
+                average: avgPrice,
+                min: minPrice,
+                max: maxPrice
+            },
+            features: {
+                beginner_friendly: shops.filter(s => s.beginner_friendly).length,
+                solo_welcome: shops.filter(s => s.solo_welcome).length,
+                female_instructor: shops.filter(s => s.female_instructor).length,
+                english_support: shops.filter(s => s.english_support).length,
+                pickup_service: shops.filter(s => s.pickup_service).length,
+                photo_service: shops.filter(s => s.photo_service).length
+            }
+        };
+        
+        console.log('📊 ショップ統計データ生成完了');
+        
+        res.json({
+            success: true,
+            data: stats
+        });
+        
+    } catch (error) {
+        console.error('❌ ショップ統計API エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// 個別ショップ詳細API
+app.get('/api/shops/:shopId', async (req, res) => {
+    try {
+        const { shopId } = req.params;
+        
+        const shop = mockShopsData.find(s => s.shop_id === shopId);
+        
+        if (!shop) {
+            return res.status(404).json({
+                success: false,
+                error: 'Shop not found',
+                message: '指定されたショップが見つかりません'
+            });
+        }
+        
+        console.log(`🏪 ショップ詳細取得: ${shop.shop_name} (${shopId})`);
+        
+        res.json({
+            success: true,
+            data: shop
+        });
+        
+    } catch (error) {
+        console.error('❌ ショップ詳細API エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
 
 // 記事一覧API（Supabase連携 + フォールバック）
 app.get('/api/blog/articles', async (req, res) => {
@@ -278,6 +581,8 @@ app.use((req, res) => {
             '/admin/dashboard',
             '/admin/blog-editor', 
             '/admin/blog-list',
+            '/shops-database',
+            '/api/shops',
             '/api/health',
             '/health'
         ]
