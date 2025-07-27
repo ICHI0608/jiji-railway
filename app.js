@@ -1767,19 +1767,25 @@ process.on('SIGTERM', () => {
 const PORT = process.env.PORT || 3000;
 
 async function startServer() {
-    // 初期化（エラーでも続行）
-    await initializeApp();
+    console.log('🚀 サーバー起動開始...');
+    
+    // 安全な初期化（エラーでも続行）
+    try {
+        await initializeApp();
+    } catch (error) {
+        console.warn('⚠️ 初期化で警告発生（続行）:', error.message);
+    }
 
     // サーバー起動
     app.listen(PORT, () => {
         console.log('\n🎉=====================================');
         console.log('🚀 Jiji沖縄ダイビングバディ起動完了！');
-        console.log('🤖 Database統合版 v2.0.0');
+        console.log('🤖 管理画面対応版 v3.0.0');
         console.log('=====================================');
         console.log(`📡 サーバー: ${BASE_URL}`);
         console.log(`🤖 Webhook: ${BASE_URL}/webhook`);
-        console.log(`💾 データベース: PostgreSQL + Redis`);
-        console.log(`🏝️ 対応エリア: ${JIJI_PERSONA_CONFIG.coverage_areas.join('、')}`);
+        console.log(`🎯 管理画面: ${BASE_URL}/admin/dashboard`);
+        console.log(`💾 データベース: 制限モード`);
         console.log('=====================================🎉\n');
     });
 }
