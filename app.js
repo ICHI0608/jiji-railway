@@ -1749,6 +1749,23 @@ app.use((req, res) => {
     }
 });
 
+// ===== 管理画面ページルーティング =====
+
+// 管理ダッシュボード
+app.get('/admin/dashboard', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/admin/dashboard.html'));
+});
+
+// 記事作成ページ
+app.get('/admin/blog-editor', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/admin/blog-editor.html'));
+});
+
+// 記事管理ページ
+app.get('/admin/blog-list', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/admin/blog-list.html'));
+});
+
 // 一般的なエラーハンドリング
 app.use((error, req, res, next) => {
     console.error('❌ サーバーエラー:', error);
