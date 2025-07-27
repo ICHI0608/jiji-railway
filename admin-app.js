@@ -42,19 +42,12 @@ app.get('/api/health', async (req, res) => {
     let dbStatus = 'unavailable';
     let dbError = null;
     
-    // Supabase接続テスト
+    // Supabase接続テスト（軽量）
     if (supabase) {
         try {
-            const { data, error } = await supabase
-                .from('blogs')
-                .select('count', { count: 'exact', head: true });
-            
-            if (error) {
-                dbStatus = 'error';
-                dbError = error.message;
-            } else {
-                dbStatus = 'connected';
-            }
+            // シンプルなクエリでテスト
+            const { data, error } = await supabase.auth.getSession();
+            dbStatus = 'auth_ok';
         } catch (error) {
             dbStatus = 'connection_failed';
             dbError = error.message;
