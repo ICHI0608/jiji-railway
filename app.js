@@ -344,6 +344,11 @@ app.get('/api/info', (req, res) => {
     });
 });
 
+// シンプルなヘルスチェック（Railway用）
+app.get('/health', (req, res) => {
+    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
 app.get('/api/health', async (req, res) => {
     let dbStatus = 'disconnected';
     let dbError = null;
