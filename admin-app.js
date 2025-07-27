@@ -7,7 +7,20 @@
 
 const express = require('express');
 const path = require('path');
+const { createClient } = require('@supabase/supabase-js');
 require('dotenv').config();
+
+// Supabase設定
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_ANON_KEY;
+let supabase = null;
+
+if (supabaseUrl && supabaseKey) {
+    supabase = createClient(supabaseUrl, supabaseKey);
+    console.log('📊 Supabase初期化完了');
+} else {
+    console.warn('⚠️ Supabase設定が見つかりません（モックモードで動作）');
+}
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -25,11 +38,36 @@ app.get('/health', (req, res) => {
     });
 });
 
-app.get('/api/health', (req, res) => {
+app.get('/api/health', async (req, res) => {
+    let dbStatus = 'unavailable';
+    let dbError = null;
+    
+    // Supabase接続テスト
+    if (supabase) {
+        try {
+            const { data, error } = await supabase
+                .from('blogs')
+                .select('count', { count: 'exact', head: true });
+            
+            if (error) {
+                dbStatus = 'error';
+                dbError = error.message;
+            } else {
+                dbStatus = 'connected';
+            }
+        } catch (error) {
+            dbStatus = 'connection_failed';
+            dbError = error.message;
+        }
+    }
+    
     res.json({
         status: 'healthy',
         server: 'running',
+        database: dbStatus,
         admin_panel: 'available',
+        supabase_configured: !!supabase,
+        error: dbError,
         timestamp: new Date().toISOString()
     });
 });
