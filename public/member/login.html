@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ログイン | Dive Buddy's - LINE連携でかんたんログイン</title>
+    <meta name="description" content="Dive Buddy'sにLINEアカウントでかんたんログイン。沖縄・離島のダイビング情報をパーソナライズして楽しもう。">
+    
+    <link rel="stylesheet" href="/app/v28-styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        .login-page {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 2rem 0;
+        }
+
+        .login-container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 25px;
+            padding: 3rem 2.5rem;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.2);
+            backdrop-filter: blur(20px);
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+        }
+
+        .login-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+        }
+
+        .login-header {
+            margin-bottom: 2rem;
+        }
+
+        .login-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .login-subtitle {
+            color: #666;
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+        }
+
+        .line-login-section {
+            margin-bottom: 2rem;
+        }
+
+        .line-login-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            background: #06C755;
+            color: white;
+            border: none;
+            padding: 1.2rem 2rem;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .line-login-button:hover {
+            background: #05B04A;
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px rgba(6, 199, 85, 0.4);
+        }
+
+        .line-login-button i {
+            font-size: 1.3rem;
+        }
+
+        .divider {
+            margin: 2rem 0;
+            position: relative;
+            text-align: center;
+        }
+
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #ddd;
+        }
+
+        .divider span {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 0 1rem;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .alternative-login {
+            margin-bottom: 2rem;
+        }
+
+        .email-login-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.8rem;
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+            border: 2px solid #667eea;
+            padding: 1rem 2rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .email-login-button:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .login-features {
+            margin: 2rem 0;
+        }
+
+        .login-features h4 {
+            color: #333;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .features-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            text-align: left;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #555;
+            font-size: 0.9rem;
+        }
+
+        .feature-item i {
+            color: #06C755;
+        }
+
+        .login-footer {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #eee;
+        }
+
+        .login-footer p {
+            color: #666;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .login-footer a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .login-footer a:hover {
+            text-decoration: underline;
+        }
+
+        .error-message {
+            background: #fee;
+            border: 1px solid #fcc;
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            color: #c33;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        .success-message {
+            background: #efe;
+            border: 1px solid #cfc;
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            color: #373;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .login-card {
+                padding: 2rem 1.5rem;
+                margin: 1rem;
+            }
+
+            .login-title {
+                font-size: 2rem;
+            }
+
+            .features-list {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-page">
+        <div class="login-container">
+            <div class="login-card">
+                <div class="login-header">
+                    <h1 class="login-title">
+                        <i class="fas fa-waves"></i> Dive Buddy's
+                    </h1>
+                    <p class="login-subtitle">
+                        沖縄・離島のダイビング情報を<br>
+                        パーソナライズして楽しもう
+                    </p>
+                </div>
+
+                <!-- エラー・成功メッセージ -->
+                <div id="errorMessage" class="error-message"></div>
+                <div id="successMessage" class="success-message"></div>
+
+                <!-- LINE Login -->
+                <div class="line-login-section">
+                    <a href="/auth/line/login" class="line-login-button">
+                        <i class="fab fa-line"></i>
+                        LINEでログイン
+                    </a>
+                </div>
+
+                <div class="divider">
+                    <span>または</span>
+                </div>
+
+                <!-- メールログイン -->
+                <div class="alternative-login">
+                    <a href="/member/register" class="email-login-button">
+                        <i class="fas fa-envelope"></i>
+                        メールアドレスで新規登録
+                    </a>
+                </div>
+
+                <!-- ログイン特典 -->
+                <div class="login-features">
+                    <h4><i class="fas fa-star"></i> ログインするとできること</h4>
+                    <div class="features-list">
+                        <div class="feature-item">
+                            <i class="fas fa-heart"></i>
+                            お気に入りショップ保存
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-comment"></i>
+                            口コミ投稿・閲覧
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-bell"></i>
+                            最新情報の優先配信
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-chart-bar"></i>
+                            ダイビング履歴管理
+                        </div>
+                    </div>
+                </div>
+
+                <div class="login-footer">
+                    <p>アカウントをお持ちでない方は <a href="/member/register">新規登録</a></p>
+                    <p><a href="/">ホームに戻る</a> | <a href="/about">サービスについて</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class LoginManager {
+            constructor() {
+                this.init();
+            }
+
+            init() {
+                this.checkUrlParams();
+                this.setupEventListeners();
+                this.checkAuthStatus();
+            }
+
+            checkUrlParams() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const error = urlParams.get('error');
+                const success = urlParams.get('success');
+
+                if (error) {
+                    this.showError(this.getErrorMessage(error));
+                }
+
+                if (success) {
+                    this.showSuccess('ログインに成功しました！');
+                }
+            }
+
+            getErrorMessage(errorCode) {
+                const messages = {
+                    'line_auth_failed': 'LINE認証に失敗しました。もう一度お試しください。',
+                    'invalid_state': 'セキュリティエラーが発生しました。もう一度お試しください。',
+                    'token_exchange_failed': 'トークンの取得に失敗しました。',
+                    'profile_fetch_failed': 'プロフィール情報の取得に失敗しました。',
+                    'callback_failed': '認証処理中にエラーが発生しました。'
+                };
+                return messages[errorCode] || 'ログインエラーが発生しました。';
+            }
+
+            showError(message) {
+                const errorElement = document.getElementById('errorMessage');
+                errorElement.textContent = message;
+                errorElement.style.display = 'block';
+            }
+
+            showSuccess(message) {
+                const successElement = document.getElementById('successMessage');
+                successElement.textContent = message;
+                successElement.style.display = 'block';
+            }
+
+            setupEventListeners() {
+                // LINEログインボタンのクリック追跡
+                document.querySelector('.line-login-button').addEventListener('click', () => {
+                    console.log('🔐 LINEログイン開始');
+                });
+            }
+
+            async checkAuthStatus() {
+                try {
+                    const response = await fetch('/api/auth/line/status');
+                    const data = await response.json();
+                    
+                    if (data.authenticated) {
+                        // 既にログイン済みの場合はダッシュボードにリダイレクト
+                        window.location.href = '/member/dashboard';
+                    }
+                } catch (error) {
+                    console.error('認証状態確認エラー:', error);
+                }
+            }
+        }
+
+        // 初期化
+        document.addEventListener('DOMContentLoaded', () => {
+            window.loginManager = new LoginManager();
+        });
+    </script>
+</body>
+</html>

@@ -17,9 +17,21 @@ const supabaseKey = process.env.SUPABASE_ANON_KEY;
 let supabase = null;
 let supabaseStatus = 'checking';
 
+// LINE Login設定
+const LINE_LOGIN_CONFIG = {
+    channel_id: process.env.LINE_LOGIN_CHANNEL_ID,
+    channel_secret: process.env.LINE_LOGIN_CHANNEL_SECRET,
+    callback_url: process.env.LINE_LOGIN_CALLBACK_URL || 'https://dive-buddys.com/auth/line/callback',
+    base_url: 'https://access.line.me/oauth2/v2.1/authorize',
+    token_url: 'https://api.line.me/oauth2/v2.1/token',
+    profile_url: 'https://api.line.me/v2/profile'
+};
+
 console.log('🔍 環境変数デバッグ:');
 console.log('SUPABASE_URL:', supabaseUrl ? '設定済み' : '未設定');
 console.log('SUPABASE_ANON_KEY:', supabaseKey ? `設定済み(${supabaseKey.length}文字)` : '未設定');
+console.log('LINE_LOGIN_CHANNEL_ID:', LINE_LOGIN_CONFIG.channel_id ? '設定済み' : '未設定');
+console.log('LINE_LOGIN_CHANNEL_SECRET:', LINE_LOGIN_CONFIG.channel_secret ? '設定済み' : '未設定');
 
 async function initializeSupabase() {
     if (supabaseUrl && supabaseKey) {
@@ -183,6 +195,14 @@ const OKINAWA_TRANSPORT_DATA = {
 app.use(express.json());
 app.use(express.static('public'));
 
+// シンプルなセッション管理（本番では express-session 推奨）
+app.use((req, res, next) => {
+    if (!req.session) {
+        req.session = {};
+    }
+    next();
+});
+
 // 全リクエストログ（デバッグ用）
 app.use((req, res, next) => {
     console.log(`📡 ${req.method} ${req.url} - IP: ${req.ip}`);
@@ -271,6 +291,16 @@ app.get('/blog/:id', (req, res) => {
 // 会員マイページ
 app.get('/member', (req, res) => {
     res.sendFile(path.join(__dirname, 'public/member/index.html'));
+});
+
+// 会員ログインページ
+app.get('/member/login', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/member/login.html'));
+});
+
+// 会員ダッシュボード
+app.get('/member/dashboard', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/member/dashboard.html'));
 });
 
 // 会員登録ページ（本番: https://dive-buddys.com で提供中）
@@ -4667,7 +4697,11 @@ app.use((req, res) => {
             '/shops-database',
             '/travel-guide/flights',
             '/member',
+            '/member/login',
+            '/member/dashboard',
             '/member/review-post',
+            '/auth/line/login',
+            '/auth/line/callback',
             '/partners',
             '/partners/dashboard',
             '/partners/advertising',
@@ -4685,6 +4719,254 @@ app.use((req, res) => {
         ]
     });
 });
+
+// ===== LINE Login認証システム =====
+
+// LINE Login開始エンドポイント
+app.get('/auth/line/login', (req, res) => {
+    try {
+        const state = generateRandomState();
+        const nonce = generateRandomNonce();
+        
+        // セッションに状態保存
+        req.session = req.session || {};
+        req.session.lineLoginState = state;
+        req.session.lineLoginNonce = nonce;
+        
+        const authUrl = new URL(LINE_LOGIN_CONFIG.base_url);
+        authUrl.searchParams.set('response_type', 'code');
+        authUrl.searchParams.set('client_id', LINE_LOGIN_CONFIG.channel_id);
+        authUrl.searchParams.set('redirect_uri', LINE_LOGIN_CONFIG.callback_url);
+        authUrl.searchParams.set('state', state);
+        authUrl.searchParams.set('scope', 'profile openid email');
+        authUrl.searchParams.set('nonce', nonce);
+        
+        console.log('🔐 LINE Login開始:', { channel_id: LINE_LOGIN_CONFIG.channel_id, state });
+        
+        res.redirect(authUrl.toString());
+    } catch (error) {
+        console.error('LINE Login開始エラー:', error);
+        res.status(500).json({ error: 'LINE Login開始に失敗しました' });
+    }
+});
+
+// LINE Login コールバック処理
+app.get('/auth/line/callback', async (req, res) => {
+    try {
+        const { code, state, error, error_description } = req.query;
+        
+        // エラーチェック
+        if (error) {
+            console.error('LINE認証エラー:', error, error_description);
+            return res.redirect('/member/login?error=line_auth_failed');
+        }
+        
+        // 状態確認
+        if (!req.session?.lineLoginState || req.session.lineLoginState !== state) {
+            console.error('LINE認証状態不一致:', { session: req.session?.lineLoginState, received: state });
+            return res.redirect('/member/login?error=invalid_state');
+        }
+        
+        console.log('🔐 LINE認証コールバック:', { code: code?.substring(0, 10) + '...', state });
+        
+        // アクセストークン取得
+        const tokenData = await exchangeCodeForToken(code);
+        if (!tokenData) {
+            return res.redirect('/member/login?error=token_exchange_failed');
+        }
+        
+        // ユーザープロフィール取得
+        const profile = await getLineUserProfile(tokenData.access_token);
+        if (!profile) {
+            return res.redirect('/member/login?error=profile_fetch_failed');
+        }
+        
+        // ユーザー情報をデータベースに保存/更新
+        const user = await saveOrUpdateLineUser(profile, tokenData);
+        
+        // セッション設定
+        req.session.userId = user.id;
+        req.session.lineUserId = profile.userId;
+        req.session.isAuthenticated = true;
+        
+        console.log('✅ LINE認証完了:', { userId: profile.userId, name: profile.displayName });
+        
+        // 成功ページにリダイレクト
+        res.redirect('/member/dashboard?login=success');
+        
+    } catch (error) {
+        console.error('LINE認証コールバックエラー:', error);
+        res.redirect('/member/login?error=callback_failed');
+    }
+});
+
+// LINE認証状態確認API
+app.get('/api/auth/line/status', (req, res) => {
+    const isAuthenticated = req.session?.isAuthenticated || false;
+    const user = req.session?.userId ? {
+        id: req.session.userId,
+        lineUserId: req.session.lineUserId
+    } : null;
+    
+    res.json({
+        success: true,
+        authenticated: isAuthenticated,
+        user: user
+    });
+});
+
+// LINE認証ログアウト
+app.post('/api/auth/line/logout', (req, res) => {
+    req.session = null;
+    console.log('🔐 LINE認証ログアウト完了');
+    res.json({ success: true, message: 'ログアウトしました' });
+});
+
+// ===== LINE Login ヘルパー関数 =====
+
+// ランダム状態生成
+function generateRandomState() {
+    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+}
+
+// ランダムnonce生成
+function generateRandomNonce() {
+    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+}
+
+// 認証コードをアクセストークンに交換
+async function exchangeCodeForToken(code) {
+    try {
+        const tokenResponse = await axios.post(LINE_LOGIN_CONFIG.token_url, new URLSearchParams({
+            grant_type: 'authorization_code',
+            code: code,
+            redirect_uri: LINE_LOGIN_CONFIG.callback_url,
+            client_id: LINE_LOGIN_CONFIG.channel_id,
+            client_secret: LINE_LOGIN_CONFIG.channel_secret
+        }), {
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        });
+        
+        console.log('🔑 トークン取得成功:', { token_type: tokenResponse.data.token_type });
+        return tokenResponse.data;
+    } catch (error) {
+        console.error('トークン取得エラー:', error.response?.data || error.message);
+        return null;
+    }
+}
+
+// LINEユーザープロフィール取得
+async function getLineUserProfile(accessToken) {
+    try {
+        const profileResponse = await axios.get(LINE_LOGIN_CONFIG.profile_url, {
+            headers: {
+                'Authorization': `Bearer ${accessToken}`
+            }
+        });
+        
+        console.log('👤 プロフィール取得成功:', { userId: profileResponse.data.userId, name: profileResponse.data.displayName });
+        return profileResponse.data;
+    } catch (error) {
+        console.error('プロフィール取得エラー:', error.response?.data || error.message);
+        return null;
+    }
+}
+
+// LINEユーザー情報を保存/更新
+async function saveOrUpdateLineUser(profile, tokenData) {
+    try {
+        const userData = {
+            line_user_id: profile.userId,
+            display_name: profile.displayName,
+            picture_url: profile.pictureUrl,
+            status_message: profile.statusMessage || null,
+            email: null, // LINE Loginでemailスコープが有効な場合のみ取得可能
+            access_token: tokenData.access_token,
+            refresh_token: tokenData.refresh_token || null,
+            token_expires_at: new Date(Date.now() + (tokenData.expires_in * 1000)).toISOString(),
+            last_login: new Date().toISOString(),
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+        };
+        
+        // Supabase保存試行
+        if (supabase && supabaseStatus === 'connected') {
+            try {
+                // 既存ユーザー確認
+                const { data: existingUser } = await supabase
+                    .from('line_users')
+                    .select('*')
+                    .eq('line_user_id', profile.userId)
+                    .single();
+                
+                if (existingUser) {
+                    // 更新
+                    const { data: updatedUser, error } = await supabase
+                        .from('line_users')
+                        .update({
+                            display_name: userData.display_name,
+                            picture_url: userData.picture_url,
+                            status_message: userData.status_message,
+                            access_token: userData.access_token,
+                            refresh_token: userData.refresh_token,
+                            token_expires_at: userData.token_expires_at,
+                            last_login: userData.last_login,
+                            updated_at: userData.updated_at
+                        })
+                        .eq('line_user_id', profile.userId)
+                        .select()
+                        .single();
+                    
+                    if (!error) {
+                        console.log('✅ LINEユーザー更新成功（Supabase）:', profile.userId);
+                        return updatedUser;
+                    }
+                } else {
+                    // 新規作成
+                    const { data: newUser, error } = await supabase
+                        .from('line_users')
+                        .insert([userData])
+                        .select()
+                        .single();
+                    
+                    if (!error) {
+                        console.log('✅ LINEユーザー作成成功（Supabase）:', profile.userId);
+                        return newUser;
+                    }
+                }
+            } catch (supabaseError) {
+                console.warn('Supabase LINEユーザー保存エラー、フォールバックへ:', supabaseError.message);
+            }
+        }
+        
+        // フォールバック: メモリベース保存
+        if (!global.lineUsers) {
+            global.lineUsers = [];
+        }
+        
+        // 既存ユーザー確認
+        const existingIndex = global.lineUsers.findIndex(u => u.line_user_id === profile.userId);
+        
+        if (existingIndex >= 0) {
+            // 更新
+            global.lineUsers[existingIndex] = { ...global.lineUsers[existingIndex], ...userData };
+            console.log('✅ LINEユーザー更新成功（フォールバック）:', profile.userId);
+            return global.lineUsers[existingIndex];
+        } else {
+            // 新規作成
+            userData.id = 'line_user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            global.lineUsers.push(userData);
+            console.log('✅ LINEユーザー作成成功（フォールバック）:', profile.userId);
+            return userData;
+        }
+        
+    } catch (error) {
+        console.error('LINEユーザー保存エラー:', error);
+        throw error;
+    }
+}
 
 // ===== サーバー起動 =====
 app.listen(PORT, () => {
