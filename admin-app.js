@@ -268,6 +268,11 @@ app.get('/travel-guide/transport', (req, res) => {
     res.sendFile(path.join(__dirname, 'public/travel-guide/transport.html'));
 });
 
+// 費用シミュレーター
+app.get('/travel-guide/cost-simulator', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/travel-guide/cost-simulator.html'));
+});
+
 // 宿泊施設検索ページ
 app.get('/travel-guide/accommodation', (req, res) => {
     res.sendFile(path.join(__dirname, 'public/travel-guide/accommodation.html'));
@@ -2783,6 +2788,293 @@ async function saveOrUpdateLineUser(profile, tokenData) {
         console.error('LINEユーザー保存エラー:', error);
         throw error;
     }
+}
+
+// ===== 旅行費用シミュレーターAPI =====
+
+// 費用計算API
+app.post('/api/travel/cost-simulator', async (req, res) => {
+    try {
+        const {
+            destination,
+            duration_days,
+            travel_dates,
+            participants,
+            accommodation_level,
+            diving_plan,
+            meal_plan,
+            transport_type
+        } = req.body;
+
+        console.log('💰 費用計算開始:', { destination, duration_days, participants });
+
+        // 基本料金設定
+        const basePrices = {
+            // 航空券料金（1名あたり・往復）
+            flights: {
+                石垣島: { economy: 45000, business: 85000 },
+                宮古島: { economy: 42000, business: 80000 },
+                沖縄本島: { economy: 35000, business: 65000 },
+                慶良間諸島: { economy: 35000, business: 65000 },
+                西表島: { economy: 50000, business: 90000 }
+            },
+            
+            // 宿泊料金（1名1泊あたり）
+            accommodation: {
+                budget: 6000,
+                mid: 12000,
+                luxury: 25000
+            },
+            
+            // ダイビング料金（1名あたり）
+            diving: {
+                none: 0,
+                beginner: 15000,      // 4ダイブ
+                recreational: 28000,  // 8ダイブ
+                advanced: 40000,      // 12ダイブ
+                intensive: 50000      // 16ダイブ
+            },
+            
+            // 食事料金（1名1日あたり）
+            meals: {
+                budget: 3000,
+                standard: 5000,
+                premium: 8000,
+                luxury: 12000
+            },
+            
+            // 現地交通費（1名あたり）
+            local_transport: {
+                石垣島: 5000,
+                宮古島: 4000,
+                沖縄本島: 6000,
+                慶良間諸島: 3000,
+                西表島: 7000
+            }
+        };
+
+        // 時期別料金倍率
+        const seasonMultipliers = getSeasonMultiplier(travel_dates.start);
+
+        // 費用計算
+        const flightCost = (basePrices.flights[destination]?.[transport_type] || 35000) * participants * seasonMultipliers.flight;
+        const accommodationCost = basePrices.accommodation[accommodation_level] * participants * duration_days * seasonMultipliers.accommodation;
+        const divingCost = basePrices.diving[diving_plan] * participants * seasonMultipliers.diving;
+        const mealsCost = basePrices.meals[meal_plan] * participants * duration_days * seasonMultipliers.meals;
+        const localTransportCost = (basePrices.local_transport[destination] || 5000) * participants;
+        const otherCost = 10000 * participants; // 保険・お土産等
+
+        const totalCost = Math.round(flightCost + accommodationCost + divingCost + mealsCost + localTransportCost + otherCost);
+        const perPersonCost = Math.round(totalCost / participants);
+
+        // 時期別比較データ生成
+        const seasonalComparison = generateSeasonalComparison(
+            destination, duration_days, participants, accommodation_level, 
+            diving_plan, meal_plan, transport_type, travel_dates.start
+        );
+
+        // 節約提案生成
+        const savingTips = generateSavingTips({
+            destination, accommodation_level, diving_plan, meal_plan, 
+            transport_type, totalCost, participants
+        });
+
+        const response = {
+            success: true,
+            cost_breakdown: {
+                total: totalCost,
+                per_person: perPersonCost,
+                flight: Math.round(flightCost),
+                accommodation: Math.round(accommodationCost),
+                diving: Math.round(divingCost),
+                meals: Math.round(mealsCost),
+                local_transport: Math.round(localTransportCost),
+                other: Math.round(otherCost)
+            },
+            seasonal_comparison: seasonalComparison,
+            saving_tips: savingTips,
+            calculation_details: {
+                destination,
+                duration_days,
+                participants,
+                travel_dates,
+                season_multipliers: seasonMultipliers
+            }
+        };
+
+        console.log('✅ 費用計算完了:', { total: totalCost, per_person: perPersonCost });
+        res.json(response);
+
+    } catch (error) {
+        console.error('費用計算エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: 'calculation_error',
+            message: '費用計算に失敗しました'
+        });
+    }
+});
+
+// 時期別料金倍率取得
+function getSeasonMultiplier(travelDate) {
+    const date = new Date(travelDate);
+    const month = date.getMonth() + 1; // 1-12
+
+    // 沖縄の観光シーズン分類
+    if (month >= 7 && month <= 9) {
+        // 夏季（7-9月）- ハイシーズン
+        return {
+            flight: 1.4,
+            accommodation: 1.5,
+            diving: 1.2,
+            meals: 1.1,
+            season: 'ハイシーズン'
+        };
+    } else if (month >= 12 || month <= 2) {
+        // 冬季（12-2月）- ピークシーズン
+        return {
+            flight: 1.6,
+            accommodation: 1.7,
+            diving: 1.0,
+            meals: 1.2,
+            season: 'ピークシーズン'
+        };
+    } else if (month >= 3 && month <= 5) {
+        // 春季（3-5月）- ベストシーズン
+        return {
+            flight: 1.3,
+            accommodation: 1.4,
+            diving: 1.1,
+            meals: 1.0,
+            season: 'ベストシーズン'
+        };
+    } else {
+        // 秋季（10-11月）- オフシーズン
+        return {
+            flight: 0.9,
+            accommodation: 0.8,
+            diving: 0.9,
+            meals: 0.9,
+            season: 'オフシーズン'
+        };
+    }
+}
+
+// 時期別比較データ生成
+function generateSeasonalComparison(destination, duration, participants, accommodation, diving, meals, transport, currentDate) {
+    const months = [
+        { name: '1月', month: 1 }, { name: '2月', month: 2 }, { name: '3月', month: 3 },
+        { name: '4月', month: 4 }, { name: '5月', month: 5 }, { name: '6月', month: 6 },
+        { name: '7月', month: 7 }, { name: '8月', month: 8 }, { name: '9月', month: 9 },
+        { name: '10月', month: 10 }, { name: '11月', month: 11 }, { name: '12月', month: 12 }
+    ];
+
+    const currentMonth = new Date(currentDate).getMonth() + 1;
+    const currentMultiplier = getSeasonMultiplier(currentDate);
+    
+    // 基本費用（倍率なし）
+    const baseCost = calculateBaseCost(destination, duration, participants, accommodation, diving, meals, transport);
+
+    return months.map(monthData => {
+        const testDate = `2024-${monthData.month.toString().padStart(2, '0')}-15`;
+        const multiplier = getSeasonMultiplier(testDate);
+        const estimatedCost = Math.round(baseCost * 
+            (multiplier.flight * 0.3 + multiplier.accommodation * 0.4 + multiplier.diving * 0.2 + multiplier.meals * 0.1));
+        
+        const currentCost = Math.round(baseCost * 
+            (currentMultiplier.flight * 0.3 + currentMultiplier.accommodation * 0.4 + currentMultiplier.diving * 0.2 + currentMultiplier.meals * 0.1));
+        
+        return {
+            name: monthData.name,
+            month: monthData.month,
+            season: multiplier.season,
+            multiplier: Math.round((multiplier.flight + multiplier.accommodation + multiplier.diving + multiplier.meals) / 4 * 100) / 100,
+            estimated_cost: estimatedCost,
+            estimated_savings: currentCost - estimatedCost,
+            is_current: monthData.month === currentMonth
+        };
+    });
+}
+
+// 基本費用計算（倍率適用前）
+function calculateBaseCost(destination, duration, participants, accommodation, diving, meals, transport) {
+    const basePrices = {
+        flights: { 石垣島: { economy: 45000, business: 85000 }, 宮古島: { economy: 42000, business: 80000 }, 沖縄本島: { economy: 35000, business: 65000 }, 慶良間諸島: { economy: 35000, business: 65000 }, 西表島: { economy: 50000, business: 90000 } },
+        accommodation: { budget: 6000, mid: 12000, luxury: 25000 },
+        diving: { none: 0, beginner: 15000, recreational: 28000, advanced: 40000, intensive: 50000 },
+        meals: { budget: 3000, standard: 5000, premium: 8000, luxury: 12000 },
+        local_transport: { 石垣島: 5000, 宮古島: 4000, 沖縄本島: 6000, 慶良間諸島: 3000, 西表島: 7000 }
+    };
+
+    const flight = (basePrices.flights[destination]?.[transport] || 35000) * participants;
+    const accom = basePrices.accommodation[accommodation] * participants * duration;
+    const div = basePrices.diving[diving] * participants;
+    const meal = basePrices.meals[meals] * participants * duration;
+    const localTrans = (basePrices.local_transport[destination] || 5000) * participants;
+    const other = 10000 * participants;
+
+    return flight + accom + div + meal + localTrans + other;
+}
+
+// 節約提案生成
+function generateSavingTips(params) {
+    const tips = [];
+    const { accommodation_level, diving_plan, meal_plan, transport_type, totalCost, participants } = params;
+
+    // 宿泊グレード節約提案
+    if (accommodation_level === 'luxury') {
+        tips.push({
+            category: '宿泊',
+            title: 'スタンダードクラスに変更',
+            description: 'プレミアムからスタンダードクラスに変更することで大幅な節約が可能です。',
+            potential_savings: 13000 * participants * 3 // 平均3泊想定
+        });
+    } else if (accommodation_level === 'mid') {
+        tips.push({
+            category: '宿泊',
+            title: 'エコノミークラスに変更',
+            description: 'ビジネスホテルやゲストハウスを利用することでコストを抑えられます。',
+            potential_savings: 6000 * participants * 3
+        });
+    }
+
+    // 航空券節約提案
+    if (transport_type === 'business') {
+        tips.push({
+            category: '航空券',
+            title: 'エコノミークラスに変更',
+            description: 'ビジネスクラスからエコノミークラスに変更することで大幅節約。',
+            potential_savings: 30000 * participants
+        });
+    }
+
+    // 食事プラン節約提案
+    if (meal_plan === 'luxury') {
+        tips.push({
+            category: '食事',
+            title: 'スタンダードプランに変更',
+            description: '地元の食堂やカフェを利用することで食費を抑えられます。',
+            potential_savings: 7000 * participants * 3
+        });
+    }
+
+    // 時期変更提案
+    tips.push({
+        category: '時期',
+        title: 'オフシーズンの利用',
+        description: '10-11月の旅行で航空券・宿泊費が20-30%安くなります。',
+        potential_savings: Math.round(totalCost * 0.25)
+    });
+
+    // 早期予約提案
+    tips.push({
+        category: '予約',
+        title: '早期予約割引の活用',
+        description: '45日前予約で航空券が10-15%、宿泊が5-10%割引になることがあります。',
+        potential_savings: Math.round(totalCost * 0.12)
+    });
+
+    return tips.slice(0, 4); // 最大4つの提案
 }
 
 // ===== サーバー起動 =====
