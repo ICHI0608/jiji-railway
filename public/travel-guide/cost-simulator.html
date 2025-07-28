@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>旅行費用シミュレーター | Dive Buddy's - ダイビング旅行の予算計算</title>
+    <meta name="description" content="沖縄・離島のダイビング旅行費用を詳細計算。航空券、宿泊、ダイビング費用を時期別に比較し、最適な予算プランを提案。">
+    
+    <link rel="stylesheet" href="/app/v28-styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.js"></script>
+    
+    <style>
+        .cost-simulator-page {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+        }
+
+        .page-header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            color: white;
+            padding: 4rem 0 2rem;
+            text-align: center;
+        }
+
+        .page-header h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .page-header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .simulator-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .input-panel {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            height: fit-content;
+        }
+
+        .results-panel {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .form-section {
+            margin-bottom: 2rem;
+        }
+
+        .form-section h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #555;
+        }
+
+        .form-input {
+            padding: 0.8rem 1rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .calculate-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 1.2rem 2rem;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .calculate-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .cost-breakdown {
+            margin-bottom: 2rem;
+        }
+
+        .cost-breakdown h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #333;
+            text-align: center;
+        }
+
+        .total-cost {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            color: white;
+        }
+
+        .total-amount {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .per-person {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .cost-items {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .cost-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+        }
+
+        .cost-item-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+        }
+
+        .cost-item-amount {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #333;
+        }
+
+        .chart-container {
+            margin: 2rem 0;
+            height: 300px;
+            position: relative;
+        }
+
+        .seasonal-comparison {
+            margin-top: 2rem;
+        }
+
+        .seasonal-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .seasonal-card {
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 12px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .seasonal-card:hover {
+            background: #e9ecef;
+            transform: translateY(-2px);
+        }
+
+        .seasonal-card.current {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .seasonal-card.best-value {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .seasonal-month {
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .seasonal-multiplier {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .seasonal-savings {
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+        }
+
+        .saving-tips {
+            margin-top: 2rem;
+        }
+
+        .tips-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .tip-card {
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border-left: 4px solid #10b981;
+        }
+
+        .tip-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .tip-category {
+            background: #10b981;
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .tip-savings {
+            font-weight: 700;
+            color: #10b981;
+            font-size: 1.1rem;
+        }
+
+        .tip-title {
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .tip-description {
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 20px;
+            z-index: 10;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 1024px) {
+            .simulator-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .page-header h1 {
+                font-size: 2rem;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .total-amount {
+                font-size: 2rem;
+            }
+
+            .seasonal-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="cost-simulator-page">
+        <!-- ヘッダー -->
+        <header class="main-header">
+            <nav class="main-nav">
+                <a href="/" class="main-logo">
+                    <h1>🌺 Dive Buddy's</h1>
+                    <span>費用シミュレーター</span>
+                </a>
+                
+                <ul class="main-nav-menu">
+                    <li><a href="/">ホーム</a></li>
+                    <li><a href="/about">サービス</a></li>
+                    <li><a href="/member">会員システム</a></li>
+                    <li><a href="/shops-database">ショップDB</a></li>
+                    <li><a href="/blog">ブログ</a></li>
+                    <li><a href="/travel-guide" class="active">旅行ガイド</a></li>
+                    <li><a href="/weather-ocean">海況・天気</a></li>
+                    <li><a href="/partners">ショップ向け</a></li>
+                    <li><a href="/contact">お問い合わせ</a></li>
+                </ul>
+                
+                <div class="main-nav-buttons">
+                    <a href="/member" class="btn btn-secondary">
+                        <i class="fas fa-user-plus"></i> 会員登録
+                    </a>
+                    <a href="https://line.me/ti/p/@2007331165" class="btn btn-primary btn-line-connect" target="_blank">
+                        <i class="fab fa-line"></i> Jijiに相談
+                    </a>
+                </div>
+            </nav>
+        </header>
+
+        <section class="page-header">
+            <div class="container">
+                <h1><i class="fas fa-calculator"></i> 旅行費用シミュレーター</h1>
+                <p>ダイビング旅行の予算を詳細計算。航空券、宿泊、ダイビング費用を時期別に比較し、最適なプランを提案</p>
+            </div>
+        </section>
+
+        <div class="simulator-container">
+            <!-- 入力パネル -->
+            <div class="input-panel">
+                <form id="costForm">
+                    <!-- 基本情報 -->
+                    <div class="form-section">
+                        <h3><i class="fas fa-map-marker-alt"></i> 基本情報</h3>
+                        
+                        <div class="form-group">
+                            <label for="destination">目的地</label>
+                            <select class="form-input" id="destination" name="destination" required>
+                                <option value="">目的地を選択</option>
+                                <option value="石垣島">石垣島</option>
+                                <option value="宮古島">宮古島</option>
+                                <option value="沖縄本島">沖縄本島</option>
+                                <option value="慶良間諸島">慶良間諸島</option>
+                                <option value="西表島">西表島</option>
+                            </select>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="startDate">出発日</label>
+                                <input type="date" class="form-input" id="startDate" name="start_date" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="endDate">帰着日</label>
+                                <input type="date" class="form-input" id="endDate" name="end_date" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="participants">参加人数</label>
+                            <select class="form-input" id="participants" name="participants" required>
+                                <option value="1">1名</option>
+                                <option value="2" selected>2名</option>
+                                <option value="3">3名</option>
+                                <option value="4">4名</option>
+                                <option value="5">5名以上</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- 宿泊・交通 -->
+                    <div class="form-section">
+                        <h3><i class="fas fa-plane"></i> 宿泊・交通</h3>
+                        
+                        <div class="form-group">
+                            <label for="accommodationLevel">宿泊グレード</label>
+                            <select class="form-input" id="accommodationLevel" name="accommodation_level" required>
+                                <option value="budget">エコノミー（6,000円〜）</option>
+                                <option value="mid" selected>スタンダード（10,000円〜）</option>
+                                <option value="luxury">プレミアム（20,000円〜）</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="transportType">航空券クラス</label>
+                            <select class="form-input" id="transportType" name="transport_type" required>
+                                <option value="economy" selected>エコノミー</option>
+                                <option value="business">ビジネス</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- ダイビングプラン -->
+                    <div class="form-section">
+                        <h3><i class="fas fa-water"></i> ダイビングプラン</h3>
+                        
+                        <div class="form-group">
+                            <label for="divingPlan">ダイビングプラン</label>
+                            <select class="form-input" id="divingPlan" name="diving_plan" required>
+                                <option value="none">ダイビングなし</option>
+                                <option value="beginner">初心者プラン（4ダイブ）</option>
+                                <option value="recreational" selected>レクリエーション（8ダイブ）</option>
+                                <option value="advanced">アドバンス（12ダイブ）</option>
+                                <option value="intensive">インテンシブ（16ダイブ）</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="mealPlan">食事プラン</label>
+                            <select class="form-input" id="mealPlan" name="meal_plan" required>
+                                <option value="budget">エコノミー</option>
+                                <option value="standard" selected>スタンダード</option>
+                                <option value="premium">プレミアム</option>
+                                <option value="luxury">ラグジュアリー</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="calculate-button">
+                        <i class="fas fa-calculator"></i> 費用を計算する
+                    </button>
+                </form>
+            </div>
+
+            <!-- 結果パネル -->
+            <div class="results-panel" style="position: relative;">
+                <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+                    <div class="loading-spinner"></div>
+                    <p>費用を計算中...</p>
+                </div>
+
+                <div id="resultsContent" style="display: none;">
+                    <!-- 費用内訳 -->
+                    <div class="cost-breakdown">
+                        <h3><i class="fas fa-yen-sign"></i> 総費用</h3>
+                        
+                        <div class="total-cost">
+                            <div class="total-amount" id="totalAmount">¥0</div>
+                            <div class="per-person" id="perPersonAmount">1名あたり ¥0</div>
+                        </div>
+
+                        <div class="cost-items" id="costItems">
+                            <!-- 費用項目が動的に挿入される -->
+                        </div>
+                    </div>
+
+                    <!-- 費用グラフ -->
+                    <div class="chart-container">
+                        <canvas id="costChart"></canvas>
+                    </div>
+
+                    <!-- 時期別料金比較 -->
+                    <div class="seasonal-comparison">
+                        <h3><i class="fas fa-calendar-alt"></i> 時期別料金比較</h3>
+                        <div class="seasonal-grid" id="seasonalGrid">
+                            <!-- 時期別データが動的に挿入される -->
+                        </div>
+                    </div>
+
+                    <!-- 節約提案 -->
+                    <div class="saving-tips">
+                        <h3><i class="fas fa-lightbulb"></i> 節約提案</h3>
+                        <div class="tips-grid" id="tipsGrid">
+                            <!-- 節約提案が動的に挿入される -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 初期メッセージ -->
+                <div id="initialMessage" class="text-center" style="padding: 3rem; color: #666;">
+                    <i class="fas fa-calculator" style="font-size: 4rem; margin-bottom: 1rem; opacity: 0.3;"></i>
+                    <h3>旅行条件を入力して費用を計算しましょう</h3>
+                    <p>詳細な内訳と節約提案をご提供します</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class CostSimulator {
+            constructor() {
+                this.chart = null;
+                this.costData = null;
+                this.init();
+            }
+
+            init() {
+                this.setDefaultDates();
+                this.setupEventListeners();
+            }
+
+            setDefaultDates() {
+                const today = new Date();
+                const nextMonth = new Date(today);
+                nextMonth.setMonth(nextMonth.getMonth() + 1);
+                const endDate = new Date(nextMonth);
+                endDate.setDate(endDate.getDate() + 3);
+
+                document.getElementById('startDate').value = nextMonth.toISOString().split('T')[0];
+                document.getElementById('endDate').value = endDate.toISOString().split('T')[0];
+            }
+
+            setupEventListeners() {
+                document.getElementById('costForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.calculateCost();
+                });
+
+                // 日付変更時の妥当性チェック
+                document.getElementById('startDate').addEventListener('change', this.validateDates);
+                document.getElementById('endDate').addEventListener('change', this.validateDates);
+            }
+
+            validateDates() {
+                const startDate = new Date(document.getElementById('startDate').value);
+                const endDate = new Date(document.getElementById('endDate').value);
+
+                if (endDate <= startDate) {
+                    const newEndDate = new Date(startDate);
+                    newEndDate.setDate(newEndDate.getDate() + 1);
+                    document.getElementById('endDate').value = newEndDate.toISOString().split('T')[0];
+                }
+            }
+
+            async calculateCost() {
+                try {
+                    this.showLoading();
+
+                    const formData = new FormData(document.getElementById('costForm'));
+                    const startDate = document.getElementById('startDate').value;
+                    const endDate = document.getElementById('endDate').value;
+                    
+                    const durationDays = Math.ceil((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24));
+
+                    const requestData = {
+                        destination: formData.get('destination'),
+                        duration_days: durationDays,
+                        travel_dates: {
+                            start: startDate,
+                            end: endDate
+                        },
+                        participants: parseInt(formData.get('participants')),
+                        accommodation_level: formData.get('accommodation_level'),
+                        diving_plan: formData.get('diving_plan'),
+                        meal_plan: formData.get('meal_plan'),
+                        transport_type: formData.get('transport_type')
+                    };
+
+                    console.log('💰 費用計算リクエスト:', requestData);
+
+                    const response = await fetch('/api/travel/cost-simulator', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(requestData)
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        this.costData = data;
+                        this.renderResults();
+                    } else {
+                        this.showError('計算に失敗しました: ' + data.message);
+                    }
+
+                } catch (error) {
+                    console.error('費用計算エラー:', error);
+                    this.showError('ネットワークエラーが発生しました');
+                } finally {
+                    this.hideLoading();
+                }
+            }
+
+            renderResults() {
+                const { cost_breakdown, seasonal_comparison, saving_tips } = this.costData;
+
+                // 総費用表示
+                document.getElementById('totalAmount').textContent = `¥${cost_breakdown.total.toLocaleString()}`;
+                document.getElementById('perPersonAmount').textContent = `1名あたり ¥${cost_breakdown.per_person.toLocaleString()}`;
+
+                // 費用内訳
+                this.renderCostBreakdown(cost_breakdown);
+
+                // グラフ描画
+                this.renderChart(cost_breakdown);
+
+                // 時期別比較
+                this.renderSeasonalComparison(seasonal_comparison);
+
+                // 節約提案
+                this.renderSavingTips(saving_tips);
+
+                // 結果表示
+                document.getElementById('initialMessage').style.display = 'none';
+                document.getElementById('resultsContent').style.display = 'block';
+            }
+
+            renderCostBreakdown(breakdown) {
+                const costItems = [
+                    { label: '航空券', icon: 'fas fa-plane', amount: breakdown.flight },
+                    { label: '宿泊費', icon: 'fas fa-bed', amount: breakdown.accommodation },
+                    { label: 'ダイビング', icon: 'fas fa-water', amount: breakdown.diving },
+                    { label: '食事', icon: 'fas fa-utensils', amount: breakdown.meals },
+                    { label: '現地交通', icon: 'fas fa-car', amount: breakdown.local_transport },
+                    { label: 'その他', icon: 'fas fa-shopping-bag', amount: breakdown.other }
+                ];
+
+                const html = costItems.map(item => `
+                    <div class="cost-item">
+                        <div class="cost-item-label">
+                            <i class="${item.icon}"></i>
+                            ${item.label}
+                        </div>
+                        <div class="cost-item-amount">¥${item.amount.toLocaleString()}</div>
+                    </div>
+                `).join('');
+
+                document.getElementById('costItems').innerHTML = html;
+            }
+
+            renderChart(breakdown) {
+                const ctx = document.getElementById('costChart').getContext('2d');
+                
+                if (this.chart) {
+                    this.chart.destroy();
+                }
+
+                const data = {
+                    labels: ['航空券', '宿泊費', 'ダイビング', '食事', '現地交通', 'その他'],
+                    datasets: [{
+                        data: [
+                            breakdown.flight,
+                            breakdown.accommodation,
+                            breakdown.diving,
+                            breakdown.meals,
+                            breakdown.local_transport,
+                            breakdown.other
+                        ],
+                        backgroundColor: [
+                            '#667eea',
+                            '#764ba2',
+                            '#f093fb',
+                            '#10b981',
+                            '#f59e0b',
+                            '#ef4444'
+                        ],
+                        borderWidth: 0
+                    }]
+                };
+
+                this.chart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: data,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+            }
+
+            renderSeasonalComparison(seasonal) {
+                const html = seasonal.map(month => {
+                    let cardClass = 'seasonal-card';
+                    if (month.is_current) cardClass += ' current';
+                    if (month.multiplier <= 0.9) cardClass += ' best-value';
+
+                    return `
+                        <div class="${cardClass}">
+                            <div class="seasonal-month">${month.name}</div>
+                            <div class="seasonal-multiplier">${month.season}</div>
+                            ${month.estimated_savings > 0 ? 
+                                `<div class="seasonal-savings">約¥${Math.abs(month.estimated_savings).toLocaleString()}節約</div>` :
+                                month.estimated_savings < 0 ?
+                                `<div class="seasonal-savings">約¥${Math.abs(month.estimated_savings).toLocaleString()}高</div>` :
+                                '<div class="seasonal-savings">現在選択中</div>'
+                            }
+                        </div>
+                    `;
+                }).join('');
+
+                document.getElementById('seasonalGrid').innerHTML = html;
+            }
+
+            renderSavingTips(tips) {
+                if (tips.length === 0) {
+                    document.getElementById('tipsGrid').innerHTML = '<p>現在のプランは既に最適化されています！</p>';
+                    return;
+                }
+
+                const html = tips.map(tip => `
+                    <div class="tip-card">
+                        <div class="tip-header">
+                            <span class="tip-category">${tip.category}</span>
+                            <span class="tip-savings">¥${tip.potential_savings.toLocaleString()}節約</span>
+                        </div>
+                        <div class="tip-title">${tip.title}</div>
+                        <div class="tip-description">${tip.description}</div>
+                    </div>
+                `).join('');
+
+                document.getElementById('tipsGrid').innerHTML = html;
+            }
+
+            showLoading() {
+                document.getElementById('loadingOverlay').style.display = 'flex';
+            }
+
+            hideLoading() {
+                document.getElementById('loadingOverlay').style.display = 'none';
+            }
+
+            showError(message) {
+                alert(message);
+            }
+        }
+
+        // 初期化
+        document.addEventListener('DOMContentLoaded', () => {
+            window.costSimulator = new CostSimulator();
+        });
+    </script>
+</body>
+</html>
