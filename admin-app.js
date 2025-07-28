@@ -273,27 +273,7 @@ app.get('/member', (req, res) => {
     res.sendFile(path.join(__dirname, 'public/member/index.html'));
 });
 
-// 会員登録ページ
-app.get('/member/register', (req, res) => {
-    console.log('🔍 /member/register アクセス - IP:', req.ip, 'UA:', req.get('User-Agent'));
-    const filePath = path.join(__dirname, 'public/member/register.html');
-    console.log('📁 送信ファイルパス:', filePath);
-    
-    // ファイル存在確認
-    const fs = require('fs');
-    try {
-        if (fs.existsSync(filePath)) {
-            console.log('✅ register.html存在確認 - サイズ:', fs.statSync(filePath).size, 'bytes');
-            res.sendFile(filePath);
-        } else {
-            console.error('❌ register.htmlが見つかりません:', filePath);
-            res.status(404).json({ error: 'Register page not found', path: filePath });
-        }
-    } catch (error) {
-        console.error('💥 register.html送信エラー:', error);
-        res.status(500).json({ error: 'Internal server error', message: error.message });
-    }
-});
+// 会員登録ページ（本番: https://dive-buddys.com で提供中）
 
 // 口コミ投稿ページ
 app.get('/member/review-post', (req, res) => {
@@ -2611,8 +2591,21 @@ function getMealCostDetails(meal_plan, duration_days, participants) {
 }
 
 // ===== 会員管理システムAPI =====
+// 注意: 本番の会員システムは https://dive-buddys.com で稼働中
+// このRailway環境では会員機能は無効化
 
-// 会員登録API
+// 会員登録API（無効化済み - 本番環境のみ）
+app.post('/api/members/register', async (req, res) => {
+    res.status(501).json({
+        success: false,
+        error: 'not_implemented',
+        message: '会員登録は本番環境（https://dive-buddys.com）でのみ利用可能です',
+        redirect_url: 'https://dive-buddys.com/member/register'
+    });
+});
+
+// 元の実装（コメントアウト）
+/*
 app.post('/api/members/register', async (req, res) => {
     try {
         const {
@@ -2852,7 +2845,27 @@ app.post('/api/members/verify-email', async (req, res) => {
     }
 });
 
-// ログインAPI
+// ログインAPI（無効化済み - 本番環境のみ）
+app.post('/api/members/login', async (req, res) => {
+    res.status(501).json({
+        success: false,
+        error: 'not_implemented', 
+        message: 'ログインは本番環境（https://dive-buddys.com）でのみ利用可能です',
+        redirect_url: 'https://dive-buddys.com/member/login'
+    });
+});
+
+// メール認証API（無効化済み）
+app.post('/api/members/verify-email', async (req, res) => {
+    res.status(501).json({
+        success: false,
+        error: 'not_implemented',
+        message: 'メール認証は本番環境でのみ利用可能です'
+    });
+});
+
+// 元のログインAPI実装（コメントアウト）
+/*
 app.post('/api/members/login', async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -4654,7 +4667,6 @@ app.use((req, res) => {
             '/shops-database',
             '/travel-guide/flights',
             '/member',
-            '/member/register',
             '/member/review-post',
             '/partners',
             '/partners/dashboard',
