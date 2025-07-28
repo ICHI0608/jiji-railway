@@ -53,13 +53,16 @@ async function initializeSupabase() {
     return { supabase, status: supabaseStatus };
 }
 
-// 非同期でSupabase初期化
-initializeSupabase().then(result => {
-    console.log(`🔗 Supabase状態: ${result.status}`);
-});
-
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// 非同期でSupabase初期化（エラー時もサーバー継続）
+initializeSupabase().then(result => {
+    console.log(`🔗 Supabase状態: ${result.status}`);
+}).catch(error => {
+    console.error('⚠️ Supabase初期化でエラー（サーバーは継続）:', error.message);
+    supabaseStatus = 'initialization_error';
+});
 
 // 気象庁API設定
 const JMA_API_CONFIG = {
