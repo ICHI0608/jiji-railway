@@ -3077,6 +3077,354 @@ function generateSavingTips(params) {
     return tips.slice(0, 4); // 最大4つの提案
 }
 
+// ===== 宿泊施設検索・比較システム =====
+
+// 宿泊施設データベース（実際にはSupabaseから取得）
+const ACCOMMODATION_DATABASE = [
+    {
+        id: 'hotel_001',
+        name: 'リゾートホテル石垣島',
+        area: '石垣島',
+        type: 'リゾートホテル',
+        price_range: { min: 12000, max: 35000 },
+        rating: 4.5,
+        diving_support: true,
+        amenities: ['プール', 'スパ', '送迎バス', 'ダイビング器材干し場', 'ダイビングショップ併設'],
+        location: { lat: 24.3364, lng: 124.1557 },
+        description: '石垣島の中心部に位置する老舗リゾートホテル。ダイビングショップと提携しており、器材の乾燥場所も完備。',
+        images: ['/images/hotels/ishigaki-resort-1.jpg', '/images/hotels/ishigaki-resort-2.jpg'],
+        booking_urls: {
+            rakuten: 'https://travel.rakuten.co.jp/hotel/ishigaki-resort',
+            jalan: 'https://www.jalan.net/hotel/ishigaki-resort',
+            booking: 'https://www.booking.com/hotel/ishigaki-resort'
+        },
+        room_types: [
+            { name: 'スタンダードツイン', price: 12000, capacity: 2 },
+            { name: 'デラックスオーシャンビュー', price: 18000, capacity: 2 },
+            { name: 'スイート', price: 35000, capacity: 4 }
+        ]
+    },
+    {
+        id: 'hotel_002',
+        name: '宮古島マリンリゾート',
+        area: '宮古島',
+        type: 'リゾートホテル',
+        price_range: { min: 15000, max: 45000 },
+        rating: 4.7,
+        diving_support: true,
+        amenities: ['プール', 'スパ', 'ダイビング器材レンタル', 'ビーチアクセス', 'レストラン'],
+        location: { lat: 24.8058, lng: 125.2809 },
+        description: '宮古島の美しいビーチに面したリゾートホテル。ダイビング器材のレンタルや洗浄設備が充実。',
+        images: ['/images/hotels/miyako-resort-1.jpg', '/images/hotels/miyako-resort-2.jpg'],
+        booking_urls: {
+            rakuten: 'https://travel.rakuten.co.jp/hotel/miyako-resort',
+            jalan: 'https://www.jalan.net/hotel/miyako-resort',
+            booking: 'https://www.booking.com/hotel/miyako-resort'
+        },
+        room_types: [
+            { name: 'スタンダードルーム', price: 15000, capacity: 2 },
+            { name: 'オーシャンビュー', price: 25000, capacity: 2 },
+            { name: 'プレミアムスイート', price: 45000, capacity: 4 }
+        ]
+    },
+    {
+        id: 'pension_001',
+        name: 'ダイバーズペンション青い海',
+        area: '沖縄本島',
+        type: 'ペンション',
+        price_range: { min: 6000, max: 12000 },
+        rating: 4.2,
+        diving_support: true,
+        amenities: ['器材干し場', '器材洗浄場', '送迎サービス', 'キッチン', 'Wi-Fi'],
+        location: { lat: 26.2041, lng: 127.6793 },
+        description: 'ダイバー専用のペンション。器材の管理設備が充実し、ダイビングショップとの連携もスムーズ。',
+        images: ['/images/hotels/pension-blue-1.jpg', '/images/hotels/pension-blue-2.jpg'],
+        booking_urls: {
+            rakuten: 'https://travel.rakuten.co.jp/hotel/pension-blue',
+            jalan: 'https://www.jalan.net/hotel/pension-blue'
+        },
+        room_types: [
+            { name: 'ツインルーム', price: 6000, capacity: 2 },
+            { name: 'ドミトリー', price: 4000, capacity: 1 },
+            { name: 'ファミリールーム', price: 12000, capacity: 4 }
+        ]
+    },
+    {
+        id: 'hotel_003',
+        name: '慶良間アイランドホテル',
+        area: '慶良間諸島',
+        type: 'ビジネスホテル',
+        price_range: { min: 8000, max: 20000 },
+        rating: 4.0,
+        diving_support: true,
+        amenities: ['器材干し場', '朝食付き', '港送迎', 'コインランドリー'],
+        location: { lat: 26.1951, lng: 127.3311 },
+        description: '慶良間諸島でのダイビングに最適な立地。港からのアクセスが良く、朝食付きプランが人気。',
+        images: ['/images/hotels/kerama-hotel-1.jpg'],
+        booking_urls: {
+            rakuten: 'https://travel.rakuten.co.jp/hotel/kerama-hotel',
+            jalan: 'https://www.jalan.net/hotel/kerama-hotel'
+        },
+        room_types: [
+            { name: 'シングル', price: 8000, capacity: 1 },
+            { name: 'ツイン', price: 14000, capacity: 2 },
+            { name: 'ファミリー', price: 20000, capacity: 4 }
+        ]
+    },
+    {
+        id: 'ryokan_001',
+        name: '西表島ネイチャーロッジ',
+        area: '西表島',
+        type: '民宿',
+        price_range: { min: 7000, max: 15000 },
+        rating: 4.3,
+        diving_support: true,
+        amenities: ['器材洗浄場', '自然体験プログラム', '地元料理', 'キャンプファイヤー'],
+        location: { lat: 24.3320, lng: 123.7614 },
+        description: '西表島の大自然に囲まれたロッジ。ダイビングと自然体験の両方を楽しめる施設。',
+        images: ['/images/hotels/iriomote-lodge-1.jpg'],
+        booking_urls: {
+            rakuten: 'https://travel.rakuten.co.jp/hotel/iriomote-lodge'
+        },
+        room_types: [
+            { name: '和室', price: 7000, capacity: 2 },
+            { name: 'コテージ', price: 15000, capacity: 4 }
+        ]
+    }
+];
+
+// 宿泊施設検索API
+app.get('/api/travel/accommodations/search', async (req, res) => {
+    try {
+        const {
+            area,
+            checkin,
+            checkout,
+            guests,
+            price_min,
+            price_max,
+            type,
+            diving_support,
+            rating_min
+        } = req.query;
+
+        console.log('🏨 宿泊施設検索:', { area, checkin, checkout, guests });
+
+        let filteredAccommodations = [...ACCOMMODATION_DATABASE];
+
+        // エリアフィルター
+        if (area && area !== 'all') {
+            filteredAccommodations = filteredAccommodations.filter(hotel => hotel.area === area);
+        }
+
+        // 宿泊タイプフィルター
+        if (type && type !== 'all') {
+            filteredAccommodations = filteredAccommodations.filter(hotel => hotel.type === type);
+        }
+
+        // 価格フィルター
+        if (price_min) {
+            filteredAccommodations = filteredAccommodations.filter(hotel => hotel.price_range.max >= parseInt(price_min));
+        }
+        if (price_max) {
+            filteredAccommodations = filteredAccommodations.filter(hotel => hotel.price_range.min <= parseInt(price_max));
+        }
+
+        // ダイビングサポートフィルター
+        if (diving_support === 'true') {
+            filteredAccommodations = filteredAccommodations.filter(hotel => hotel.diving_support);
+        }
+
+        // 評価フィルター
+        if (rating_min) {
+            filteredAccommodations = filteredAccommodations.filter(hotel => hotel.rating >= parseFloat(rating_min));
+        }
+
+        // 宿泊日に基づく価格計算
+        const stayDays = checkin && checkout ? calculateStayDays(checkin, checkout) : 1;
+        const guestCount = parseInt(guests) || 2;
+
+        // 各宿泊施設に動的価格を追加
+        const enrichedAccommodations = filteredAccommodations.map(hotel => {
+            const seasonMultiplier = getAccommodationSeasonMultiplier(checkin);
+            const basePrice = calculateHotelPrice(hotel, guestCount, stayDays);
+            const finalPrice = Math.round(basePrice * seasonMultiplier);
+
+            return {
+                ...hotel,
+                calculated_price: finalPrice,
+                price_per_night: Math.round(finalPrice / stayDays),
+                stay_days: stayDays,
+                guests: guestCount,
+                season_multiplier: seasonMultiplier,
+                availability: checkAvailability(hotel, checkin, checkout)
+            };
+        });
+
+        // 価格順にソート
+        enrichedAccommodations.sort((a, b) => a.calculated_price - b.calculated_price);
+
+        const response = {
+            success: true,
+            accommodations: enrichedAccommodations,
+            search_params: {
+                area,
+                checkin,
+                checkout,
+                guests: guestCount,
+                stay_days: stayDays,
+                results_count: enrichedAccommodations.length
+            },
+            filters: {
+                areas: ['石垣島', '宮古島', '沖縄本島', '慶良間諸島', '西表島'],
+                types: ['リゾートホテル', 'ビジネスホテル', 'ペンション', '民宿'],
+                price_ranges: [
+                    { label: '～10,000円', min: 0, max: 10000 },
+                    { label: '10,000-20,000円', min: 10000, max: 20000 },
+                    { label: '20,000-30,000円', min: 20000, max: 30000 },
+                    { label: '30,000円～', min: 30000, max: 999999 }
+                ]
+            }
+        };
+
+        console.log('✅ 宿泊施設検索完了:', { count: enrichedAccommodations.length });
+        res.json(response);
+
+    } catch (error) {
+        console.error('宿泊施設検索エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: 'search_error',
+            message: '宿泊施設の検索に失敗しました'
+        });
+    }
+});
+
+// 宿泊施設詳細取得API
+app.get('/api/travel/accommodations/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const accommodation = ACCOMMODATION_DATABASE.find(hotel => hotel.id === id);
+
+        if (!accommodation) {
+            return res.status(404).json({
+                success: false,
+                error: 'not_found',
+                message: '宿泊施設が見つかりません'
+            });
+        }
+
+        // 詳細情報を追加
+        const detailedAccommodation = {
+            ...accommodation,
+            nearby_dive_sites: getNearbyDiveSites(accommodation.area),
+            weather_info: await getAreaWeather(accommodation.area),
+            similar_hotels: getSimilarHotels(accommodation)
+        };
+
+        res.json({
+            success: true,
+            accommodation: detailedAccommodation
+        });
+
+    } catch (error) {
+        console.error('宿泊施設詳細取得エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: 'fetch_error',
+            message: '宿泊施設の詳細取得に失敗しました'
+        });
+    }
+});
+
+// ===== 宿泊施設関連ヘルパー関数 =====
+
+// 宿泊日数計算
+function calculateStayDays(checkin, checkout) {
+    if (!checkin || !checkout) return 1;
+    const checkinDate = new Date(checkin);
+    const checkoutDate = new Date(checkout);
+    const diffTime = Math.abs(checkoutDate - checkinDate);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return Math.max(diffDays, 1);
+}
+
+// 宿泊料金計算
+function calculateHotelPrice(hotel, guests, days) {
+    // 部屋タイプから最適な料金を選択
+    let selectedRoom = hotel.room_types[0]; // デフォルト
+    
+    for (const room of hotel.room_types) {
+        if (room.capacity >= guests) {
+            selectedRoom = room;
+            break;
+        }
+    }
+    
+    return selectedRoom.price * days;
+}
+
+// 宿泊施設の季節倍率
+function getAccommodationSeasonMultiplier(checkin) {
+    if (!checkin) return 1.0;
+    
+    const date = new Date(checkin);
+    const month = date.getMonth() + 1;
+
+    if (month >= 7 && month <= 9) return 1.5; // 夏季
+    if (month >= 12 || month <= 2) return 1.7; // 冬季
+    if (month >= 3 && month <= 5) return 1.4; // 春季
+    return 0.8; // 秋季
+}
+
+// 空室状況チェック（模擬）
+function checkAvailability(hotel, checkin, checkout) {
+    // 実際の実装では予約システムAPIを呼び出し
+    const random = Math.random();
+    return {
+        available: random > 0.1, // 90%の確率で空室
+        rooms_left: Math.floor(random * 10) + 1,
+        booking_urgency: random > 0.7 ? 'high' : random > 0.4 ? 'medium' : 'low'
+    };
+}
+
+// 近隣ダイビングサイト取得
+function getNearbyDiveSites(area) {
+    const diveSites = {
+        '石垣島': ['川平石崎マンタスクランブル', '米原ビーチ', '大崎ハナゴイリーフ'],
+        '宮古島': ['魔王の宮殿', '通り池', 'アーチ'],
+        '沖縄本島': ['青の洞窟', '万座ドリームホール', 'ゴリラチョップ'],
+        '慶良間諸島': ['座間味島', '阿嘉島', '渡嘉敷島'],
+        '西表島': ['バラス島', '網取湾', 'イダの浜']
+    };
+    return diveSites[area] || [];
+}
+
+// エリア天気情報取得
+async function getAreaWeather(area) {
+    // 実際の実装では気象庁APIを呼び出し
+    return {
+        temperature: 25,
+        condition: '晴れ',
+        wave_height: '1-2m',
+        visibility: '良好'
+    };
+}
+
+// 類似宿泊施設取得
+function getSimilarHotels(hotel) {
+    return ACCOMMODATION_DATABASE
+        .filter(h => h.id !== hotel.id && (h.area === hotel.area || h.type === hotel.type))
+        .slice(0, 3)
+        .map(h => ({
+            id: h.id,
+            name: h.name,
+            area: h.area,
+            price_range: h.price_range,
+            rating: h.rating
+        }));
+}
+
 // ===== サーバー起動 =====
 app.listen(PORT, () => {
     console.log('\n🎉=====================================');
