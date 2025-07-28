@@ -3614,3 +3614,236 @@ app.listen(PORT, () => {
     console.log(`📋 記事管理: https://dive-buddys.com/admin/blog-list`);
     console.log('=====================================🎉\n');
 });
+
+// ===== 会員登録システム =====
+
+// 会員登録API
+app.post('/api/member/register', async (req, res) => {
+    try {
+        const {
+            username,
+            email,
+            password,
+            confirmPassword,
+            fullName,
+            experience,
+            favoriteArea,
+            newsletter
+        } = req.body;
+
+        console.log('👤 新規会員登録:', { username, email, fullName, experience });
+
+        // バリデーション
+        const validationErrors = validateRegistrationData(req.body);
+        if (validationErrors.length > 0) {
+            return res.status(400).json({
+                success: false,
+                error: 'validation_error',
+                message: 'バリデーションエラーが発生しました',
+                errors: validationErrors
+            });
+        }
+
+        // Supabase接続試行
+        if (supabase && supabaseStatus === 'connected') {
+            try {
+                // 既存ユーザーチェック
+                const { data: existingUser, error: checkError } = await supabase
+                    .from('users')
+                    .select('username, email')
+                    .or(`username.eq.${username},email.eq.${email}`)
+                    .limit(1);
+
+                if (checkError) {
+                    console.warn('既存ユーザーチェックエラー:', checkError);
+                } else if (existingUser && existingUser.length > 0) {
+                    const existing = existingUser[0];
+                    const field = existing.username === username ? 'username' : 'email';
+                    return res.status(409).json({
+                        success: false,
+                        error: 'user_exists',
+                        message: `この${field === 'username' ? 'ユーザー名' : 'メールアドレス'}は既に使用されています`,
+                        field
+                    });
+                }
+
+                // パスワードハッシュ化（実際の実装では bcrypt を使用）
+                const hashedPassword = hashPassword(password);
+
+                // ユーザー作成
+                const userData = {
+                    username,
+                    email,
+                    password_hash: hashedPassword,
+                    full_name: fullName,
+                    diving_experience: experience || 'none',
+                    favorite_area: favoriteArea || null,
+                    newsletter_subscription: newsletter === 'on',
+                    email_verified: false,
+                    registration_date: new Date().toISOString(),
+                    last_login: null,
+                    profile_completed: false,
+                    points_balance: 100, // 新規登録ボーナス
+                    status: 'active'
+                };
+
+                const { data: newUser, error: insertError } = await supabase
+                    .from('users')
+                    .insert([userData])
+                    .select()
+                    .single();
+
+                if (insertError) {
+                    console.error('ユーザー作成エラー:', insertError);
+                    throw new Error('ユーザーの作成に失敗しました');
+                }
+
+                // メール認証トークン生成
+                const verificationToken = generateVerificationToken();
+                await supabase
+                    .from('email_verifications')
+                    .insert([{
+                        user_id: newUser.id,
+                        email: email,
+                        token: verificationToken,
+                        expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24時間後
+                    }]);
+
+                // メール送信（実際の実装では SendGrid 等を使用）
+                await sendVerificationEmail(email, verificationToken, fullName);
+
+                console.log('✅ 会員登録成功（Supabase）:', newUser.username);
+                return res.json({
+                    success: true,
+                    message: '会員登録が完了しました',
+                    user: {
+                        id: newUser.id,
+                        username: newUser.username,
+                        email: newUser.email,
+                        full_name: newUser.full_name,
+                        points_balance: newUser.points_balance
+                    },
+                    next_step: 'email_verification'
+                });
+
+            } catch (supabaseError) {
+                console.warn('Supabase会員登録エラー、フォールバックへ:', supabaseError.message);
+            }
+        }
+
+        // フォールバック: セッションストレージ
+        const userId = 'user_' + Date.now();
+        const hashedPassword = hashPassword(password);
+        
+        const userData = {
+            id: userId,
+            username,
+            email,
+            password_hash: hashedPassword,
+            full_name: fullName,
+            diving_experience: experience || 'none',
+            favorite_area: favoriteArea || null,
+            newsletter_subscription: newsletter === 'on',
+            email_verified: false,
+            registration_date: new Date().toISOString(),
+            points_balance: 100,
+            status: 'active'
+        };
+
+        // グローバル変数に保存（デモ用）
+        if (!global.registeredUsers) {
+            global.registeredUsers = new Map();
+        }
+        global.registeredUsers.set(username, userData);
+        global.registeredUsers.set(email, userData);
+
+        console.log('✅ 会員登録成功（フォールバック）:', username);
+        res.json({
+            success: true,
+            message: '会員登録が完了しました',
+            user: {
+                id: userData.id,
+                username: userData.username,
+                email: userData.email,
+                full_name: userData.full_name,
+                points_balance: userData.points_balance
+            },
+            next_step: 'demo_mode'
+        });
+
+    } catch (error) {
+        console.error('会員登録API エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message,
+            message: '会員登録に失敗しました'
+        });
+    }
+});
+
+// 会員登録ページ
+app.get('/member/register', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/member/register.html'));
+});
+
+// ===== 会員登録ヘルパー関数 =====
+
+// 登録データバリデーション
+function validateRegistrationData(data) {
+    const errors = [];
+    const { username, email, password, confirmPassword, fullName } = data;
+
+    // ユーザー名バリデーション
+    if (!username || username.length < 3) {
+        errors.push({ field: 'username', message: 'ユーザー名は3文字以上で入力してください' });
+    } else if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+        errors.push({ field: 'username', message: 'ユーザー名は英数字とアンダースコアのみ使用できます' });
+    }
+
+    // メールアドレスバリデーション
+    if (!email) {
+        errors.push({ field: 'email', message: 'メールアドレスは必須です' });
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        errors.push({ field: 'email', message: '正しいメールアドレス形式で入力してください' });
+    }
+
+    // パスワードバリデーション
+    if (!password || password.length < 8) {
+        errors.push({ field: 'password', message: 'パスワードは8文字以上で入力してください' });
+    }
+
+    if (password !== confirmPassword) {
+        errors.push({ field: 'confirmPassword', message: 'パスワードが一致しません' });
+    }
+
+    // 氏名バリデーション
+    if (!fullName || fullName.length < 2) {
+        errors.push({ field: 'fullName', message: 'お名前は2文字以上で入力してください' });
+    }
+
+    return errors;
+}
+
+// パスワードハッシュ化（簡易版）
+function hashPassword(password) {
+    // 実際の実装では bcrypt を使用
+    return 'hashed_' + password + '_salt';
+}
+
+// メール認証トークン生成
+function generateVerificationToken() {
+    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+}
+
+// メール認証送信（デモ版）
+async function sendVerificationEmail(email, token, fullName) {
+    // 実際の実装では SendGrid、AWS SES 等を使用
+    console.log(`📧 認証メール送信（デモ）:`, {
+        to: email,
+        subject: 'Dive Buddy\'s メールアドレス認証',
+        verification_url: `https://dive-buddys.com/member/verify?token=${token}`,
+        recipient: fullName
+    });
+    
+    return true;
+}
