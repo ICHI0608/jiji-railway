@@ -266,19 +266,7 @@ app.get('/member', (req, res) => {
 
 // 会員登録ページ
 app.get('/member/register', (req, res) => {
-    console.log('🔍 会員登録ページアクセス:', req.url);
-    const filePath = path.join(__dirname, 'public/member/register.html');
-    console.log('📁 ファイルパス:', filePath);
-    
-    // ファイル存在確認
-    const fs = require('fs');
-    if (fs.existsSync(filePath)) {
-        console.log('✅ register.htmlファイル存在確認');
-        res.sendFile(filePath);
-    } else {
-        console.error('❌ register.htmlファイルが見つかりません');
-        res.status(404).send('会員登録ページが見つかりません');
-    }
+    res.sendFile(path.join(__dirname, 'public/member/register.html'));
 });
 
 // 口コミ投稿ページ

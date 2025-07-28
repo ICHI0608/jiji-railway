@@ -3,1009 +3,927 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>会員登録 | Jiji会員システム</title>
-    <meta name="description" content="Jiji会員登録でポイント獲得、口コミ投稿、お気に入りショップ管理が可能。LINE連携で簡単登録。">
+    <title>会員登録 | Dive Buddy's - ダイビング情報プラットフォーム</title>
+    <meta name="description" content="Dive Buddy'sに会員登録して、沖縄・離島のダイビング情報を最大限に活用しましょう。限定コンテンツやパーソナライズされた情報をお楽しみください。">
     
+    <link rel="stylesheet" href="/app/v28-styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="../app/v28-styles.css">
     
     <style>
-        .register-header {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: white;
-            padding: 80px 0 60px;
-            text-align: center;
+        .register-page {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 2rem 0;
         }
-        
-        .register-benefits {
-            padding: 60px 0;
-            background: #f0fdf4;
-        }
-        
-        .benefits-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 30px;
-            margin-top: 40px;
-        }
-        
-        .benefit-card {
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            text-align: center;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-            border: 2px solid transparent;
-            transition: all 0.3s ease;
-        }
-        
-        .benefit-card:hover {
-            border-color: #10b981;
-            transform: translateY(-5px);
-        }
-        
-        .benefit-icon {
-            font-size: 3rem;
-            color: #10b981;
-            margin-bottom: 20px;
-        }
-        
-        .benefit-title {
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: #1f2937;
-            margin-bottom: 15px;
-        }
-        
-        .benefit-description {
-            color: #6b7280;
-            line-height: 1.6;
-        }
-        
-        .register-form-section {
-            padding: 80px 0;
-            background: white;
-        }
-        
-        .register-options {
+
+        .register-container {
             max-width: 600px;
             margin: 0 auto;
+            padding: 0 1rem;
         }
-        
-        .line-register {
-            background: #00c300;
-            color: white;
-            padding: 20px;
-            border-radius: 15px;
-            text-align: center;
-            margin-bottom: 40px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: block;
-        }
-        
-        .line-register:hover {
-            background: #00a500;
-            color: white;
-            transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(0, 195, 0, 0.3);
-        }
-        
-        .line-icon {
-            font-size: 2rem;
-            margin-bottom: 10px;
-        }
-        
-        .line-title {
-            font-size: 1.3rem;
-            font-weight: 700;
-            margin-bottom: 10px;
-        }
-        
-        .line-description {
-            opacity: 0.9;
-            font-size: 0.9rem;
-        }
-        
-        .divider {
-            text-align: center;
-            margin: 40px 0;
+
+        .register-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 25px;
+            padding: 3rem 2.5rem;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.2);
+            backdrop-filter: blur(20px);
             position: relative;
+            overflow: hidden;
         }
-        
-        .divider::before {
+
+        .register-card::before {
             content: '';
             position: absolute;
-            top: 50%;
+            top: 0;
             left: 0;
             right: 0;
-            height: 1px;
-            background: #e5e7eb;
+            height: 5px;
+            background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
         }
-        
-        .divider span {
-            background: white;
-            padding: 0 20px;
-            color: #6b7280;
-            font-weight: 500;
-        }
-        
-        .manual-register {
-            background: #f8fafc;
-            border: 2px solid #e5e7eb;
-            border-radius: 15px;
-            padding: 30px;
-        }
-        
-        .manual-title {
+
+        .register-header {
             text-align: center;
-            margin-bottom: 30px;
-            color: #1f2937;
+            margin-bottom: 2rem;
+        }
+
+        .register-title {
+            font-size: 2.5rem;
             font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
         }
-        
-        .register-form {
-            display: grid;
-            gap: 25px;
+
+        .register-subtitle {
+            color: #666;
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
         }
-        
+
+        .form-section {
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #333;
+            font-size: 0.95rem;
+        }
+
+        .required {
+            color: #e74c3c;
+            margin-left: 0.2rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: #fff;
+            box-sizing: border-box;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-input.error {
+            border-color: #e74c3c;
+            box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
+        }
+
+        .form-input.success {
+            border-color: #27ae60;
+            box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.1);
+        }
+
         .form-row {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
         }
-        
-        .form-group {
+
+        .password-strength {
+            margin-top: 0.5rem;
+            padding: 0.5rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        .password-strength.weak {
+            background: #fdeaea;
+            color: #e74c3c;
+            display: block;
+        }
+
+        .password-strength.medium {
+            background: #fff3cd;
+            color: #f39c12;
+            display: block;
+        }
+
+        .password-strength.strong {
+            background: #d4edda;
+            color: #27ae60;
+            display: block;
+        }
+
+        .checkbox-group {
             display: flex;
             flex-direction: column;
+            gap: 1rem;
         }
-        
-        .form-label {
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: #374151;
+
+        .checkbox-item {
             display: flex;
-            align-items: center;
-            gap: 8px;
+            align-items: flex-start;
+            gap: 0.8rem;
         }
-        
-        .required {
-            color: #ef4444;
-            font-size: 0.8rem;
+
+        .checkbox-custom {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #667eea;
+            border-radius: 4px;
+            position: relative;
+            cursor: pointer;
+            flex-shrink: 0;
+            margin-top: 0.1rem;
         }
-        
-        .form-input, .form-select {
-            padding: 12px;
-            border: 2px solid #e5e7eb;
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: border-color 0.3s ease;
-            font-family: inherit;
+
+        .checkbox-custom:checked {
+            background: #667eea;
         }
-        
-        .form-input:focus, .form-select:focus {
-            border-color: #10b981;
-            outline: none;
+
+        .checkbox-custom:checked::after {
+            content: '✓';
+            position: absolute;
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            top: -2px;
+            left: 2px;
         }
-        
-        .diving-experience {
+
+        .checkbox-label {
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: #555;
+            cursor: pointer;
+        }
+
+        .diving-experience-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-top: 10px;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 0.8rem;
+            margin-top: 0.5rem;
         }
-        
+
         .experience-option {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 12px;
-            border: 2px solid #e5e7eb;
-            border-radius: 8px;
+            position: relative;
+        }
+
+        .experience-radio {
+            appearance: none;
+            position: absolute;
+            opacity: 0;
+        }
+
+        .experience-label {
+            display: block;
+            padding: 0.8rem;
+            background: #f8f9fa;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            text-align: center;
             cursor: pointer;
             transition: all 0.3s ease;
-        }
-        
-        .experience-option:hover {
-            border-color: #10b981;
-            background: #f0fdf4;
-        }
-        
-        .experience-option.selected {
-            border-color: #10b981;
-            background: #f0fdf4;
-        }
-        
-        .experience-option input[type="radio"] {
-            margin: 0;
-        }
-        
-        .preferences-section {
-            background: #f8fafc;
-            border-radius: 12px;
-            padding: 25px;
-            margin-top: 20px;
-        }
-        
-        .preferences-title {
-            font-weight: 600;
-            color: #1f2937;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .preference-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-        }
-        
-        .preference-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px;
-            border: 1px solid #e5e7eb;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            background: white;
-        }
-        
-        .preference-item:hover {
-            border-color: #10b981;
-            background: #f0fdf4;
-        }
-        
-        .preference-item.selected {
-            border-color: #10b981;
-            background: #f0fdf4;
-        }
-        
-        .preference-item input[type="checkbox"] {
-            margin: 0;
-        }
-        
-        .terms-section {
-            background: #fef2f2;
-            border: 2px solid #fecaca;
-            border-radius: 12px;
-            padding: 20px;
-            margin-top: 30px;
-        }
-        
-        .terms-title {
-            font-weight: 600;
-            color: #dc2626;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .terms-list {
-            margin-bottom: 20px;
-        }
-        
-        .terms-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 10px;
-            padding: 8px;
-            background: white;
-            border-radius: 6px;
-        }
-        
-        .terms-item input[type="checkbox"] {
-            margin: 0;
-        }
-        
-        .terms-item label {
             font-size: 0.9rem;
-            color: #374151;
+            font-weight: 500;
+        }
+
+        .experience-radio:checked + .experience-label {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-color: #667eea;
+        }
+
+        .diving-areas-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 0.8rem;
+            margin-top: 0.5rem;
+        }
+
+        .area-checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .area-checkbox-item:has(.checkbox-custom:checked) {
+            background: rgba(102, 126, 234, 0.1);
+            border: 1px solid #667eea;
+        }
+
+        .error-message {
+            color: #e74c3c;
+            font-size: 0.85rem;
+            margin-top: 0.3rem;
+            display: none;
+        }
+
+        .success-message {
+            color: #27ae60;
+            font-size: 0.85rem;
+            margin-top: 0.3rem;
+            display: none;
+        }
+
+        .register-button {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 1.2rem 2rem;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 1.1rem;
             cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
         }
-        
-        .terms-item a {
-            color: #10b981;
+
+        .register-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+        }
+
+        .register-button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .register-button .loading-spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 0.5rem;
+        }
+
+        .register-button.loading .loading-spinner {
+            display: inline-block;
+        }
+
+        .register-footer {
+            text-align: center;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #eee;
+        }
+
+        .register-footer p {
+            color: #666;
+            margin-bottom: 1rem;
+        }
+
+        .register-footer a {
+            color: #667eea;
             text-decoration: none;
+            font-weight: 500;
         }
-        
-        .terms-item a:hover {
+
+        .register-footer a:hover {
             text-decoration: underline;
         }
-        
-        .submit-section {
-            text-align: center;
-            margin-top: 40px;
-        }
-        
-        .btn-submit {
-            background: #10b981;
-            color: white;
-            padding: 15px 50px;
-            border: none;
-            border-radius: 25px;
-            font-size: 1.1rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .btn-submit:hover {
-            background: #059669;
-            color: white;
-            transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
-        }
-        
-        .btn-submit:disabled {
-            background: #d1d5db;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-        
-        .register-note {
-            text-align: center;
-            margin-top: 30px;
-            padding: 20px;
-            background: #f0f9ff;
+
+        .form-notice {
+            background: #e8f4fd;
+            border: 1px solid #bee5eb;
             border-radius: 12px;
-            color: #1e40af;
+            padding: 1rem;
+            margin-bottom: 2rem;
         }
-        
-        .register-note i {
-            margin-right: 8px;
+
+        .form-notice h4 {
+            color: #0c5460;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
-        
-        .welcome-bonus {
-            background: linear-gradient(135deg, #fef3c7, #fde68a);
-            border: 2px solid #f59e0b;
-            border-radius: 15px;
-            padding: 25px;
-            text-align: center;
-            margin-bottom: 40px;
-        }
-        
-        .bonus-title {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: #92400e;
-            margin-bottom: 10px;
-        }
-        
-        .bonus-amount {
-            font-size: 2rem;
-            font-weight: 900;
-            color: #f59e0b;
-            margin-bottom: 10px;
-        }
-        
-        .bonus-description {
-            color: #b45309;
+
+        .form-notice p {
+            color: #0c5460;
             font-size: 0.9rem;
+            margin: 0;
+            line-height: 1.5;
         }
-        
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
         @media (max-width: 768px) {
-            .benefits-grid {
-                grid-template-columns: 1fr;
-                gap: 20px;
+            .register-card {
+                padding: 2rem 1.5rem;
+                margin: 1rem;
             }
-            
+
+            .register-title {
+                font-size: 2rem;
+            }
+
             .form-row {
                 grid-template-columns: 1fr;
             }
-            
-            .diving-experience {
-                grid-template-columns: 1fr;
+
+            .diving-experience-grid {
+                grid-template-columns: repeat(2, 1fr);
             }
-            
-            .preference-grid {
+
+            .diving-areas-grid {
                 grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
 <body>
-    <!-- ヘッダー -->
-    <header class="main-header">
-        <nav class="main-nav">
-            <a href="/" class="main-logo">
-                <h1>🌊 Jiji</h1>
-                <span>会員システム</span>
-            </a>
-            
-            <ul class="main-nav-menu">
-                <li><a href="/">ホーム</a></li>
-                <li><a href="/shops-database">ショップDB</a></li>
-                <li><a href="/travel-guide">旅行ガイド</a></li>
-                <li><a href="/diving-blog">ダイビングブログ</a></li>
-                <li><a href="/weather-ocean">海況・天気</a></li>
-                <li><a href="/member/register" class="active">会員登録</a></li>
-            </ul>
-            
-            <div class="main-nav-buttons">
-                <a href="https://line.me/ti/p/@2007331165" class="btn btn-primary" target="_blank">
-                    <i class="fab fa-line"></i> LINE相談
-                </a>
-            </div>
-        </nav>
-    </header>
-
-    <!-- 会員登録ヘッダー -->
-    <section class="register-header">
-        <div class="container">
-            <h1 class="database-title">🎉 Jiji会員登録</h1>
-            <p class="database-subtitle">
-                口コミ投稿でポイント獲得、お気に入りショップ管理、<br>
-                あなただけのダイビングライフをサポートします。
-            </p>
-        </div>
-    </section>
-
-    <!-- 会員特典 -->
-    <section class="register-benefits">
-        <div class="container">
-            <!-- 新規登録ボーナス -->
-            <div class="welcome-bonus">
-                <div class="bonus-title">🎁 新規登録特典</div>
-                <div class="bonus-amount">100ポイント</div>
-                <div class="bonus-description">
-                    会員登録完了で即座に100ポイント獲得！<br>
-                    プロフィール完成でさらに50ポイント追加！
-                </div>
-            </div>
-
-            <h2 class="section-title">🌟 会員特典</h2>
-            <p class="section-subtitle">
-                Jiji会員になって、もっと充実したダイビング体験を
-            </p>
-            
-            <div class="benefits-grid">
-                <div class="benefit-card">
-                    <div class="benefit-icon">
-                        <i class="fas fa-coins"></i>
-                    </div>
-                    <h3 class="benefit-title">ポイント獲得・交換</h3>
-                    <p class="benefit-description">
-                        口コミ投稿で150-200ポイント獲得。貯めたポイントでダイビングチケットや器材と交換可能。
+    <div class="register-page">
+        <div class="register-container">
+            <div class="register-card">
+                <div class="register-header">
+                    <h1 class="register-title">
+                        <i class="fas fa-waves"></i> Dive Buddy's
+                    </h1>
+                    <p class="register-subtitle">
+                        沖縄・離島のダイビング情報を最大限に活用するため、<br>
+                        会員登録をして限定コンテンツをお楽しみください
                     </p>
                 </div>
-                
-                <div class="benefit-card">
-                    <div class="benefit-icon">
-                        <i class="fas fa-comment-dots"></i>
-                    </div>
-                    <h3 class="benefit-title">口コミ投稿・管理</h3>
-                    <p class="benefit-description">
-                        ダイビング体験を投稿して他の初心者を応援。過去の口コミも一元管理で振り返り可能。
-                    </p>
-                </div>
-                
-                <div class="benefit-card">
-                    <div class="benefit-icon">
-                        <i class="fas fa-heart"></i>
-                    </div>
-                    <h3 class="benefit-title">お気に入り管理</h3>
-                    <p class="benefit-description">
-                        気になるショップをお気に入りに保存。次回のダイビング計画に役立てることができます。
-                    </p>
-                </div>
-                
-                <div class="benefit-card">
-                    <div class="benefit-icon">
-                        <i class="fas fa-chart-line"></i>
-                    </div>
-                    <h3 class="benefit-title">ダイビング履歴</h3>
-                    <p class="benefit-description">
-                        過去のダイビング記録を自動保存。成長の軌跡を確認し、次の目標設定に活用。
-                    </p>
-                </div>
-                
-                <div class="benefit-card">
-                    <div class="benefit-icon">
-                        <i class="fas fa-user-friends"></i>
-                    </div>
-                    <h3 class="benefit-title">友達紹介特典</h3>
-                    <p class="benefit-description">
-                        友達を招待すると300ポイント獲得。一緒にダイビングを楽しむ仲間を増やそう。
-                    </p>
-                </div>
-                
-                <div class="benefit-card">
-                    <div class="benefit-icon">
-                        <i class="fab fa-line"></i>
-                    </div>
-                    <h3 class="benefit-title">LINE Bot連携</h3>
-                    <p class="benefit-description">
-                        LINE Botとの連携で個別化された相談・推薦サービス。いつでも気軽に相談可能。
-                    </p>
-                </div>
-            </div>
-        </div>
-    </section>
 
-    <!-- 会員登録フォーム -->
-    <section class="register-form-section">
-        <div class="container">
-            <h2 class="section-title">📝 会員登録</h2>
-            <p class="section-subtitle">
-                簡単2分で登録完了。LINE連携なら1クリックで登録できます。
-            </p>
-            
-            <div class="register-options">
-                <!-- LINE連携登録 -->
-                <a href="#" class="line-register" id="line-register">
-                    <div class="line-icon">
-                        <i class="fab fa-line"></i>
-                    </div>
-                    <div class="line-title">LINE連携で簡単登録</div>
-                    <div class="line-description">
-                        1クリックで登録完了。LINE Botとの連携も自動で設定されます。
-                    </div>
-                </a>
-
-                <div class="divider">
-                    <span>または</span>
+                <div class="form-notice">
+                    <h4><i class="fas fa-info-circle"></i> 会員登録の特典</h4>
+                    <p>パーソナライズされたダイビング情報、限定記事の閲覧、お気に入りショップの保存、最新情報の優先配信など、豊富な特典をご利用いただけます。</p>
                 </div>
 
-                <!-- 手動登録 -->
-                <div class="manual-register">
-                    <h3 class="manual-title">メールアドレスで登録</h3>
-                    
-                    <form class="register-form" id="register-form">
+                <form id="registerForm" novalidate>
+                    <!-- 基本情報 -->
+                    <div class="form-section">
+                        <h3 class="section-title">
+                            <i class="fas fa-user"></i> 基本情報
+                        </h3>
+                        
                         <div class="form-row">
                             <div class="form-group">
-                                <label class="form-label">
-                                    <i class="fas fa-user"></i>
-                                    お名前 <span class="required">*</span>
-                                </label>
-                                <input type="text" class="form-input" id="full-name" 
-                                       placeholder="田中 太郎" required>
+                                <label for="firstName">お名前（姓）<span class="required">*</span></label>
+                                <input type="text" id="firstName" name="first_name" class="form-input" required>
+                                <div class="error-message" id="firstNameError"></div>
                             </div>
-                            
                             <div class="form-group">
-                                <label class="form-label">
-                                    <i class="fas fa-envelope"></i>
-                                    メールアドレス <span class="required">*</span>
-                                </label>
-                                <input type="email" class="form-input" id="email" 
-                                       placeholder="example@email.com" required>
+                                <label for="lastName">お名前（名）<span class="required">*</span></label>
+                                <input type="text" id="lastName" name="last_name" class="form-input" required>
+                                <div class="error-message" id="lastNameError"></div>
                             </div>
                         </div>
 
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label class="form-label">
-                                    <i class="fas fa-lock"></i>
-                                    パスワード <span class="required">*</span>
-                                </label>
-                                <input type="password" class="form-input" id="password" 
-                                       placeholder="8文字以上" required>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label class="form-label">
-                                    <i class="fas fa-birthday-cake"></i>
-                                    生年月日 <span class="required">*</span>
-                                </label>
-                                <input type="date" class="form-input" id="birth-date" required>
-                            </div>
-                        </div>
-
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label class="form-label">
-                                    <i class="fas fa-venus-mars"></i>
-                                    性別
-                                </label>
-                                <select class="form-select" id="gender">
-                                    <option value="">選択しない</option>
-                                    <option value="male">男性</option>
-                                    <option value="female">女性</option>
-                                    <option value="other">その他</option>
-                                </select>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label class="form-label">
-                                    <i class="fas fa-phone"></i>
-                                    電話番号
-                                </label>
-                                <input type="tel" class="form-input" id="phone" 
-                                       placeholder="090-1234-5678">
-                            </div>
-                        </div>
-
-                        <!-- ダイビング経験 -->
                         <div class="form-group">
-                            <label class="form-label">
-                                <i class="fas fa-swimming-pool"></i>
-                                ダイビング経験 <span class="required">*</span>
-                            </label>
-                            <div class="diving-experience">
-                                <label class="experience-option">
-                                    <input type="radio" name="diving-experience" value="none" required>
-                                    <span>未経験</span>
-                                </label>
-                                <label class="experience-option">
-                                    <input type="radio" name="diving-experience" value="trial">
-                                    <span>体験ダイビングのみ</span>
-                                </label>
-                                <label class="experience-option">
-                                    <input type="radio" name="diving-experience" value="license">
-                                    <span>ライセンス取得済み</span>
-                                </label>
-                                <label class="experience-option">
-                                    <input type="radio" name="diving-experience" value="experienced">
-                                    <span>経験豊富</span>
-                                </label>
-                            </div>
+                            <label for="email">メールアドレス<span class="required">*</span></label>
+                            <input type="email" id="email" name="email" class="form-input" required>
+                            <div class="error-message" id="emailError"></div>
+                            <div class="success-message" id="emailSuccess"></div>
                         </div>
 
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label class="form-label">
-                                    <i class="fas fa-certificate"></i>
-                                    ライセンス種類
-                                </label>
-                                <select class="form-select" id="license-type">
-                                    <option value="">選択してください</option>
-                                    <option value="none">なし</option>
-                                    <option value="owd">オープンウォーター</option>
-                                    <option value="awd">アドバンス</option>
-                                    <option value="rescue">レスキュー</option>
-                                    <option value="dm">ダイブマスター</option>
-                                    <option value="instructor">インストラクター</option>
-                                </select>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label class="form-label">
-                                    <i class="fas fa-sort-numeric-up"></i>
-                                    経験本数（概算）
-                                </label>
-                                <select class="form-select" id="dive-count">
-                                    <option value="">選択してください</option>
-                                    <option value="0">0本</option>
-                                    <option value="1-5">1-5本</option>
-                                    <option value="6-20">6-20本</option>
-                                    <option value="21-50">21-50本</option>
-                                    <option value="51-100">51-100本</option>
-                                    <option value="100+">100本以上</option>
-                                </select>
-                            </div>
+                        <div class="form-group">
+                            <label for="password">パスワード<span class="required">*</span></label>
+                            <input type="password" id="password" name="password" class="form-input" required>
+                            <div class="password-strength" id="passwordStrength"></div>
+                            <div class="error-message" id="passwordError"></div>
                         </div>
 
-                        <!-- 興味・関心 -->
-                        <div class="preferences-section">
-                            <h4 class="preferences-title">
-                                <i class="fas fa-star"></i>
-                                興味のあるエリア・スタイル（複数選択可）
-                            </h4>
-                            
-                            <div class="preference-grid">
-                                <label class="preference-item">
-                                    <input type="checkbox" name="interests" value="ishigaki">
-                                    <span>🏝️ 石垣島</span>
-                                </label>
-                                <label class="preference-item">
-                                    <input type="checkbox" name="interests" value="miyako">
-                                    <span>🌺 宮古島</span>
-                                </label>
-                                <label class="preference-item">
-                                    <input type="checkbox" name="interests" value="okinawa">
-                                    <span>🏖️ 沖縄本島</span>
-                                </label>
-                                <label class="preference-item">
-                                    <input type="checkbox" name="interests" value="other-islands">
-                                    <span>🚢 その他離島</span>
-                                </label>
-                                <label class="preference-item">
-                                    <input type="checkbox" name="interests" value="manta">
-                                    <span>🦸‍♀️ マンタダイビング</span>
-                                </label>
-                                <label class="preference-item">
-                                    <input type="checkbox" name="interests" value="caves">
-                                    <span>🕳️ 地形・洞窟</span>
-                                </label>
-                                <label class="preference-item">
-                                    <input type="checkbox" name="interests" value="macro">
-                                    <span>🔍 マクロ撮影</span>
-                                </label>
-                                <label class="preference-item">
-                                    <input type="checkbox" name="interests" value="wreck">
-                                    <span>🚢 沈船ダイビング</span>
-                                </label>
-                                <label class="preference-item">
-                                    <input type="checkbox" name="interests" value="night">
-                                    <span>🌙 ナイトダイビング</span>
-                                </label>
-                                <label class="preference-item">
-                                    <input type="checkbox" name="interests" value="solo">
-                                    <span>👤 一人参加</span>
-                                </label>
-                            </div>
+                        <div class="form-group">
+                            <label for="confirmPassword">パスワード（確認）<span class="required">*</span></label>
+                            <input type="password" id="confirmPassword" name="confirm_password" class="form-input" required>
+                            <div class="error-message" id="confirmPasswordError"></div>
                         </div>
+                    </div>
 
-                        <!-- 利用規約・プライバシーポリシー -->
-                        <div class="terms-section">
-                            <h4 class="terms-title">
-                                <i class="fas fa-file-contract"></i>
-                                利用規約・プライバシーポリシー
-                            </h4>
-                            
-                            <div class="terms-list">
-                                <div class="terms-item">
-                                    <input type="checkbox" id="terms-service" required>
-                                    <label for="terms-service">
-                                        <a href="/legal/terms" target="_blank">利用規約</a>に同意します <span class="required">*</span>
-                                    </label>
+                    <!-- ダイビング経験 -->
+                    <div class="form-section">
+                        <h3 class="section-title">
+                            <i class="fas fa-water"></i> ダイビング経験
+                        </h3>
+                        
+                        <div class="form-group">
+                            <label>ダイビング経験レベル<span class="required">*</span></label>
+                            <div class="diving-experience-grid">
+                                <div class="experience-option">
+                                    <input type="radio" id="beginner" name="diving_experience" value="beginner" class="experience-radio" required>
+                                    <label for="beginner" class="experience-label">初心者</label>
                                 </div>
-                                
-                                <div class="terms-item">
-                                    <input type="checkbox" id="terms-privacy" required>
-                                    <label for="terms-privacy">
-                                        <a href="/legal/privacy" target="_blank">プライバシーポリシー</a>に同意します <span class="required">*</span>
-                                    </label>
+                                <div class="experience-option">
+                                    <input type="radio" id="advanced" name="diving_experience" value="advanced" class="experience-radio">
+                                    <label for="advanced" class="experience-label">アドバンス</label>
                                 </div>
-                                
-                                <div class="terms-item">
-                                    <input type="checkbox" id="terms-marketing">
-                                    <label for="terms-marketing">
-                                        メールマガジン・お得な情報の受信に同意します（任意）
-                                    </label>
+                                <div class="experience-option">
+                                    <input type="radio" id="rescue" name="diving_experience" value="rescue" class="experience-radio">
+                                    <label for="rescue" class="experience-label">レスキュー</label>
+                                </div>
+                                <div class="experience-option">
+                                    <input type="radio" id="instructor" name="diving_experience" value="instructor" class="experience-radio">
+                                    <label for="instructor" class="experience-label">インストラクター</label>
+                                </div>
+                            </div>
+                            <div class="error-message" id="experienceError"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>希望ダイビングエリア（複数選択可）</label>
+                            <div class="diving-areas-grid">
+                                <div class="area-checkbox-item">
+                                    <input type="checkbox" id="ishigaki" name="preferred_areas" value="石垣島" class="checkbox-custom">
+                                    <label for="ishigaki" class="checkbox-label">石垣島</label>
+                                </div>
+                                <div class="area-checkbox-item">
+                                    <input type="checkbox" id="miyako" name="preferred_areas" value="宮古島" class="checkbox-custom">
+                                    <label for="miyako" class="checkbox-label">宮古島</label>
+                                </div>
+                                <div class="area-checkbox-item">
+                                    <input type="checkbox" id="okinawa" name="preferred_areas" value="沖縄本島" class="checkbox-custom">
+                                    <label for="okinawa" class="checkbox-label">沖縄本島</label>
+                                </div>
+                                <div class="area-checkbox-item">
+                                    <input type="checkbox" id="kerama" name="preferred_areas" value="慶良間諸島" class="checkbox-custom">
+                                    <label for="kerama" class="checkbox-label">慶良間諸島</label>
+                                </div>
+                                <div class="area-checkbox-item">
+                                    <input type="checkbox" id="iriomote" name="preferred_areas" value="西表島" class="checkbox-custom">
+                                    <label for="iriomote" class="checkbox-label">西表島</label>
+                                </div>
+                                <div class="area-checkbox-item">
+                                    <input type="checkbox" id="yonaguni" name="preferred_areas" value="与那国島" class="checkbox-custom">
+                                    <label for="yonaguni" class="checkbox-label">与那国島</label>
                                 </div>
                             </div>
                         </div>
+                    </div>
 
-                        <!-- 登録ボタン -->
-                        <div class="submit-section">
-                            <button type="submit" class="btn-submit" id="submit-btn" disabled>
-                                <i class="fas fa-user-plus"></i>
-                                会員登録を完了する
-                            </button>
+                    <!-- 利用規約・プライバシー -->
+                    <div class="form-section">
+                        <h3 class="section-title">
+                            <i class="fas fa-shield-alt"></i> 利用規約・プライバシー
+                        </h3>
+                        
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="terms" name="agree_terms" class="checkbox-custom" required>
+                                <label for="terms" class="checkbox-label">
+                                    <strong>利用規約</strong>に同意します<span class="required">*</span><br>
+                                    <small>Dive Buddy'sのサービス利用に関する規約をご確認ください。</small>
+                                </label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="privacy" name="agree_privacy" class="checkbox-custom" required>
+                                <label for="privacy" class="checkbox-label">
+                                    <strong>プライバシーポリシー</strong>に同意します<span class="required">*</span><br>
+                                    <small>個人情報の取り扱いに関するポリシーをご確認ください。</small>
+                                </label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="newsletter" name="newsletter_subscribe" class="checkbox-custom">
+                                <label for="newsletter" class="checkbox-label">
+                                    <strong>メールマガジン</strong>の配信を希望します<br>
+                                    <small>最新のダイビング情報やお役立ちコンテンツをお届けします。</small>
+                                </label>
+                            </div>
                         </div>
-                    </form>
+                        <div class="error-message" id="agreementError"></div>
+                    </div>
+
+                    <button type="submit" class="register-button" id="registerButton">
+                        <div class="loading-spinner"></div>
+                        <i class="fas fa-user-plus"></i> 会員登録を完了する
+                    </button>
+                </form>
+
+                <div class="register-footer">
+                    <p>すでに会員の方は <a href="/member/login">こちらからログイン</a></p>
+                    <p><a href="/">ホームに戻る</a> | <a href="/about">サービスについて</a></p>
                 </div>
-            </div>
-            
-            <div class="register-note">
-                <i class="fas fa-info-circle"></i>
-                登録後、確認メールをお送りします。メール内のリンクをクリックして登録を完了してください。
             </div>
         </div>
-    </section>
-
-    <!-- フッター -->
-    <footer class="main-footer">
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-section">
-                    <h3>🌊 Jiji会員システム</h3>
-                    <p>ダイビングライフをサポート</p>
-                </div>
-                
-                <div class="footer-section">
-                    <h3>登録・サポート</h3>
-                    <ul>
-                        <li><a href="/member/register">会員登録</a></li>
-                        <li><a href="/member/login">ログイン</a></li>
-                        <li><a href="/help">ヘルプ</a></li>
-                        <li><a href="/contact">お問い合わせ</a></li>
-                    </ul>
-                </div>
-                
-                <div class="footer-section">
-                    <h3>法的情報</h3>
-                    <ul>
-                        <li><a href="/legal/terms">利用規約</a></li>
-                        <li><a href="/legal/privacy">プライバシーポリシー</a></li>
-                        <li><a href="/legal/cookies">Cookie使用について</a></li>
-                    </ul>
-                </div>
-                
-                <div class="footer-section">
-                    <h3>サポート</h3>
-                    <ul>
-                        <li><a href="https://line.me/ti/p/@2007331165" target="_blank">LINE Bot相談</a></li>
-                        <li><a href="/contact">お問い合わせ</a></li>
-                    </ul>
-                </div>
-            </div>
-            
-            <div class="footer-bottom">
-                <p>&copy; 2025 Jiji会員システム - ダイビングコミュニティ</p>
-            </div>
-        </div>
-    </footer>
+    </div>
 
     <script>
-        // フォーム管理
-        const form = document.getElementById('register-form');
-        const submitBtn = document.getElementById('submit-btn');
-        const requiredCheckboxes = ['terms-service', 'terms-privacy'];
+        class MemberRegistration {
+            constructor() {
+                this.form = document.getElementById('registerForm');
+                this.submitButton = document.getElementById('registerButton');
+                this.validationRules = {
+                    first_name: { required: true, minLength: 1, maxLength: 50 },
+                    last_name: { required: true, minLength: 1, maxLength: 50 },
+                    email: { required: true, email: true, maxLength: 255 },
+                    password: { required: true, minLength: 8, strength: true },
+                    confirm_password: { required: true, match: 'password' },
+                    diving_experience: { required: true },
+                    agree_terms: { required: true },
+                    agree_privacy: { required: true }
+                };
+                this.init();
+            }
 
-        // 初期化
-        document.addEventListener('DOMContentLoaded', function() {
-            setupFormValidation();
-            setupInteractiveElements();
-        });
+            init() {
+                this.setupEventListeners();
+                this.setupPasswordStrengthIndicator();
+                this.setupRealTimeValidation();
+            }
 
-        // フォームバリデーション設定
-        function setupFormValidation() {
-            // 必須フィールドとチェックボックスの変更を監視
-            const requiredInputs = form.querySelectorAll('input[required], select[required]');
-            const requiredCheckboxElements = requiredCheckboxes.map(id => document.getElementById(id));
+            setupEventListeners() {
+                // フォーム送信
+                this.form.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.handleSubmit();
+                });
 
-            function validateForm() {
-                let isValid = true;
+                // パスワード確認のリアルタイム検証
+                document.getElementById('confirmPassword').addEventListener('input', () => {
+                    this.validatePasswordMatch();
+                });
 
-                // 必須入力フィールドチェック
-                for (const input of requiredInputs) {
-                    if (input.type === 'radio') {
-                        const radioGroup = form.querySelectorAll(`input[name="${input.name}"]`);
-                        const isRadioSelected = Array.from(radioGroup).some(radio => radio.checked);
-                        if (!isRadioSelected) {
-                            isValid = false;
-                            break;
-                        }
-                    } else if (!input.value.trim()) {
-                        isValid = false;
-                        break;
+                // メールアドレスの重複チェック
+                document.getElementById('email').addEventListener('blur', () => {
+                    this.checkEmailAvailability();
+                });
+            }
+
+            setupPasswordStrengthIndicator() {
+                const passwordInput = document.getElementById('password');
+                const strengthIndicator = document.getElementById('passwordStrength');
+
+                passwordInput.addEventListener('input', () => {
+                    const password = passwordInput.value;
+                    const strength = this.calculatePasswordStrength(password);
+                    
+                    strengthIndicator.className = `password-strength ${strength.level}`;
+                    strengthIndicator.textContent = strength.message;
+                });
+            }
+
+            setupRealTimeValidation() {
+                // 各入力フィールドのリアルタイム検証
+                Object.keys(this.validationRules).forEach(fieldName => {
+                    const field = document.querySelector(`[name="${fieldName}"]`);
+                    if (field && field.type !== 'checkbox' && field.type !== 'radio') {
+                        field.addEventListener('blur', () => {
+                            this.validateField(fieldName);
+                        });
+                        field.addEventListener('input', () => {
+                            this.clearFieldError(fieldName);
+                        });
                     }
+                });
+            }
+
+            calculatePasswordStrength(password) {
+                if (password.length === 0) {
+                    return { level: 'weak', message: '' };
                 }
 
-                // 必須チェックボックスチェック
-                for (const checkbox of requiredCheckboxElements) {
-                    if (!checkbox.checked) {
-                        isValid = false;
-                        break;
+                let score = 0;
+                const checks = {
+                    length: password.length >= 8,
+                    lowercase: /[a-z]/.test(password),
+                    uppercase: /[A-Z]/.test(password),
+                    numbers: /\d/.test(password),
+                    symbols: /[^\w\s]/.test(password)
+                };
+
+                score = Object.values(checks).filter(Boolean).length;
+
+                if (score < 3) {
+                    return { 
+                        level: 'weak', 
+                        message: '弱い: 英大文字、小文字、数字、記号を組み合わせてください' 
+                    };
+                } else if (score < 4) {
+                    return { 
+                        level: 'medium', 
+                        message: '普通: より安全にするため記号も含めることをお勧めします' 
+                    };
+                } else {
+                    return { 
+                        level: 'strong', 
+                        message: '強い: 安全なパスワードです' 
+                    };
+                }
+            }
+
+            async checkEmailAvailability() {
+                const emailInput = document.getElementById('email');
+                const email = emailInput.value.trim();
+                
+                if (!email || !this.isValidEmail(email)) {
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/api/members/check-email', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ email })
+                    });
+
+                    const data = await response.json();
+                    
+                    if (data.available) {
+                        this.showFieldSuccess('email', '利用可能なメールアドレスです');
+                    } else {
+                        this.showFieldError('email', 'このメールアドレスは既に登録されています');
                     }
+                } catch (error) {
+                    console.error('メールアドレス確認エラー:', error);
+                }
+            }
+
+            validatePasswordMatch() {
+                const password = document.getElementById('password').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+                
+                if (confirmPassword && password !== confirmPassword) {
+                    this.showFieldError('confirmPassword', 'パスワードが一致しません');
+                    return false;
+                } else if (confirmPassword) {
+                    this.clearFieldError('confirmPassword');
+                    return true;
+                }
+                return true;
+            }
+
+            validateField(fieldName) {
+                const field = document.querySelector(`[name="${fieldName}"]`);
+                const rules = this.validationRules[fieldName];
+                
+                if (!field || !rules) return true;
+
+                const value = this.getFieldValue(field);
+                
+                // 必須チェック
+                if (rules.required && !value) {
+                    this.showFieldError(fieldName, 'この項目は必須です');
+                    return false;
+                }
+
+                // 最小長チェック
+                if (rules.minLength && value.length < rules.minLength) {
+                    this.showFieldError(fieldName, `${rules.minLength}文字以上で入力してください`);
+                    return false;
+                }
+
+                // 最大長チェック
+                if (rules.maxLength && value.length > rules.maxLength) {
+                    this.showFieldError(fieldName, `${rules.maxLength}文字以下で入力してください`);
+                    return false;
+                }
+
+                // メールアドレス形式チェック
+                if (rules.email && value && !this.isValidEmail(value)) {
+                    this.showFieldError(fieldName, '有効なメールアドレスを入力してください');
+                    return false;
                 }
 
                 // パスワード強度チェック
-                const password = document.getElementById('password').value;
-                if (password && password.length < 8) {
-                    isValid = false;
+                if (rules.strength && value) {
+                    const strength = this.calculatePasswordStrength(value);
+                    if (strength.level === 'weak') {
+                        this.showFieldError(fieldName, '8文字以上で英数字を組み合わせてください');
+                        return false;
+                    }
                 }
 
-                submitBtn.disabled = !isValid;
+                // パスワード一致チェック
+                if (rules.match && value) {
+                    const matchField = document.getElementById(rules.match);
+                    if (matchField && value !== matchField.value) {
+                        this.showFieldError(fieldName, 'パスワードが一致しません');
+                        return false;
+                    }
+                }
+
+                this.clearFieldError(fieldName);
+                return true;
             }
 
-            // イベントリスナー設定
-            requiredInputs.forEach(input => {
-                input.addEventListener('input', validateForm);
-                input.addEventListener('change', validateForm);
-            });
+            getFieldValue(field) {
+                if (field.type === 'checkbox') {
+                    return field.checked;
+                } else if (field.type === 'radio') {
+                    const checked = document.querySelector(`[name="${field.name}"]:checked`);
+                    return checked ? checked.value : '';
+                } else {
+                    return field.value.trim();
+                }
+            }
 
-            requiredCheckboxElements.forEach(checkbox => {
-                checkbox.addEventListener('change', validateForm);
-            });
+            isValidEmail(email) {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                return emailRegex.test(email);
+            }
 
-            // 初回バリデーション
-            validateForm();
-        }
-
-        // インタラクティブ要素設定
-        function setupInteractiveElements() {
-            // ダイビング経験の選択肢
-            document.querySelectorAll('.experience-option').forEach(option => {
-                option.addEventListener('click', function() {
-                    document.querySelectorAll('.experience-option').forEach(opt => {
-                        opt.classList.remove('selected');
-                    });
-                    this.classList.add('selected');
-                    this.querySelector('input[type="radio"]').checked = true;
-                });
-            });
-
-            // 興味・関心の選択肢
-            document.querySelectorAll('.preference-item').forEach(item => {
-                item.addEventListener('click', function() {
-                    const checkbox = this.querySelector('input[type="checkbox"]');
-                    checkbox.checked = !checkbox.checked;
-                    this.classList.toggle('selected', checkbox.checked);
-                });
-            });
-        }
-
-        // LINE連携登録
-        document.getElementById('line-register').addEventListener('click', function(e) {
-            e.preventDefault();
-            
-            // 実際の実装ではLINE Login APIを使用
-            alert('LINE連携機能は現在開発中です。メールアドレスでの登録をご利用ください。');
-            
-            // LINE Login URL（実装例）
-            // const lineLoginUrl = 'https://access.line.me/oauth2/v2.1/authorize?' + 
-            //     'response_type=code&' +
-            //     'client_id=YOUR_CHANNEL_ID&' +
-            //     'redirect_uri=YOUR_REDIRECT_URI&' +
-            //     'state=YOUR_STATE&' +
-            //     'scope=profile%20openid%20email';
-            // window.location.href = lineLoginUrl;
-        });
-
-        // フォーム送信
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            if (submitBtn.disabled) return;
-            
-            // 送信処理
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 登録中...';
-            
-            // フォームデータ収集
-            const formData = collectFormData();
-            
-            // API送信（実際の実装）
-            console.log('送信データ:', formData);
-            
-            // シミュレーション
-            setTimeout(() => {
-                alert('会員登録が完了しました！確認メールをお送りしましたので、メール内のリンクをクリックして登録を完了してください。');
+            showFieldError(fieldName, message) {
+                const field = document.querySelector(`[name="${fieldName}"]`);
+                const errorElement = document.getElementById(`${fieldName}Error`) || 
+                                   document.getElementById(`${fieldName.replace('_', '')}Error`);
                 
-                // ログインページまたはマイページにリダイレクト
-                window.location.href = '/member/login?registered=true';
-            }, 2000);
-        });
+                if (field) {
+                    field.classList.add('error');
+                    field.classList.remove('success');
+                }
+                
+                if (errorElement) {
+                    errorElement.textContent = message;
+                    errorElement.style.display = 'block';
+                }
+            }
 
-        function collectFormData() {
-            const formData = {
-                fullName: document.getElementById('full-name').value,
-                email: document.getElementById('email').value,
-                password: document.getElementById('password').value,
-                birthDate: document.getElementById('birth-date').value,
-                gender: document.getElementById('gender').value,
-                phone: document.getElementById('phone').value,
-                divingExperience: document.querySelector('input[name="diving-experience"]:checked')?.value,
-                licenseType: document.getElementById('license-type').value,
-                diveCount: document.getElementById('dive-count').value,
-                interests: Array.from(document.querySelectorAll('input[name="interests"]:checked')).map(cb => cb.value),
-                termsAccepted: document.getElementById('terms-service').checked,
-                privacyAccepted: document.getElementById('terms-privacy').checked,
-                marketingConsent: document.getElementById('terms-marketing').checked
-            };
-            
-            return formData;
+            showFieldSuccess(fieldName, message) {
+                const field = document.querySelector(`[name="${fieldName}"]`);
+                const successElement = document.getElementById(`${fieldName}Success`);
+                
+                if (field) {
+                    field.classList.add('success');
+                    field.classList.remove('error');
+                }
+                
+                if (successElement) {
+                    successElement.textContent = message;
+                    successElement.style.display = 'block';
+                }
+                
+                this.clearFieldError(fieldName);
+            }
+
+            clearFieldError(fieldName) {
+                const field = document.querySelector(`[name="${fieldName}"]`);
+                const errorElement = document.getElementById(`${fieldName}Error`) || 
+                                   document.getElementById(`${fieldName.replace('_', '')}Error`);
+                
+                if (field) {
+                    field.classList.remove('error');
+                }
+                
+                if (errorElement) {
+                    errorElement.style.display = 'none';
+                }
+            }
+
+            validateForm() {
+                let isValid = true;
+                
+                // 全フィールドの検証
+                Object.keys(this.validationRules).forEach(fieldName => {
+                    if (!this.validateField(fieldName)) {
+                        isValid = false;
+                    }
+                });
+
+                // 利用規約同意チェック
+                const termsChecked = document.getElementById('terms').checked;
+                const privacyChecked = document.getElementById('privacy').checked;
+                
+                if (!termsChecked || !privacyChecked) {
+                    this.showFieldError('agreement', '利用規約とプライバシーポリシーに同意してください');
+                    isValid = false;
+                } else {
+                    this.clearFieldError('agreement');
+                }
+
+                return isValid;
+            }
+
+            async handleSubmit() {
+                if (!this.validateForm()) {
+                    return;
+                }
+
+                this.setLoading(true);
+
+                try {
+                    const formData = new FormData(this.form);
+                    const preferredAreas = [];
+                    
+                    // 希望エリアの収集
+                    document.querySelectorAll('[name="preferred_areas"]:checked').forEach(checkbox => {
+                        preferredAreas.push(checkbox.value);
+                    });
+
+                    const registrationData = {
+                        first_name: formData.get('first_name'),
+                        last_name: formData.get('last_name'),
+                        email: formData.get('email'),
+                        password: formData.get('password'),
+                        diving_experience: formData.get('diving_experience'),
+                        preferred_areas: preferredAreas,
+                        newsletter_subscribe: formData.get('newsletter_subscribe') === 'on'
+                    };
+
+                    console.log('👤 会員登録データ:', registrationData);
+
+                    const response = await fetch('/api/members/register', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(registrationData)
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        // 登録成功
+                        alert('会員登録が完了しました！メール認証を行ってください。');
+                        
+                        // メール認証画面へリダイレクト
+                        window.location.href = '/member/verify-email?email=' + encodeURIComponent(registrationData.email);
+                    } else {
+                        // 登録失敗
+                        this.handleRegistrationError(data);
+                    }
+
+                } catch (error) {
+                    console.error('会員登録エラー:', error);
+                    alert('ネットワークエラーが発生しました。しばらくしてから再度お試しください。');
+                } finally {
+                    this.setLoading(false);
+                }
+            }
+
+            handleRegistrationError(data) {
+                if (data.errors && typeof data.errors === 'object') {
+                    // フィールド別エラー表示
+                    Object.keys(data.errors).forEach(field => {
+                        this.showFieldError(field, data.errors[field]);
+                    });
+                } else {
+                    // 一般的なエラーメッセージ
+                    alert(data.message || '登録に失敗しました。入力内容をご確認ください。');
+                }
+            }
+
+            setLoading(loading) {
+                if (loading) {
+                    this.submitButton.disabled = true;
+                    this.submitButton.classList.add('loading');
+                } else {
+                    this.submitButton.disabled = false;
+                    this.submitButton.classList.remove('loading');
+                }
+            }
         }
 
-        // パスワード強度表示（オプション）
-        document.getElementById('password').addEventListener('input', function() {
-            const password = this.value;
-            const minLength = 8;
-            
-            // 簡易的な強度チェック表示（実装例）
-            if (password.length > 0 && password.length < minLength) {
-                this.style.borderColor = '#ef4444';
-            } else if (password.length >= minLength) {
-                this.style.borderColor = '#10b981';
-            } else {
-                this.style.borderColor = '#e5e7eb';
-            }
-        });
-
-        // 入力フィールドのフォーカス効果
-        document.querySelectorAll('.form-input, .form-select').forEach(input => {
-            input.addEventListener('focus', function() {
-                this.parentNode.style.transform = 'translateY(-2px)';
-            });
-            
-            input.addEventListener('blur', function() {
-                this.parentNode.style.transform = 'translateY(0)';
-            });
+        // 初期化
+        document.addEventListener('DOMContentLoaded', () => {
+            window.memberRegistration = new MemberRegistration();
         });
     </script>
 </body>
