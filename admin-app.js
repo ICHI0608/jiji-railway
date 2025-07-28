@@ -114,6 +114,68 @@ const AIRPORT_CODES = {
     kume: 'OKA'        // 久米島（那覇経由）
 };
 
+// Google Maps API設定
+const GOOGLE_MAPS_CONFIG = {
+    api_key: process.env.GOOGLE_MAPS_API_KEY,
+    endpoints: {
+        directions: 'https://maps.googleapis.com/maps/api/directions/json',
+        places: 'https://maps.googleapis.com/maps/api/place/nearbysearch/json',
+        geocoding: 'https://maps.googleapis.com/maps/api/geocode/json',
+        distance_matrix: 'https://maps.googleapis.com/maps/api/distancematrix/json'
+    }
+};
+
+// 沖縄交通データ
+const OKINAWA_TRANSPORT_DATA = {
+    airports: {
+        naha: { name: '那覇空港', lat: 26.1958, lng: 127.6458, code: 'OKA' },
+        ishigaki: { name: '新石垣空港', lat: 24.3968, lng: 124.2449, code: 'ISG' },
+        miyako: { name: '宮古空港', lat: 24.7828, lng: 125.2950, code: 'MMY' },
+        kumejima: { name: '久米島空港', lat: 26.3633, lng: 126.7139, code: 'UEO' }
+    },
+    
+    bus_companies: {
+        okinawa_main: [
+            { name: '沖縄バス', routes: ['名護・本部・今帰仁方面', '中部・北谷方面'], website: 'https://okinawabus.com/' },
+            { name: '琉球バス', routes: ['糸満・豊見城方面', '南城・知念方面'], website: 'https://ryukyubus.jp/' },
+            { name: '那覇バス', routes: ['首里・浦添方面', '西原・中城方面'], website: 'https://nahabus.jp/' },
+            { name: '東陽バス', routes: ['与那原・南風原方面', '八重瀬方面'], website: 'https://toyobus.jp/' }
+        ],
+        ishigaki: [
+            { name: '東運輸', routes: ['市内循環', '川平・御神崎方面'], website: 'https://azumabus.co.jp/' },
+            { name: 'カリー観光', routes: ['空港連絡バス', '観光地周遊'], website: 'https://karrykanko.co.jp/' }
+        ],
+        miyako: [
+            { name: '宮古協栄バス', routes: ['市内路線', '各地区路線'], website: 'https://miyakokyoei-bus.co.jp/' },
+            { name: '中央交通', routes: ['空港線', '観光路線'], website: 'https://miyako-kotsu.co.jp/' }
+        ]
+    },
+    
+    rental_car_companies: [
+        { name: 'オリックスレンタカー', locations: ['那覇空港', '石垣空港', '宮古空港'], price_range: '3000-8000円/日' },
+        { name: 'トヨタレンタカー', locations: ['那覇空港', '石垣空港', '宮古空港'], price_range: '3500-9000円/日' },
+        { name: 'ニッポンレンタカー', locations: ['那覇空港', '石垣空港', '宮古空港'], price_range: '3200-8500円/日' },
+        { name: 'スカイレンタカー', locations: ['那覇空港', '石垣空港', '宮古空港'], price_range: '2500-6000円/日' },
+        { name: 'OTSレンタカー', locations: ['沖縄全域'], price_range: '2800-7000円/日', note: '沖縄地元企業' }
+    ],
+    
+    ferry_routes: [
+        { name: '泊港⇔座間味島', company: '座間味村営船', duration: '50分', frequency: '1日2-3便', price: '往復4,750円' },
+        { name: '泊港⇔渡嘉敷島', company: '渡嘉敷村営船', duration: '35分', frequency: '1日2-3便', price: '往復4,160円' },
+        { name: '泊港⇔阿嘉島', company: '座間味村営船', duration: '50分', frequency: '1日1-2便', price: '往復4,750円' },
+        { name: '那覇空港⇔久米島空港', company: 'JAC・ANA', duration: '35分', frequency: '1日6-8便', price: '往復15,000-25,000円' },
+        { name: '石垣港⇔竹富島', company: '安栄観光・八重山観光', duration: '15分', frequency: '1日20便以上', price: '往復1,540円' },
+        { name: '石垣港⇔西表島', company: '安栄観光・八重山観光', duration: '40分', frequency: '1日10便以上', price: '往復2,060円' }
+    ],
+    
+    diving_areas: {
+        kerama: { transport: 'ferry', from: '泊港', duration: '35-50分', best_access: 'レンタカー→泊港' },
+        kume: { transport: 'plane', from: '那覇空港', duration: '35分', best_access: 'レンタカー→那覇空港' },
+        ishigaki_manta: { transport: 'boat', from: '石垣港', duration: '60分', best_access: 'レンタカー→石垣港' },
+        miyako_caves: { transport: 'boat', from: '平良港', duration: '30分', best_access: 'レンタカー→平良港' }
+    }
+};
+
 // 基本設定
 app.use(express.json());
 app.use(express.static('public'));
@@ -170,6 +232,31 @@ app.get('/', (req, res) => {
 // 航空券検索ページ
 app.get('/travel-guide/flights', (req, res) => {
     res.sendFile(path.join(__dirname, 'public/travel-guide/flights.html'));
+});
+
+// 交通ルート検索ページ
+app.get('/travel-guide/transport', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/travel-guide/transport.html'));
+});
+
+// 宿泊施設検索ページ
+app.get('/travel-guide/accommodation', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/travel-guide/accommodation.html'));
+});
+
+// 旅行費用シミュレーターページ
+app.get('/travel-guide/cost-simulator', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/travel-guide/cost-simulator.html'));
+});
+
+// ブログメインページ
+app.get('/blog', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/blog/index.html'));
+});
+
+// ブログ記事詳細ページ
+app.get('/blog/:id', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/blog/article.html'));
 });
 
 // 会員マイページ
@@ -531,25 +618,313 @@ app.get('/api/blog/articles', async (req, res) => {
             console.log('🔄 Supabaseステータス:', supabaseStatus, '- フォールバックモード使用');
         }
         
-        // フォールバック: サンプルデータ + メモリデータ
+        // フォールバック: 20記事の充実したサンプルデータ + メモリデータ
         const sampleArticles = [
+            {
+                id: 'ishigaki_manta_guide',
+                title: '石垣島マンタポイント完全攻略ガイド 2025年版',
+                excerpt: '石垣島の川平石崎マンタスクランブル、マンタシティなど主要マンタポイントの詳細情報と遭遇率を高めるコツを地元ガイドが解説します。',
+                category: 'diving_spots',
+                tags: ['石垣島', 'マンタ', 'ダイビングポイント', '攻略ガイド'],
+                status: 'published',
+                author: '石垣島ダイビングガイド協会',
+                published_at: '2025-07-28T10:00:00Z',
+                created_at: '2025-07-28T09:00:00Z',
+                updated_at: '2025-07-28T10:00:00Z',
+                featured: true,
+                views: 2150,
+                featured_image: 'https://images.unsplash.com/photo-1583212292454-1fe6229603b7?w=800&q=80'
+            },
+            {
+                id: 'miyako_blue_cave',
+                title: '宮古島「青の洞窟」完全ガイド：幻想的な海中世界への招待',
+                excerpt: '宮古島の隠れた名所「青の洞窟」の魅力と安全なダイビング方法を詳しく解説。神秘的な青い光の世界を体験しましょう。',
+                category: 'diving_spots',
+                tags: ['宮古島', '青の洞窟', '地形ダイビング', '洞窟'],
+                status: 'published',
+                author: '宮古島ダイビング協会',
+                published_at: '2025-07-27T14:00:00Z',
+                created_at: '2025-07-27T13:00:00Z',
+                updated_at: '2025-07-27T14:00:00Z',
+                featured: false,
+                views: 1680,
+                featured_image: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800&q=80'
+            },
+            {
+                id: 'kerama_turtle_diving',
+                title: '慶良間諸島でウミガメと泳ぐ：遭遇率90%の秘密スポット',
+                excerpt: '慶良間諸島でのウミガメダイビングの魅力と高確率で遭遇できるポイントを現地ガイドが詳しく解説。ウミガメとの正しい接し方も紹介します。',
+                category: 'diving_spots',
+                tags: ['慶良間諸島', 'ウミガメ', 'ケラマブルー', '座間味島'],
+                status: 'published',
+                author: '慶良間ダイビングガイド連盟',
+                published_at: '2025-07-26T16:00:00Z',
+                created_at: '2025-07-26T15:00:00Z',
+                updated_at: '2025-07-26T16:00:00Z',
+                featured: false,
+                views: 1420,
+                featured_image: 'https://images.unsplash.com/photo-1583212292454-1fe6229603b7?w=800&q=80'
+            },
+            {
+                id: 'okinawa_beginner_complete',
+                title: '沖縄ダイビング初心者完全マニュアル：ライセンス取得から楽しみ方まで',
+                excerpt: '沖縄でダイビングを始めたい方必見！ライセンス取得の流れ、必要な装備、おすすめポイント、予算まで初心者が知りたい情報を完全網羅。',
+                category: 'beginner_guide',
+                tags: ['初心者', 'ライセンス取得', '沖縄', '基礎知識'],
+                status: 'published',
+                author: '沖縄ダイビング指導員連盟',
+                published_at: '2025-07-25T11:00:00Z',
+                created_at: '2025-07-25T10:00:00Z',
+                updated_at: '2025-07-25T11:00:00Z',
+                featured: false,
+                views: 1890,
+                featured_image: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800&q=80'
+            },
+            {
+                id: 'ishigaki_equipment_guide',
+                title: '石垣島ダイビングに最適な器材選び：現地ガイドが教える完璧装備',
+                excerpt: '石垣島の海況に最適化された器材選びと、レンタル vs 購入の判断基準を現地ガイドが詳しく解説します。',
+                category: 'equipment',
+                tags: ['石垣島', '器材', '装備', '選び方'],
+                status: 'published',
+                author: '石垣島器材専門ガイド',
+                published_at: '2025-07-24T09:00:00Z',
+                created_at: '2025-07-24T08:00:00Z',
+                updated_at: '2025-07-24T09:00:00Z',
+                featured: false,
+                views: 1340,
+                featured_image: 'https://images.unsplash.com/photo-1530549387789-4c1017266635?w=800&q=80'
+            },
+            {
+                id: 'okinawa_coral_guide',
+                title: '沖縄のサンゴ礁完全図鑑：ダイバーが知るべき30種類',
+                excerpt: '沖縄の海で出会える美しいサンゴ30種類を写真付きで詳しく解説。サンゴの見分け方と保護の重要性も紹介します。',
+                category: 'marine_life',
+                tags: ['サンゴ', '海洋生物', '図鑑', '保護'],
+                status: 'published',
+                author: '沖縄海洋生物研究所',
+                published_at: '2025-07-23T15:00:00Z',
+                created_at: '2025-07-23T14:00:00Z',
+                updated_at: '2025-07-23T15:00:00Z',
+                featured: false,
+                views: 2240,
+                featured_image: 'https://images.unsplash.com/photo-1583212292454-1fe6229603b7?w=800&q=80'
+            },
+            {
+                id: 'okinawa_fish_guide',
+                title: '沖縄の熱帯魚図鑑：カクレクマノミから大型魚まで50種',
+                excerpt: '沖縄の海で出会える色とりどりの熱帯魚50種類を詳しく解説。魚の見分け方、観察ポイント、撮影のコツも紹介します。',
+                category: 'marine_life',
+                tags: ['熱帯魚', '魚類', '図鑑', '観察'],
+                status: 'published',
+                author: '沖縄海洋生物研究所',
+                published_at: '2025-07-22T12:00:00Z',
+                created_at: '2025-07-22T11:00:00Z',
+                updated_at: '2025-07-22T12:00:00Z',
+                featured: false,
+                views: 1750,
+                featured_image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&q=80'
+            },
+            {
+                id: 'winter_diving_okinawa',
+                title: '沖縄の冬ダイビング：12月〜3月の海の魅力と注意点',
+                excerpt: '冬の沖縄ダイビングの魅力を詳しく解説。透明度抜群の海、ホエールウォッチング、適切な装備選びまで完全ガイド。',
+                category: 'beginner_guide',
+                tags: ['冬ダイビング', '沖縄', '季節', 'ホエールウォッチング'],
+                status: 'published',
+                author: '沖縄ダイビングガイド連盟',
+                published_at: '2025-07-21T08:00:00Z',
+                created_at: '2025-07-21T07:00:00Z',
+                updated_at: '2025-07-21T08:00:00Z',
+                featured: false,
+                views: 980,
+                featured_image: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800&q=80'
+            },
+            {
+                id: 'underwater_photography',
+                title: '沖縄水中写真完全マスター：カメラ選びから撮影テクニックまで',
+                excerpt: '沖縄の美しい海での水中写真撮影を完全マスター。カメラ選び、設定、構図、ライティングまで詳しく解説します。',
+                category: 'equipment',
+                tags: ['水中写真', 'カメラ', '撮影技術', 'ライティング'],
+                status: 'published',
+                author: '水中写真家協会',
+                published_at: '2025-07-20T13:00:00Z',
+                created_at: '2025-07-20T12:00:00Z',
+                updated_at: '2025-07-20T13:00:00Z',
+                featured: false,
+                views: 1560,
+                featured_image: 'https://images.unsplash.com/photo-1530549387789-4c1017266635?w=800&q=80'
+            },
+            {
+                id: 'safety_diving_guide',
+                title: 'ダイビング安全マニュアル：事故を防ぐための完全ガイド',
+                excerpt: 'ダイビングの安全知識を完全網羅。潜水計画、バディシステム、緊急時対応、機材点検まで安全ダイビングの全てを解説。',
+                category: 'safety',
+                tags: ['安全', '事故防止', '緊急対応', 'バディシステム'],
+                status: 'published',
+                author: 'ダイビング安全協会',
+                published_at: '2025-07-19T10:00:00Z',
+                created_at: '2025-07-19T09:00:00Z',
+                updated_at: '2025-07-19T10:00:00Z',
+                featured: true,
+                views: 2890,
+                featured_image: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800&q=80'
+            },
+            {
+                id: 'okinawa_travel_guide',
+                title: '沖縄ダイビング旅行完全プランニング：予算から宿泊まで',
+                excerpt: '沖縄ダイビング旅行の計画を完全サポート。航空券選び、宿泊施設、ダイビングショップ選択、予算管理まで詳しく解説。',
+                category: 'travel_tips',
+                tags: ['旅行計画', '予算', '宿泊', '航空券'],
+                status: 'published',
+                author: '沖縄旅行プランナー',
+                published_at: '2025-07-18T14:00:00Z',
+                created_at: '2025-07-18T13:00:00Z',
+                updated_at: '2025-07-18T14:00:00Z',
+                featured: false,
+                views: 1230,
+                featured_image: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800&q=80'
+            },
+            {
+                id: 'night_diving_okinawa',
+                title: '沖縄ナイトダイビング：夜の海で出会える神秘的な生物たち',
+                excerpt: '沖縄のナイトダイビングの魅力を詳しく解説。夜行性生物、蛍光サンゴ、安全な潜り方、必要な装備まで完全ガイド。',
+                category: 'diving_spots',
+                tags: ['ナイトダイビング', '夜行性生物', '蛍光', '沖縄'],
+                status: 'published',
+                author: 'ナイトダイビング専門ガイド',
+                published_at: '2025-07-17T16:00:00Z',
+                created_at: '2025-07-17T15:00:00Z',
+                updated_at: '2025-07-17T16:00:00Z',
+                featured: false,
+                views: 1450,
+                featured_image: 'https://images.unsplash.com/photo-1583212292454-1fe6229603b7?w=800&q=80'
+            },
+            {
+                id: 'okinawa_beginner_course',
+                title: '沖縄ダイビングライセンス取得コース比較：PADI vs NAUI vs SSI',
+                excerpt: '沖縄で取得できる主要ダイビングライセンスを徹底比較。PADI、NAUI、SSIの特徴、費用、取得期間を詳しく解説。',
+                category: 'beginner_guide',
+                tags: ['ライセンス', 'PADI', 'NAUI', 'SSI'],
+                status: 'published',
+                author: 'ダイビングインストラクター協会',
+                published_at: '2025-07-16T11:00:00Z',
+                created_at: '2025-07-16T10:00:00Z',
+                updated_at: '2025-07-16T11:00:00Z',
+                featured: false,
+                views: 2100,
+                featured_image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&q=80'
+            },
+            {
+                id: 'macro_diving_okinawa',
+                title: '沖縄マクロダイビング：小さな生物の大きな魅力',
+                excerpt: '沖縄のマクロダイビングスポットと撮影テクニックを詳しく解説。ウミウシ、エビ、カニなど小さな生物の観察方法を紹介。',
+                category: 'marine_life',
+                tags: ['マクロダイビング', 'ウミウシ', '小型生物', '撮影'],
+                status: 'published',
+                author: 'マクロ撮影専門家',
+                published_at: '2025-07-15T09:00:00Z',
+                created_at: '2025-07-15T08:00:00Z',
+                updated_at: '2025-07-15T09:00:00Z',
+                featured: false,
+                views: 870,
+                featured_image: 'https://images.unsplash.com/photo-1530549387789-4c1017266635?w=800&q=80'
+            },
+            {
+                id: 'drift_diving_okinawa',
+                title: 'ドリフトダイビング入門：沖縄の流れを楽しむ技術',
+                excerpt: '沖縄のドリフトダイビングの基本技術と安全知識を詳しく解説。流れに乗った快適なダイビングを楽しむコツを紹介します。',
+                category: 'safety',
+                tags: ['ドリフトダイビング', '流れ', '技術', '安全'],
+                status: 'published',
+                author: 'ドリフトダイビング指導員',
+                published_at: '2025-07-14T15:00:00Z',
+                created_at: '2025-07-14T14:00:00Z',
+                updated_at: '2025-07-14T15:00:00Z',
+                featured: false,
+                views: 690,
+                featured_image: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800&q=80'
+            },
+            {
+                id: 'okinawa_budget_diving',
+                title: '沖縄格安ダイビング：予算を抑えて楽しむ完全ガイド',
+                excerpt: '予算を抑えて沖縄ダイビングを楽しむ方法を詳しく解説。格安ツアー、宿泊、器材レンタルの賢い選び方を紹介します。',
+                category: 'travel_tips',
+                tags: ['格安', '予算', '節約', 'コスパ'],
+                status: 'published',
+                author: '格安旅行プランナー',
+                published_at: '2025-07-13T12:00:00Z',
+                created_at: '2025-07-13T11:00:00Z',
+                updated_at: '2025-07-13T12:00:00Z',
+                featured: false,
+                views: 1680,
+                featured_image: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800&q=80'
+            },
+            {
+                id: 'wreck_diving_okinawa',
+                title: '沖縄沈船ダイビング：歴史と冒険のアンダーウォーター',
+                excerpt: '沖縄周辺の沈船ダイビングスポットを詳しく解説。歴史的背景、安全な探索方法、見どころを紹介します。',
+                category: 'diving_spots',
+                tags: ['沈船', '歴史', '冒険', '探索'],
+                status: 'published',
+                author: '沈船ダイビング専門ガイド',
+                published_at: '2025-07-12T10:00:00Z',
+                created_at: '2025-07-12T09:00:00Z',
+                updated_at: '2025-07-12T10:00:00Z',
+                featured: false,
+                views: 920,
+                featured_image: 'https://images.unsplash.com/photo-1583212292454-1fe6229603b7?w=800&q=80'
+            },
+            {
+                id: 'advanced_diving_skills',
+                title: 'ダイビングスキルアップ講座：中級者から上級者への道',
+                excerpt: '中級ダイバーが上級者になるためのスキルアップ方法を詳しく解説。浮力コントロール、ナビゲーション、レスキュー技術など。',
+                category: 'safety',
+                tags: ['スキルアップ', '中級者', '上級者', '技術向上'],
+                status: 'published',
+                author: 'ダイビング技術指導員',
+                published_at: '2025-07-11T14:00:00Z',
+                created_at: '2025-07-11T13:00:00Z',
+                updated_at: '2025-07-11T14:00:00Z',
+                featured: false,
+                views: 1120,
+                featured_image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&q=80'
+            },
+            {
+                id: 'okinawa_group_diving',
+                title: '沖縄グループダイビング：仲間と楽しむ海の思い出作り',
+                excerpt: '友人や家族と沖縄でグループダイビングを楽しむための完全ガイド。計画の立て方、ショップ選び、注意点を詳しく解説。',
+                category: 'travel_tips',
+                tags: ['グループダイビング', '仲間', '家族', '思い出'],
+                status: 'published',
+                author: 'グループツアープランナー',
+                published_at: '2025-07-10T16:00:00Z',
+                created_at: '2025-07-10T15:00:00Z',
+                updated_at: '2025-07-10T16:00:00Z',
+                featured: false,
+                views: 750,
+                featured_image: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800&q=80'
+            },
+            {
+                id: 'diving_health_fitness',
+                title: 'ダイビングのための体作り：健康管理とフィットネス',
+                excerpt: 'ダイビングを安全に楽しむための体作りと健康管理を詳しく解説。適切な体調管理、トレーニング方法、健康チェックなど。',
+                category: 'safety',
+                tags: ['健康管理', 'フィットネス', '体作り', '安全'],
+                status: 'published',
+                author: 'ダイビングメディカル協会',
+                published_at: '2025-07-09T11:00:00Z',
+                created_at: '2025-07-09T10:00:00Z',
+                updated_at: '2025-07-09T11:00:00Z',
+                featured: false,
+                views: 1340,
+                featured_image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&q=80'
+            },
             {
                 id: 'article_001',
                 title: '石垣島のマンタポイント完全ガイド',
                 excerpt: '石垣島の代表的なダイビングスポット、マンタポイントの攻略法を詳しく解説。',
                 category: 'diving_spots',
-                status: 'published',
-                author: 'Jiji編集部',
-                published_at: '2025-07-25T10:00:00Z',
-                created_at: '2025-07-25T09:00:00Z',
-                updated_at: '2025-07-25T10:00:00Z',
-                featured: true
-            },
-            {
-                id: 'article_002',
-                title: '初心者必見！沖縄ダイビングの基礎知識',
-                excerpt: 'ダイビング初心者が沖縄で安全に楽しむための基礎知識をまとめました。',
-                category: 'beginner_guide',
                 status: 'published',
                 author: 'ダイビング太郎',
                 published_at: '2025-07-24T14:30:00Z',
@@ -660,6 +1035,1975 @@ app.post('/api/blog/articles', async (req, res) => {
         });
     }
 });
+
+// 記事詳細取得API
+app.get('/api/blog/articles/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        // Supabase接続試行
+        if (supabase && supabaseStatus === 'connected') {
+            try {
+                const { data: article, error } = await supabase
+                    .from('blogs')
+                    .select('*')
+                    .eq('id', id)
+                    .single();
+                
+                if (!error && article) {
+                    console.log('📄 記事詳細取得成功（Supabase）:', article.id);
+                    return res.json({
+                        success: true,
+                        article: article,
+                        source: 'supabase'
+                    });
+                }
+            } catch (supabaseError) {
+                console.warn('Supabase記事詳細取得エラー、フォールバックへ:', supabaseError.message);
+            }
+        }
+        
+        // フォールバック: サンプルデータ + メモリデータ
+        const allArticles = [
+            {
+                id: 'article_001',
+                title: '石垣島のマンタポイント完全ガイド',
+                excerpt: '石垣島の代表的なダイビングスポット、マンタポイントの攻略法を詳しく解説。',
+                content: `# 石垣島のマンタポイント完全ガイド
+
+石垣島周辺には世界屈指のマンタポイントが点在しています。この記事では、マンタとの遭遇率を高めるためのポイント選びと、ダイビングのコツを詳しく解説します。
+
+## 主要マンタポイント
+
+### 1. 川平石崎マンタスクランブル
+- **遭遇率**: 85%以上
+- **ベストシーズン**: 4月〜11月
+- **水深**: 15-20m
+
+### 2. マンタシティポイント
+- **遭遇率**: 70%
+- **特徴**: クリーニングステーション
+- **水深**: 10-15m
+
+## マンタとの遭遇のコツ
+
+1. **早朝ダイビング**: マンタは朝の活動が活発
+2. **クリーニングステーション**: マンタが掃除される場所
+3. **潮回り**: 大潮前後がベスト
+
+## 注意事項
+
+- マンタには触れない
+- フラッシュ撮影禁止
+- 急な動きは避ける`,
+                category: 'diving_spots',
+                tags: ['石垣島', 'マンタ', 'ダイビングポイント'],
+                status: 'published',
+                author: 'Jiji編集部',
+                published_at: '2025-07-25T10:00:00Z',
+                created_at: '2025-07-25T09:00:00Z',
+                updated_at: '2025-07-25T10:00:00Z',
+                featured: true,
+                views: 1245,
+                featured_image: 'https://images.unsplash.com/photo-1583212292454-1fe6229603b7?w=800'
+            },
+            {
+                id: 'article_002',
+                title: '初心者必見！沖縄ダイビングの基礎知識',
+                excerpt: 'ダイビング初心者が沖縄で安全に楽しむための基礎知識をまとめました。',
+                content: `# 初心者必見！沖縄ダイビングの基礎知識
+
+沖縄でのダイビングを安全に楽しむための基礎知識をご紹介します。
+
+## ダイビングライセンスについて
+
+### 必要なライセンス
+- **体験ダイビング**: ライセンス不要
+- **ファンダイビング**: オープンウォーター以上
+
+### おすすめ取得コース
+1. オープンウォーターダイバー
+2. アドバンスオープンウォーター
+3. レスキューダイバー
+
+## 沖縄の海の特徴
+
+### 水温
+- 夏期: 28-30°C
+- 冬期: 22-24°C
+
+### 透明度
+- 平均: 25-30m
+- 最高: 40m以上
+
+## 必須装備
+
+1. **ウェットスーツ**: 5mm推奨
+2. **マスク・フィン**: 自分用を用意
+3. **ダイビングコンピューター**: 安全管理必須`,
+                category: 'beginner_guide',
+                tags: ['初心者', '基礎知識', 'ライセンス'],
+                status: 'published',
+                author: 'ダイビングインストラクター田中',
+                published_at: '2025-07-24T14:00:00Z',
+                created_at: '2025-07-24T13:00:00Z',
+                updated_at: '2025-07-24T14:00:00Z',
+                featured: false,
+                views: 856,
+                featured_image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800'
+            }
+        ];
+        
+        // メモリデータからも検索
+        if (global.tempArticles) {
+            allArticles.push(...global.tempArticles);
+        }
+        
+        const article = allArticles.find(a => a.id === id);
+        
+        if (article) {
+            console.log('📄 記事詳細取得成功（フォールバック）:', article.id);
+            res.json({
+                success: true,
+                article: article,
+                source: 'fallback'
+            });
+        } else {
+            res.status(404).json({
+                success: false,
+                error: 'Article not found',
+                message: '指定された記事が見つかりません'
+            });
+        }
+        
+    } catch (error) {
+        console.error('記事詳細取得API エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message,
+            message: 'サーバーエラーが発生しました'
+        });
+    }
+});
+
+// 記事更新API
+app.put('/api/blog/articles/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { title, excerpt, content, category, tags, status } = req.body;
+        
+        if (!title || !content) {
+            return res.status(400).json({
+                success: false,
+                error: 'Missing required fields',
+                message: 'タイトルと内容は必須です'
+            });
+        }
+        
+        const updateData = {
+            title,
+            excerpt: excerpt || '',
+            content,
+            category: category || 'general',
+            tags: Array.isArray(tags) ? tags : [],
+            status: status || 'draft',
+            updated_at: new Date().toISOString()
+        };
+        
+        // Supabase接続試行
+        if (supabase && supabaseStatus === 'connected') {
+            try {
+                const { data: article, error } = await supabase
+                    .from('blogs')
+                    .update(updateData)
+                    .eq('id', id)
+                    .select()
+                    .single();
+                
+                if (!error) {
+                    console.log('📝 記事更新成功（Supabase）:', article);
+                    return res.json({
+                        success: true,
+                        message: '記事が正常に更新されました（Supabase）',
+                        data: article
+                    });
+                }
+            } catch (supabaseError) {
+                console.warn('Supabase更新エラー、フォールバックへ:', supabaseError.message);
+            }
+        }
+        
+        // フォールバック: メモリデータ更新
+        if (global.tempArticles) {
+            const index = global.tempArticles.findIndex(a => a.id === id);
+            if (index !== -1) {
+                global.tempArticles[index] = { ...global.tempArticles[index], ...updateData };
+                console.log('📝 記事更新成功（ローカル）:', global.tempArticles[index]);
+                return res.json({
+                    success: true,
+                    message: '記事が正常に更新されました（ローカル）',
+                    data: global.tempArticles[index]
+                });
+            }
+        }
+        
+        res.status(404).json({
+            success: false,
+            error: 'Article not found',
+            message: '指定された記事が見つかりません'
+        });
+        
+    } catch (error) {
+        console.error('記事更新API エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message,
+            message: 'サーバーエラーが発生しました'
+        });
+    }
+});
+
+// 記事削除API
+app.delete('/api/blog/articles/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        // Supabase接続試行
+        if (supabase && supabaseStatus === 'connected') {
+            try {
+                const { error } = await supabase
+                    .from('blogs')
+                    .delete()
+                    .eq('id', id);
+                
+                if (!error) {
+                    console.log('🗑️ 記事削除成功（Supabase）:', id);
+                    return res.json({
+                        success: true,
+                        message: '記事が正常に削除されました（Supabase）'
+                    });
+                }
+            } catch (supabaseError) {
+                console.warn('Supabase削除エラー、フォールバックへ:', supabaseError.message);
+            }
+        }
+        
+        // フォールバック: メモリデータから削除
+        if (global.tempArticles) {
+            const index = global.tempArticles.findIndex(a => a.id === id);
+            if (index !== -1) {
+                global.tempArticles.splice(index, 1);
+                console.log('🗑️ 記事削除成功（ローカル）:', id);
+                return res.json({
+                    success: true,
+                    message: '記事が正常に削除されました（ローカル）'
+                });
+            }
+        }
+        
+        res.status(404).json({
+            success: false,
+            error: 'Article not found',
+            message: '指定された記事が見つかりません'
+        });
+        
+    } catch (error) {
+        console.error('記事削除API エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message,
+            message: 'サーバーエラーが発生しました'
+        });
+    }
+});
+
+// カテゴリ一覧API
+app.get('/api/blog/categories', async (req, res) => {
+    try {
+        const categories = [
+            {
+                id: 'diving_spots',
+                name: 'ダイビングスポット',
+                slug: 'diving-spots',
+                description: '沖縄・離島の人気ダイビングスポット情報',
+                count: 15,
+                color: '#3B82F6'
+            },
+            {
+                id: 'beginner_guide',
+                name: '初心者ガイド',
+                slug: 'beginner-guide', 
+                description: 'ダイビング初心者向けガイド・基礎知識',
+                count: 8,
+                color: '#10B981'
+            },
+            {
+                id: 'equipment',
+                name: '器材・装備',
+                slug: 'equipment',
+                description: 'ダイビング器材・装備のレビュー・選び方',
+                count: 12,
+                color: '#F59E0B'
+            },
+            {
+                id: 'marine_life',
+                name: '海洋生物',
+                slug: 'marine-life',
+                description: '沖縄の海で出会える魚・サンゴ・生物図鑑',
+                count: 23,
+                color: '#8B5CF6'
+            },
+            {
+                id: 'travel_tips',
+                name: '旅行情報',
+                slug: 'travel-tips',
+                description: '沖縄旅行・ダイビング旅行の役立つ情報',
+                count: 9,
+                color: '#EF4444'
+            },
+            {
+                id: 'safety',
+                name: '安全・スキル',
+                slug: 'safety',
+                description: 'ダイビング安全知識・スキルアップ情報',
+                count: 6,
+                color: '#6B7280'
+            }
+        ];
+        
+        console.log('📂 カテゴリ一覧取得成功:', categories.length, '件');
+        res.json({
+            success: true,
+            categories: categories,
+            count: categories.length
+        });
+        
+    } catch (error) {
+        console.error('カテゴリ一覧API エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message,
+            message: 'カテゴリ一覧の取得に失敗しました'
+        });
+    }
+});
+
+// タグ一覧API
+app.get('/api/blog/tags', async (req, res) => {
+    try {
+        const tags = [
+            { name: '石垣島', count: 8, color: '#3B82F6' },
+            { name: '宮古島', count: 6, color: '#10B981' },
+            { name: '慶良間', count: 5, color: '#F59E0B' },
+            { name: 'マンタ', count: 4, color: '#8B5CF6' },
+            { name: 'ジンベエザメ', count: 3, color: '#EF4444' },
+            { name: '初心者', count: 7, color: '#6B7280' },
+            { name: 'ライセンス', count: 5, color: '#EC4899' },
+            { name: 'ウミガメ', count: 4, color: '#14B8A6' },
+            { name: 'サンゴ', count: 6, color: '#F97316' },
+            { name: '青の洞窟', count: 3, color: '#6366F1' }
+        ];
+        
+        console.log('🏷️ タグ一覧取得成功:', tags.length, '件');
+        res.json({
+            success: true,
+            tags: tags,
+            count: tags.length
+        });
+        
+    } catch (error) {
+        console.error('タグ一覧API エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message,
+            message: 'タグ一覧の取得に失敗しました'
+        });
+    }
+});
+
+// ===== ブログ検索・関連記事 高度機能 =====
+
+// 関連度スコアリング関数
+function calculateRelevanceScore(article, query) {
+    if (!query || !article) return 0;
+    
+    const searchTerms = query.toLowerCase().split(' ').filter(term => term.length > 1);
+    let score = 0;
+    
+    // タイトルマッチ（重要度最高）
+    const titleLower = (article.title || '').toLowerCase();
+    searchTerms.forEach(term => {
+        if (titleLower.includes(term)) {
+            score += titleLower === term ? 100 : 50; // 完全一致は最高点
+        }
+    });
+    
+    // 抜粋マッチ（重要度高）
+    const excerptLower = (article.excerpt || '').toLowerCase();
+    searchTerms.forEach(term => {
+        if (excerptLower.includes(term)) {
+            score += 30;
+        }
+    });
+    
+    // コンテンツマッチ（重要度中）
+    const contentLower = (article.content || '').toLowerCase();
+    searchTerms.forEach(term => {
+        if (contentLower.includes(term)) {
+            const occurrences = (contentLower.match(new RegExp(term, 'g')) || []).length;
+            score += Math.min(occurrences * 10, 50); // 最大50点
+        }
+    });
+    
+    // タグマッチ（重要度高）
+    if (article.tags && Array.isArray(article.tags)) {
+        const tagsLower = article.tags.map(tag => tag.toLowerCase());
+        searchTerms.forEach(term => {
+            if (tagsLower.some(tag => tag.includes(term))) {
+                score += 40;
+            }
+        });
+    }
+    
+    // 人気度ボーナス（閲覧数）
+    if (article.views && article.views > 1000) {
+        score += Math.min(article.views / 1000, 20); // 最大20点のボーナス
+    }
+    
+    // 新しさボーナス
+    const publishDate = new Date(article.published_at || article.created_at);
+    const daysSincePublish = (Date.now() - publishDate.getTime()) / (1000 * 60 * 60 * 24);
+    if (daysSincePublish < 30) {
+        score += 10; // 1ヶ月以内は新しさボーナス
+    }
+    
+    return Math.round(score);
+}
+
+// 関連記事取得アルゴリズム
+function findRelatedArticles(targetArticle, allArticles, maxResults = 6) {
+    if (!targetArticle || !allArticles || allArticles.length === 0) return [];
+    
+    const relatedScores = allArticles
+        .filter(article => article.id !== targetArticle.id && article.status === 'published')
+        .map(article => {
+            let score = 0;
+            
+            // 同じカテゴリ（重要度最高）
+            if (article.category === targetArticle.category) {
+                score += 100;
+            }
+            
+            // 共通タグ（重要度高）
+            if (targetArticle.tags && article.tags) {
+                const commonTags = targetArticle.tags.filter(tag => 
+                    article.tags.includes(tag)
+                );
+                score += commonTags.length * 50;
+            }
+            
+            // タイトルの類似性（重要度中）
+            const titleSimilarity = calculateTextSimilarity(
+                targetArticle.title || '', 
+                article.title || ''
+            );
+            score += titleSimilarity * 30;
+            
+            // 内容の類似性（重要度低）
+            const contentSimilarity = calculateTextSimilarity(
+                targetArticle.excerpt || '', 
+                article.excerpt || ''
+            );
+            score += contentSimilarity * 20;
+            
+            // 人気度ファクター
+            if (article.views && article.views > 500) {
+                score += Math.min(article.views / 500, 15);
+            }
+            
+            return {
+                ...article,
+                relatedScore: Math.round(score)
+            };
+        })
+        .sort((a, b) => b.relatedScore - a.relatedScore)
+        .slice(0, maxResults);
+    
+    return relatedScores;
+}
+
+// テキスト類似性計算（簡易版）
+function calculateTextSimilarity(text1, text2) {
+    if (!text1 || !text2) return 0;
+    
+    const words1 = text1.toLowerCase().split(/\s+/).filter(word => word.length > 2);
+    const words2 = text2.toLowerCase().split(/\s+/).filter(word => word.length > 2);
+    
+    if (words1.length === 0 || words2.length === 0) return 0;
+    
+    const commonWords = words1.filter(word => words2.includes(word));
+    const similarity = (commonWords.length * 2) / (words1.length + words2.length);
+    
+    return Math.min(similarity, 1);
+}
+
+// 高度検索アルゴリズム
+function performAdvancedSearch(articles, query, options = {}) {
+    if (!query || !articles) return articles;
+    
+    const searchTerms = query.toLowerCase().split(' ').filter(term => term.length > 1);
+    
+    // 部分検索とフレーズ検索の組み合わせ
+    const searchResults = articles.filter(article => {
+        // すべての検索語が含まれているかチェック
+        const titleLower = (article.title || '').toLowerCase();
+        const excerptLower = (article.excerpt || '').toLowerCase();
+        const contentLower = (article.content || '').toLowerCase();
+        const tagsLower = (article.tags || []).join(' ').toLowerCase();
+        
+        const fullText = `${titleLower} ${excerptLower} ${contentLower} ${tagsLower}`;
+        
+        if (options.exactPhrase) {
+            return fullText.includes(query.toLowerCase());
+        } else {
+            return searchTerms.every(term => fullText.includes(term));
+        }
+    });
+    
+    // 関連度でソート
+    return searchResults.map(article => ({
+        ...article,
+        relevanceScore: calculateRelevanceScore(article, query)
+    })).sort((a, b) => b.relevanceScore - a.relevanceScore);
+}
+
+// ブログ検索API
+app.get('/api/blog/search', async (req, res) => {
+    try {
+        const { query, category, tag, status, limit = 10, offset = 0 } = req.query;
+        
+        console.log('🔍 ブログ検索:', { query, category, tag, status });
+        
+        // Supabase接続試行
+        if (supabase && supabaseStatus === 'connected') {
+            try {
+                let supabaseQuery = supabase
+                    .from('blogs')
+                    .select('*');
+                
+                if (query) {
+                    supabaseQuery = supabaseQuery.or(`title.ilike.%${query}%,content.ilike.%${query}%,excerpt.ilike.%${query}%,tags.cs.{${query}}`);
+                }
+                
+                if (category) {
+                    supabaseQuery = supabaseQuery.eq('category', category);
+                }
+                
+                if (status) {
+                    supabaseQuery = supabaseQuery.eq('status', status);
+                }
+                
+                supabaseQuery = supabaseQuery
+                    .order('created_at', { ascending: false })
+                    .range(parseInt(offset), parseInt(offset) + parseInt(limit) - 1);
+                
+                const { data: articles, error } = await supabaseQuery;
+                
+                if (!error) {
+                    // Supabaseでも関連度スコアリングを適用
+                    let scoredArticles = articles || [];
+                    if (query) {
+                        scoredArticles = scoredArticles.map(article => ({
+                            ...article,
+                            relevanceScore: calculateRelevanceScore(article, query)
+                        })).sort((a, b) => b.relevanceScore - a.relevanceScore);
+                    }
+                    
+                    console.log('🔍 ブログ検索成功（Supabase）:', scoredArticles.length, '件');
+                    return res.json({
+                        success: true,
+                        articles: scoredArticles,
+                        total: scoredArticles.length,
+                        count: scoredArticles.length,
+                        source: 'supabase'
+                    });
+                }
+            } catch (supabaseError) {
+                console.warn('Supabase検索エラー、フォールバックへ:', supabaseError.message);
+            }
+        }
+        
+        // フォールバック: サンプルデータ + 高度検索
+        let allArticles = [
+            {
+                id: 'article_001',
+                title: '石垣島のマンタポイント完全ガイド',
+                excerpt: '石垣島の代表的なダイビングスポット、マンタポイントの攻略法を詳しく解説。ベストシーズンや潮の流れ、遭遇確率まで詳細に紹介します。',
+                content: '石垣島のマンタポイントは、石垣島の北部に位置する世界的に有名なダイビングスポットです...',
+                category: 'diving_spots',
+                tags: ['石垣島', 'マンタ', 'ダイビングポイント', '上級者', '大物'],
+                status: 'published',
+                author: 'Jiji編集部',
+                views: 2150,
+                featured: true,
+                published_at: '2025-07-25T10:00:00Z',
+                created_at: '2025-07-25T09:00:00Z'
+            },
+            {
+                id: 'article_002',
+                title: '初心者必見！沖縄ダイビングの基礎知識',
+                excerpt: 'ダイビング初心者が沖縄で安全に楽しむための基礎知識をまとめました。',
+                content: 'ダイビングを始めるには、まず基本的な知識と技術を身につけることが重要です...',
+                category: 'beginner_guide',
+                tags: ['初心者', '基礎知識', 'ライセンス', '安全', 'PADI'],
+                status: 'published',
+                author: 'ダイビングインストラクター田中',
+                views: 1650,
+                published_at: '2025-07-24T14:00:00Z',
+                created_at: '2025-07-24T13:00:00Z'
+            }
+        ];
+        
+        // 20記事のデータを追加（BLOG-002で作成済み）
+        if (global.tempArticles) {
+            allArticles.push(...global.tempArticles);
+        }
+        
+        // 基本フィルタリング（カテゴリ、ステータス、タグ）
+        let filteredArticles = allArticles;
+        
+        if (category) {
+            filteredArticles = filteredArticles.filter(article => article.category === category);
+        }
+        
+        if (tag) {
+            filteredArticles = filteredArticles.filter(article => 
+                article.tags && article.tags.includes(tag)
+            );
+        }
+        
+        if (status) {
+            filteredArticles = filteredArticles.filter(article => article.status === status);
+        }
+        
+        // 高度検索アルゴリズム適用
+        if (query) {
+            filteredArticles = performAdvancedSearch(filteredArticles, query);
+        } else {
+            // クエリがない場合は人気度と新しさでソート
+            filteredArticles = filteredArticles
+                .map(article => ({
+                    ...article,
+                    relevanceScore: (article.views || 0) / 100 + (article.featured ? 50 : 0)
+                }))
+                .sort((a, b) => {
+                    // 注目記事優先、次に人気度、最後に新しさ
+                    if (a.featured && !b.featured) return -1;
+                    if (!a.featured && b.featured) return 1;
+                    if (b.relevanceScore !== a.relevanceScore) return b.relevanceScore - a.relevanceScore;
+                    return new Date(b.published_at || b.created_at) - new Date(a.published_at || a.created_at);
+                });
+        }
+        
+        // ページネーション
+        const startIndex = parseInt(offset);
+        const endIndex = startIndex + parseInt(limit);
+        const paginatedArticles = filteredArticles.slice(startIndex, endIndex);
+        
+        console.log('🔍 ブログ検索成功（フォールバック）:', paginatedArticles.length, '/', filteredArticles.length, '件');
+        res.json({
+            success: true,
+            articles: paginatedArticles,
+            count: paginatedArticles.length,
+            total: filteredArticles.length,
+            source: 'fallback'
+        });
+        
+    } catch (error) {
+        console.error('ブログ検索API エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message,
+            message: 'ブログ検索に失敗しました'
+        });
+    }
+});
+
+// 関連記事取得API
+app.get('/api/blog/articles/:id/related', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { limit = 6 } = req.query;
+        
+        console.log('🔗 関連記事取得:', { id, limit });
+        
+        // まず基準となる記事を取得
+        let targetArticle = null;
+        
+        // Supabase接続試行
+        if (supabase && supabaseStatus === 'connected') {
+            try {
+                const { data: article, error } = await supabase
+                    .from('blogs')
+                    .select('*')
+                    .eq('id', id)
+                    .single();
+                
+                if (!error && article) {
+                    targetArticle = article;
+                    
+                    // 全記事を取得して関連記事を計算
+                    const { data: allArticles, error: allError } = await supabase
+                        .from('blogs')
+                        .select('*')
+                        .eq('status', 'published');
+                    
+                    if (!allError && allArticles) {
+                        const relatedArticles = findRelatedArticles(targetArticle, allArticles, parseInt(limit));
+                        
+                        console.log('🔗 関連記事取得成功（Supabase）:', relatedArticles.length, '件');
+                        return res.json({
+                            success: true,
+                            related_articles: relatedArticles,
+                            count: relatedArticles.length,
+                            source: 'supabase'
+                        });
+                    }
+                }
+            } catch (supabaseError) {
+                console.warn('Supabase関連記事取得エラー、フォールバックへ:', supabaseError.message);
+            }
+        }
+        
+        // フォールバック: サンプルデータから関連記事を取得
+        let allArticles = [
+            {
+                id: 'article_001',
+                title: '石垣島のマンタポイント完全ガイド',
+                excerpt: '石垣島の代表的なダイビングスポット、マンタポイントの攻略法を詳しく解説。',
+                category: 'diving_spots',
+                tags: ['石垣島', 'マンタ', 'ダイビングポイント', '上級者', '大物'],
+                status: 'published',
+                author: 'Jiji編集部',
+                views: 2150,
+                featured: true,
+                published_at: '2025-07-25T10:00:00Z',
+                created_at: '2025-07-25T09:00:00Z'
+            },
+            {
+                id: 'article_002',
+                title: '初心者必見！沖縄ダイビングの基礎知識',
+                excerpt: 'ダイビング初心者が沖縄で安全に楽しむための基礎知識をまとめました。',
+                category: 'beginner_guide',
+                tags: ['初心者', '基礎知識', 'ライセンス', '安全', 'PADI'],
+                status: 'published',
+                author: 'ダイビングインストラクター田中',
+                views: 1650,
+                published_at: '2025-07-24T14:00:00Z',
+                created_at: '2025-07-24T13:00:00Z'
+            }
+        ];
+        
+        // 20記事のデータを追加
+        if (global.tempArticles) {
+            allArticles.push(...global.tempArticles);
+        }
+        
+        // 基準記事を見つける
+        targetArticle = allArticles.find(article => article.id === id);
+        
+        if (!targetArticle) {
+            return res.status(404).json({
+                success: false,
+                error: 'Article not found',
+                message: '指定された記事が見つかりません'
+            });
+        }
+        
+        // 関連記事を計算
+        const relatedArticles = findRelatedArticles(targetArticle, allArticles, parseInt(limit));
+        
+        console.log('🔗 関連記事取得成功（フォールバック）:', relatedArticles.length, '件');
+        res.json({
+            success: true,
+            related_articles: relatedArticles,
+            count: relatedArticles.length,
+            source: 'fallback'
+        });
+        
+    } catch (error) {
+        console.error('関連記事取得API エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message,
+            message: '関連記事の取得に失敗しました'
+        });
+    }
+});
+
+// ===== 宿泊施設検索API =====
+
+// 宿泊施設検索API
+app.get('/api/travel/accommodations/search', async (req, res) => {
+    try {
+        const { 
+            location, 
+            checkin, 
+            checkout, 
+            guests = 2, 
+            diving_friendly = false,
+            price_range = 'all',
+            accommodation_type = 'all',
+            limit = 20 
+        } = req.query;
+        
+        console.log('🏨 宿泊施設検索:', { location, checkin, checkout, guests, diving_friendly });
+        
+        // 楽天トラベル API統合試行（実際のAPIキーが必要）
+        let accommodations = [];
+        
+        try {
+            // 楽天トラベル API（模擬実装）
+            accommodations = await searchRakutenTravel({
+                location,
+                checkin,
+                checkout,
+                guests,
+                diving_friendly,
+                price_range,
+                accommodation_type
+            });
+        } catch (apiError) {
+            console.warn('楽天トラベルAPI接続エラー、フォールバックデータ使用:', apiError.message);
+            
+            // フォールバック: 沖縄ダイビング特化宿泊施設データ
+            accommodations = getDivingFriendlyAccommodations({
+                location,
+                checkin,
+                checkout,
+                guests,
+                diving_friendly,
+                price_range,
+                accommodation_type,
+                limit
+            });
+        }
+        
+        console.log('🏨 宿泊施設検索完了:', accommodations.length, '件');
+        res.json({
+            success: true,
+            accommodations: accommodations,
+            count: accommodations.length,
+            search_params: {
+                location,
+                checkin,
+                checkout,
+                guests,
+                diving_friendly,
+                price_range,
+                accommodation_type
+            }
+        });
+        
+    } catch (error) {
+        console.error('宿泊施設検索API エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message,
+            message: '宿泊施設の検索に失敗しました'
+        });
+    }
+});
+
+// 宿泊施設詳細取得API
+app.get('/api/travel/accommodations/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        console.log('🏨 宿泊施設詳細取得:', id);
+        
+        // フォールバックデータから詳細を取得
+        const accommodation = getAccommodationDetails(id);
+        
+        if (!accommodation) {
+            return res.status(404).json({
+                success: false,
+                error: 'Accommodation not found',
+                message: '指定された宿泊施設が見つかりません'
+            });
+        }
+        
+        console.log('🏨 宿泊施設詳細取得完了:', accommodation.name);
+        res.json({
+            success: true,
+            accommodation: accommodation
+        });
+        
+    } catch (error) {
+        console.error('宿泊施設詳細取得API エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message,
+            message: '宿泊施設詳細の取得に失敗しました'
+        });
+    }
+});
+
+// 楽天トラベル API統合関数（模擬実装）
+async function searchRakutenTravel(params) {
+    // 実際の実装では楽天トラベル APIを呼び出し
+    // const RAKUTEN_API_KEY = process.env.RAKUTEN_API_KEY;
+    // const RAKUTEN_AFFILIATE_ID = process.env.RAKUTEN_AFFILIATE_ID;
+    
+    throw new Error('楽天トラベル API未設定（フォールバック使用）');
+}
+
+// ダイビング特化宿泊施設データ取得関数
+function getDivingFriendlyAccommodations(params) {
+    const allAccommodations = [
+        {
+            id: 'acc_001',
+            name: '石垣島ダイバーズホテル',
+            type: 'hotel',
+            location: '石垣島',
+            area: '石垣港周辺',
+            rating: 4.5,
+            review_count: 127,
+            price_per_night: 12000,
+            currency: 'JPY',
+            diving_friendly: true,
+            diving_features: ['器材レンタル', '器材洗い場', 'ボート送迎', 'ダイビングショップ併設'],
+            images: [
+                'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800&q=80',
+                'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80'
+            ],
+            amenities: ['WiFi', 'エアコン', '冷蔵庫', 'バルコニー', '駐車場'],
+            description: '石垣島のダイビングスポットまで徒歩5分。ダイバー専用の器材洗い場完備。',
+            check_in_time: '15:00',
+            check_out_time: '10:00',
+            cancellation_policy: 'チェックイン3日前まで無料',
+            coordinates: { lat: 24.3364, lng: 124.1564 },
+            nearby_dive_sites: ['マンタポイント', '川平石崎', 'ビッグドロップオフ'],
+            booking_url: '#',
+            phone: '0980-82-1234'
+        },
+        {
+            id: 'acc_002',
+            name: '宮古島リゾート＆ダイビング',
+            type: 'resort',
+            location: '宮古島',
+            area: '下地島空港周辺',
+            rating: 4.8,
+            review_count: 89,
+            price_per_night: 18000,
+            currency: 'JPY',
+            diving_friendly: true,
+            diving_features: ['自社ダイビングボート', 'PADI認定ショップ', '器材フルレンタル', 'ナイトダイビング対応'],
+            images: [
+                'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&q=80',
+                'https://images.unsplash.com/photo-1540541338287-41700207dee6?w=800&q=80'
+            ],
+            amenities: ['WiFi', 'プール', 'スパ', 'レストラン', 'バー', '送迎サービス'],
+            description: '宮古島の美しい海を一望できるリゾートホテル。自社ダイビングボートで快適なダイビング体験。',
+            check_in_time: '14:00',
+            check_out_time: '11:00',
+            cancellation_policy: 'チェックイン7日前まで無料',
+            coordinates: { lat: 24.7831, lng: 125.3701 },
+            nearby_dive_sites: ['魔王の宮殿', '八重干瀬', 'アントニオガウディ'],
+            booking_url: '#',
+            phone: '0980-73-5678'
+        },
+        {
+            id: 'acc_003',
+            name: '慶良間ダイビングロッジ',
+            type: 'lodge',
+            location: '座間味島',
+            area: '慶良間諸島',
+            rating: 4.3,
+            review_count: 156,
+            price_per_night: 8500,
+            currency: 'JPY',
+            diving_friendly: true,
+            diving_features: ['ビーチダイビング直結', '少人数制ガイド', '水中写真サービス', 'ナイトロックス対応'],
+            images: [
+                'https://images.unsplash.com/photo-1586611292717-f828b167408c?w=800&q=80',
+                'https://images.unsplash.com/photo-1544725176-7c40e5a71c5e?w=800&q=80'
+            ],
+            amenities: ['WiFi', 'エアコン', '共有キッチン', 'BBQ設備', '自転車レンタル'],
+            description: '慶良間ブルーを満喫できるダイバー専用ロッジ。ビーチから直接エントリー可能。',
+            check_in_time: '15:00',
+            check_out_time: '10:00',
+            cancellation_policy: 'チェックイン2日前まで無料',
+            coordinates: { lat: 26.2395, lng: 127.3058 },
+            nearby_dive_sites: ['古座間味ビーチ', 'ニシハマ', '男岩・女岩'],
+            booking_url: '#',
+            phone: '098-987-3456'
+        },
+        {
+            id: 'acc_004',
+            name: '那覇シティホテル',
+            type: 'hotel',
+            location: '那覇市',
+            area: '国際通り',
+            rating: 4.1,
+            review_count: 234,
+            price_per_night: 9500,
+            currency: 'JPY',
+            diving_friendly: false,
+            diving_features: [],
+            images: [
+                'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=800&q=80',
+                'https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=800&q=80'
+            ],
+            amenities: ['WiFi', 'エアコン', 'レストラン', 'コンビニ', '駐車場'],
+            description: '那覇の中心地に位置するビジネスホテル。ダイビングショップへのアクセス良好。',
+            check_in_time: '15:00',
+            check_out_time: '11:00',
+            cancellation_policy: 'チェックイン1日前まで無料',
+            coordinates: { lat: 26.2124, lng: 127.6792 },
+            nearby_dive_sites: ['チービシ', '那覇湾内', 'USSエモンズ'],
+            booking_url: '#',
+            phone: '098-862-7890'
+        },
+        {
+            id: 'acc_005',
+            name: '西表島エコロッジ',
+            type: 'eco_lodge',
+            location: '西表島',
+            area: '上原港周辺',
+            rating: 4.6,
+            review_count: 72,
+            price_per_night: 15000,
+            currency: 'JPY',
+            diving_friendly: true,
+            diving_features: ['マングローブダイビング', '貸切ボート', 'エコツアー併設', '星空観察'],
+            images: [
+                'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800&q=80',
+                'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800&q=80'
+            ],
+            amenities: ['WiFi', 'エアコン', '天然温泉', 'レストラン', '送迎サービス'],
+            description: '西表島の大自然を満喫できるエコロッジ。マングローブダイビングが人気。',
+            check_in_time: '14:00',
+            check_out_time: '10:00',
+            cancellation_policy: 'チェックイン5日前まで無料',
+            coordinates: { lat: 24.3964, lng: 123.7661 },
+            nearby_dive_sites: ['網取湾', 'バラス島', '鹿川湾'],
+            booking_url: '#',
+            phone: '0980-85-2345'
+        }
+    ];
+    
+    let filtered = allAccommodations;
+    
+    // 場所フィルター
+    if (params.location) {
+        filtered = filtered.filter(acc => 
+            acc.location.includes(params.location) || 
+            acc.area.includes(params.location)
+        );
+    }
+    
+    // ダイビング特化フィルター
+    if (params.diving_friendly === 'true') {
+        filtered = filtered.filter(acc => acc.diving_friendly);
+    }
+    
+    // 価格帯フィルター
+    if (params.price_range && params.price_range !== 'all') {
+        const ranges = {
+            'budget': [0, 10000],
+            'mid': [10000, 20000],
+            'luxury': [20000, 100000]
+        };
+        const [min, max] = ranges[params.price_range] || [0, 100000];
+        filtered = filtered.filter(acc => acc.price_per_night >= min && acc.price_per_night <= max);
+    }
+    
+    // 宿泊施設タイプフィルター
+    if (params.accommodation_type && params.accommodation_type !== 'all') {
+        filtered = filtered.filter(acc => acc.type === params.accommodation_type);
+    }
+    
+    // ソート（ダイビング特化 > 評価 > 価格）
+    filtered.sort((a, b) => {
+        if (a.diving_friendly && !b.diving_friendly) return -1;
+        if (!a.diving_friendly && b.diving_friendly) return 1;
+        if (b.rating !== a.rating) return b.rating - a.rating;
+        return a.price_per_night - b.price_per_night;
+    });
+    
+    return filtered.slice(0, parseInt(params.limit));
+}
+
+// 宿泊施設詳細取得関数
+function getAccommodationDetails(id) {
+    const accommodations = getDivingFriendlyAccommodations({ limit: 100 });
+    return accommodations.find(acc => acc.id === id);
+}
+
+// ===== 旅行費用シミュレーターAPI =====
+
+// 旅行費用計算API
+app.post('/api/travel/cost-simulator', async (req, res) => {
+    try {
+        const {
+            destination,
+            duration_days,
+            travel_dates,
+            participants,
+            accommodation_level,
+            diving_plan,
+            meal_plan,
+            transport_type
+        } = req.body;
+        
+        console.log('💰 旅行費用計算:', { destination, duration_days, participants, diving_plan });
+        
+        // 旅行費用を計算
+        const costBreakdown = calculateTravelCosts({
+            destination,
+            duration_days,
+            travel_dates,
+            participants,
+            accommodation_level,
+            diving_plan,
+            meal_plan,
+            transport_type
+        });
+        
+        // 時期別料金比較
+        const seasonalComparison = getSeasonalPricing(destination, travel_dates);
+        
+        // 節約提案
+        const savingTips = generateSavingTips(costBreakdown, {
+            destination,
+            duration_days,
+            participants,
+            diving_plan
+        });
+        
+        console.log('💰 旅行費用計算完了:', costBreakdown.total);
+        res.json({
+            success: true,
+            cost_breakdown: costBreakdown,
+            seasonal_comparison: seasonalComparison,
+            saving_tips: savingTips,
+            calculation_date: new Date().toISOString()
+        });
+        
+    } catch (error) {
+        console.error('旅行費用計算API エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message,
+            message: '旅行費用の計算に失敗しました'
+        });
+    }
+});
+
+// 時期別料金比較API
+app.get('/api/travel/seasonal-pricing/:destination', async (req, res) => {
+    try {
+        const { destination } = req.params;
+        const { year = new Date().getFullYear() } = req.query;
+        
+        console.log('📅 時期別料金比較:', { destination, year });
+        
+        const seasonalData = getYearlySeasonalPricing(destination, parseInt(year));
+        
+        console.log('📅 時期別料金比較完了');
+        res.json({
+            success: true,
+            destination: destination,
+            year: parseInt(year),
+            seasonal_data: seasonalData
+        });
+        
+    } catch (error) {
+        console.error('時期別料金比較API エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message,
+            message: '時期別料金の取得に失敗しました'
+        });
+    }
+});
+
+// 旅行費用計算メイン関数
+function calculateTravelCosts(params) {
+    const {
+        destination,
+        duration_days,
+        travel_dates,
+        participants,
+        accommodation_level,
+        diving_plan,
+        meal_plan,
+        transport_type
+    } = params;
+    
+    // 基本料金データ
+    const basePrices = getBasePrices(destination);
+    const seasonMultiplier = getSeasonMultiplier(destination, travel_dates);
+    
+    // 航空券費用
+    const flightCost = calculateFlightCost(destination, participants, travel_dates, transport_type);
+    
+    // 宿泊費用
+    const accommodationCost = calculateAccommodationCost(
+        destination, 
+        duration_days, 
+        participants, 
+        accommodation_level,
+        seasonMultiplier
+    );
+    
+    // ダイビング費用
+    const divingCost = calculateDivingCost(diving_plan, participants, destination);
+    
+    // 食事費用
+    const mealCost = calculateMealCost(meal_plan, duration_days, participants, destination);
+    
+    // 交通費用（現地）
+    const localTransportCost = calculateLocalTransportCost(destination, duration_days, participants);
+    
+    // その他費用
+    const otherCost = calculateOtherCosts(destination, duration_days, participants);
+    
+    const subtotal = flightCost + accommodationCost + divingCost + mealCost + localTransportCost + otherCost;
+    const tax = Math.round(subtotal * 0.1); // 10%税金
+    const total = subtotal + tax;
+    
+    return {
+        flight: flightCost,
+        accommodation: accommodationCost,
+        diving: divingCost,
+        meals: mealCost,
+        local_transport: localTransportCost,
+        other: otherCost,
+        subtotal: subtotal,
+        tax: tax,
+        total: total,
+        per_person: Math.round(total / participants),
+        currency: 'JPY',
+        breakdown_details: {
+            flight_details: getFlightCostDetails(destination, participants, travel_dates),
+            accommodation_details: getAccommodationCostDetails(accommodation_level, duration_days),
+            diving_details: getDivingCostDetails(diving_plan, participants),
+            meal_details: getMealCostDetails(meal_plan, duration_days, participants)
+        }
+    };
+}
+
+// 基本料金データ取得
+function getBasePrices(destination) {
+    const priceData = {
+        '石垣島': {
+            accommodation_mid: 15000,
+            diving_per_dive: 8000,
+            meal_per_day: 4000,
+            local_transport_per_day: 2000
+        },
+        '宮古島': {
+            accommodation_mid: 18000,
+            diving_per_dive: 9000,
+            meal_per_day: 4500,
+            local_transport_per_day: 2500
+        },
+        '沖縄本島': {
+            accommodation_mid: 12000,
+            diving_per_dive: 7000,
+            meal_per_day: 3500,
+            local_transport_per_day: 1500
+        },
+        '慶良間諸島': {
+            accommodation_mid: 10000,
+            diving_per_dive: 8500,
+            meal_per_day: 3000,
+            local_transport_per_day: 3000
+        },
+        '西表島': {
+            accommodation_mid: 20000,
+            diving_per_dive: 10000,
+            meal_per_day: 5000,
+            local_transport_per_day: 3500
+        }
+    };
+    
+    return priceData[destination] || priceData['沖縄本島'];
+}
+
+// 季節倍率取得
+function getSeasonMultiplier(destination, travel_dates) {
+    const month = new Date(travel_dates.start).getMonth() + 1; // 1-12
+    
+    // 沖縄の季節料金倍率
+    const seasonMultipliers = {
+        1: 0.8,  // 1月 - オフシーズン
+        2: 0.8,  // 2月 - オフシーズン  
+        3: 1.0,  // 3月 - 通常
+        4: 1.2,  // 4月 - ハイシーズン開始
+        5: 1.3,  // 5月 - ハイシーズン
+        6: 1.1,  // 6月 - 梅雨
+        7: 1.5,  // 7月 - ピークシーズン
+        8: 1.6,  // 8月 - ピークシーズン
+        9: 1.2,  // 9月 - ハイシーズン
+        10: 1.1, // 10月 - 通常
+        11: 0.9, // 11月 - オフシーズン
+        12: 1.0  // 12月 - 年末年始
+    };
+    
+    return seasonMultipliers[month] || 1.0;
+}
+
+// 航空券費用計算
+function calculateFlightCost(destination, participants, travel_dates, transport_type) {
+    const basePrices = {
+        '石垣島': { economy: 45000, business: 85000 },
+        '宮古島': { economy: 50000, business: 90000 },
+        '沖縄本島': { economy: 35000, business: 70000 },
+        '慶良間諸島': { economy: 35000, business: 70000 }, // 那覇経由
+        '西表島': { economy: 45000, business: 85000 } // 石垣経由
+    };
+    
+    const seasonMultiplier = getSeasonMultiplier(destination, travel_dates);
+    const basePrice = basePrices[destination]?.[transport_type] || basePrices['沖縄本島']['economy'];
+    
+    return Math.round(basePrice * seasonMultiplier * participants);
+}
+
+// 宿泊費用計算
+function calculateAccommodationCost(destination, duration_days, participants, level, seasonMultiplier) {
+    const basePrices = getBasePrices(destination);
+    const levelMultipliers = {
+        'budget': 0.6,
+        'mid': 1.0,
+        'luxury': 2.0
+    };
+    
+    const baseNightlyRate = basePrices.accommodation_mid;
+    const adjustedRate = baseNightlyRate * levelMultipliers[level] * seasonMultiplier;
+    
+    // 2名1室基準、追加人数は50%加算
+    const roomRate = participants <= 2 ? adjustedRate : adjustedRate * (1 + (participants - 2) * 0.5);
+    
+    return Math.round(roomRate * duration_days);
+}
+
+// ダイビング費用計算
+function calculateDivingCost(diving_plan, participants, destination) {
+    const basePrices = getBasePrices(destination);
+    const divePrice = basePrices.diving_per_dive;
+    
+    const planPricing = {
+        'none': { dives: 0, equipment: 0 },
+        'beginner': { dives: 4, equipment: 3000 },
+        'recreational': { dives: 8, equipment: 4000 },
+        'advanced': { dives: 12, equipment: 5000 },
+        'intensive': { dives: 16, equipment: 6000 }
+    };
+    
+    const plan = planPricing[diving_plan] || planPricing['none'];
+    const divingFees = plan.dives * divePrice * participants;
+    const equipmentFees = plan.equipment * participants * Math.ceil(plan.dives / 4); // 4ダイブごとに機材代
+    
+    return divingFees + equipmentFees;
+}
+
+// 食事費用計算
+function calculateMealCost(meal_plan, duration_days, participants, destination) {
+    const basePrices = getBasePrices(destination);
+    const baseMealCost = basePrices.meal_per_day;
+    
+    const planMultipliers = {
+        'budget': 0.7,
+        'standard': 1.0,
+        'premium': 1.8,
+        'luxury': 2.5
+    };
+    
+    const dailyCost = baseMealCost * planMultipliers[meal_plan] * participants;
+    return Math.round(dailyCost * duration_days);
+}
+
+// 現地交通費計算
+function calculateLocalTransportCost(destination, duration_days, participants) {
+    const basePrices = getBasePrices(destination);
+    const dailyTransportCost = basePrices.local_transport_per_day;
+    
+    // グループ割引
+    const groupDiscount = participants > 2 ? 0.8 : 1.0;
+    
+    return Math.round(dailyTransportCost * duration_days * groupDiscount);
+}
+
+// その他費用計算
+function calculateOtherCosts(destination, duration_days, participants) {
+    // 観光、お土産、雑費など
+    const dailyOtherCost = 2000 * participants;
+    return dailyOtherCost * duration_days;
+}
+
+// 時期別料金データ取得
+function getSeasonalPricing(destination, travel_dates) {
+    const currentMonth = new Date(travel_dates.start).getMonth() + 1;
+    const months = [
+        { month: 1, name: '1月', multiplier: 0.8, season: 'オフシーズン' },
+        { month: 2, name: '2月', multiplier: 0.8, season: 'オフシーズン' },
+        { month: 3, name: '3月', multiplier: 1.0, season: '通常シーズン' },
+        { month: 4, name: '4月', multiplier: 1.2, season: 'ハイシーズン' },
+        { month: 5, name: '5月', multiplier: 1.3, season: 'ハイシーズン' },
+        { month: 6, name: '6月', multiplier: 1.1, season: '梅雨シーズン' },
+        { month: 7, name: '7月', multiplier: 1.5, season: 'ピークシーズン' },
+        { month: 8, name: '8月', multiplier: 1.6, season: 'ピークシーズン' },
+        { month: 9, name: '9月', multiplier: 1.2, season: 'ハイシーズン' },
+        { month: 10, name: '10月', multiplier: 1.1, season: '通常シーズン' },
+        { month: 11, name: '11月', multiplier: 0.9, season: 'オフシーズン' },
+        { month: 12, name: '12月', multiplier: 1.0, season: '年末シーズン' }
+    ];
+    
+    return months.map(month => ({
+        ...month,
+        is_current: month.month === currentMonth,
+        estimated_savings: currentMonth !== month.month ? 
+            Math.round((getSeasonMultiplier(destination, travel_dates) - month.multiplier) * 100000) : 0
+    }));
+}
+
+// 年間時期別料金データ取得
+function getYearlySeasonalPricing(destination, year) {
+    return getSeasonalPricing(destination, { start: `${year}-06-01` });
+}
+
+// 節約提案生成
+function generateSavingTips(costBreakdown, params) {
+    const tips = [];
+    
+    // 季節による節約
+    const currentMultiplier = getSeasonMultiplier(params.destination, { start: new Date().toISOString().split('T')[0] });
+    if (currentMultiplier > 1.2) {
+        tips.push({
+            category: '時期変更',
+            title: 'オフシーズンの利用',
+            description: '1-2月や11月の旅行で20-40%節約できます',
+            potential_savings: Math.round(costBreakdown.total * 0.3),
+            difficulty: 'easy'
+        });
+    }
+    
+    // 宿泊費節約
+    if (costBreakdown.accommodation > costBreakdown.total * 0.3) {
+        tips.push({
+            category: '宿泊',
+            title: '宿泊グレードの見直し',
+            description: 'ダイビング特化ロッジで宿泊費を抑えつつ設備充実',
+            potential_savings: Math.round(costBreakdown.accommodation * 0.4),
+            difficulty: 'easy'
+        });
+    }
+    
+    // グループ割引
+    if (params.participants < 4) {
+        tips.push({
+            category: 'グループ',
+            title: 'グループ旅行の検討',
+            description: '4名以上のグループで交通費・宿泊費の割引適用',
+            potential_savings: Math.round(costBreakdown.total * 0.15),
+            difficulty: 'medium'
+        });
+    }
+    
+    // ダイビング費用最適化
+    if (costBreakdown.diving > costBreakdown.total * 0.4) {
+        tips.push({
+            category: 'ダイビング',
+            title: 'パッケージプランの活用',
+            description: '宿泊+ダイビングセットプランで10-20%割引',
+            potential_savings: Math.round(costBreakdown.diving * 0.2),
+            difficulty: 'easy'
+        });
+    }
+    
+    return tips.slice(0, 5); // 上位5つの提案
+}
+
+// 詳細情報取得関数群
+function getFlightCostDetails(destination, participants, travel_dates) {
+    return {
+        route: `東京 → ${destination}`,
+        airline: '主要航空会社',
+        duration: '2-3時間',
+        participants: participants,
+        season_factor: getSeasonMultiplier(destination, travel_dates)
+    };
+}
+
+function getAccommodationCostDetails(level, duration_days) {
+    const levelNames = {
+        'budget': 'エコノミー',
+        'mid': 'スタンダード', 
+        'luxury': 'プレミアム'
+    };
+    
+    return {
+        level: levelNames[level],
+        nights: duration_days,
+        room_type: '2名1室基準'
+    };
+}
+
+function getDivingCostDetails(diving_plan, participants) {
+    const planDetails = {
+        'none': { name: 'ダイビングなし', dives: 0 },
+        'beginner': { name: '初心者プラン', dives: 4 },
+        'recreational': { name: 'レクリエーション', dives: 8 },
+        'advanced': { name: 'アドバンス', dives: 12 },
+        'intensive': { name: 'インテンシブ', dives: 16 }
+    };
+    
+    const plan = planDetails[diving_plan] || planDetails['none'];
+    return {
+        plan_name: plan.name,
+        total_dives: plan.dives * participants,
+        includes_equipment: diving_plan !== 'none'
+    };
+}
+
+function getMealCostDetails(meal_plan, duration_days, participants) {
+    const planNames = {
+        'budget': 'エコノミー',
+        'standard': 'スタンダード',
+        'premium': 'プレミアム',
+        'luxury': 'ラグジュアリー'
+    };
+    
+    return {
+        plan_name: planNames[meal_plan],
+        total_meals: duration_days * 3 * participants, // 朝昼夕
+        includes: meal_plan === 'luxury' ? '高級レストラン' : '地元料理中心'
+    };
+}
+
+// ===== 会員管理システムAPI =====
+
+// 会員登録API
+app.post('/api/members/register', async (req, res) => {
+    try {
+        const {
+            email,
+            password,
+            name,
+            phone,
+            diving_experience,
+            certification_level,
+            preferred_areas,
+            newsletter_subscribe
+        } = req.body;
+        
+        console.log('👤 会員登録:', { email, name, diving_experience });
+        
+        // バリデーション
+        const validation = validateMemberData({
+            email, password, name, phone, diving_experience, certification_level
+        });
+        
+        if (!validation.valid) {
+            return res.status(400).json({
+                success: false,
+                error: 'validation_error',
+                message: 'データが正しくありません',
+                validation_errors: validation.errors
+            });
+        }
+        
+        // Supabase接続試行
+        if (supabase && supabaseStatus === 'connected') {
+            try {
+                // メールアドレス重複チェック
+                const { data: existingUser } = await supabase
+                    .from('members')
+                    .select('email')
+                    .eq('email', email)
+                    .single();
+                
+                if (existingUser) {
+                    return res.status(409).json({
+                        success: false,
+                        error: 'email_exists',
+                        message: 'このメールアドレスは既に登録されています'
+                    });
+                }
+                
+                // パスワードハッシュ化（実際の実装では bcrypt 使用）
+                const hashedPassword = hashPassword(password);
+                
+                // 会員データ挿入
+                const memberData = {
+                    email,
+                    password_hash: hashedPassword,
+                    name,
+                    phone,
+                    diving_experience,
+                    certification_level,
+                    preferred_areas: preferred_areas || [],
+                    newsletter_subscribe: newsletter_subscribe || false,
+                    email_verified: false,
+                    verification_token: generateVerificationToken(),
+                    created_at: new Date().toISOString(),
+                    status: 'pending'
+                };
+                
+                const { data: newMember, error } = await supabase
+                    .from('members')
+                    .insert([memberData])
+                    .select()
+                    .single();
+                
+                if (!error && newMember) {
+                    // メール認証送信（模擬）
+                    await sendVerificationEmail(email, memberData.verification_token);
+                    
+                    console.log('👤 会員登録成功（Supabase）:', email);
+                    return res.json({
+                        success: true,
+                        member: {
+                            id: newMember.id,
+                            email: newMember.email,
+                            name: newMember.name,
+                            status: newMember.status
+                        },
+                        message: '会員登録が完了しました。認証メールをご確認ください。',
+                        source: 'supabase'
+                    });
+                }
+            } catch (supabaseError) {
+                console.warn('Supabase会員登録エラー、フォールバックへ:', supabaseError.message);
+            }
+        }
+        
+        // フォールバック: メモリベース会員管理
+        if (!global.tempMembers) {
+            global.tempMembers = [];
+        }
+        
+        // メール重複チェック
+        const existingMember = global.tempMembers.find(m => m.email === email);
+        if (existingMember) {
+            return res.status(409).json({
+                success: false,
+                error: 'email_exists',
+                message: 'このメールアドレスは既に登録されています'
+            });
+        }
+        
+        // 新規会員作成
+        const memberId = 'member_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        const hashedPassword = hashPassword(password);
+        const verificationToken = generateVerificationToken();
+        
+        const newMember = {
+            id: memberId,
+            email,
+            password_hash: hashedPassword,
+            name,
+            phone,
+            diving_experience,
+            certification_level,
+            preferred_areas: preferred_areas || [],
+            newsletter_subscribe: newsletter_subscribe || false,
+            email_verified: false,
+            verification_token: verificationToken,
+            created_at: new Date().toISOString(),
+            status: 'pending'
+        };
+        
+        global.tempMembers.push(newMember);
+        
+        // メール認証送信（模擬）
+        await sendVerificationEmail(email, verificationToken);
+        
+        console.log('👤 会員登録成功（フォールバック）:', email);
+        res.json({
+            success: true,
+            member: {
+                id: newMember.id,
+                email: newMember.email,
+                name: newMember.name,
+                status: newMember.status
+            },
+            message: '会員登録が完了しました。認証メールをご確認ください。',
+            source: 'fallback'
+        });
+        
+    } catch (error) {
+        console.error('会員登録API エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message,
+            message: '会員登録に失敗しました'
+        });
+    }
+});
+
+// メール認証API
+app.post('/api/members/verify-email', async (req, res) => {
+    try {
+        const { token } = req.body;
+        
+        console.log('📧 メール認証:', { token: token.substr(0, 10) + '...' });
+        
+        // Supabase接続試行
+        if (supabase && supabaseStatus === 'connected') {
+            try {
+                const { data: member, error } = await supabase
+                    .from('members')
+                    .select('*')
+                    .eq('verification_token', token)
+                    .single();
+                
+                if (!error && member) {
+                    // 認証状態更新
+                    const { error: updateError } = await supabase
+                        .from('members')
+                        .update({
+                            email_verified: true,
+                            status: 'active',
+                            verified_at: new Date().toISOString()
+                        })
+                        .eq('id', member.id);
+                    
+                    if (!updateError) {
+                        console.log('📧 メール認証成功（Supabase）:', member.email);
+                        return res.json({
+                            success: true,
+                            message: 'メール認証が完了しました',
+                            source: 'supabase'
+                        });
+                    }
+                }
+            } catch (supabaseError) {
+                console.warn('Supabaseメール認証エラー、フォールバックへ:', supabaseError.message);
+            }
+        }
+        
+        // フォールバック: メモリベース認証
+        if (!global.tempMembers) {
+            return res.status(404).json({
+                success: false,
+                error: 'token_not_found',
+                message: '認証トークンが見つかりません'
+            });
+        }
+        
+        const memberIndex = global.tempMembers.findIndex(m => m.verification_token === token);
+        if (memberIndex === -1) {
+            return res.status(404).json({
+                success: false,
+                error: 'token_not_found',
+                message: '認証トークンが見つかりません'
+            });
+        }
+        
+        // 認証状態更新
+        global.tempMembers[memberIndex].email_verified = true;
+        global.tempMembers[memberIndex].status = 'active';
+        global.tempMembers[memberIndex].verified_at = new Date().toISOString();
+        
+        console.log('📧 メール認証成功（フォールバック）:', global.tempMembers[memberIndex].email);
+        res.json({
+            success: true,
+            message: 'メール認証が完了しました',
+            source: 'fallback'
+        });
+        
+    } catch (error) {
+        console.error('メール認証API エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message,
+            message: 'メール認証に失敗しました'
+        });
+    }
+});
+
+// ログインAPI
+app.post('/api/members/login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        
+        console.log('🔐 ログイン試行:', { email });
+        
+        // Supabase接続試行
+        if (supabase && supabaseStatus === 'connected') {
+            try {
+                const { data: member, error } = await supabase
+                    .from('members')
+                    .select('*')
+                    .eq('email', email)
+                    .single();
+                
+                if (!error && member) {
+                    // パスワード検証
+                    if (verifyPassword(password, member.password_hash)) {
+                        if (!member.email_verified) {
+                            return res.status(401).json({
+                                success: false,
+                                error: 'email_not_verified',
+                                message: 'メール認証が完了していません'
+                            });
+                        }
+                        
+                        // セッショントークン生成
+                        const sessionToken = generateSessionToken();
+                        
+                        console.log('🔐 ログイン成功（Supabase）:', email);
+                        return res.json({
+                            success: true,
+                            session_token: sessionToken,
+                            member: {
+                                id: member.id,
+                                email: member.email,
+                                name: member.name,
+                                diving_experience: member.diving_experience,
+                                certification_level: member.certification_level
+                            },
+                            source: 'supabase'
+                        });
+                    }
+                }
+            } catch (supabaseError) {
+                console.warn('Supabaseログインエラー、フォールバックへ:', supabaseError.message);
+            }
+        }
+        
+        // フォールバック: メモリベースログイン
+        if (!global.tempMembers) {
+            return res.status(401).json({
+                success: false,
+                error: 'invalid_credentials',
+                message: 'メールアドレスまたはパスワードが正しくありません'
+            });
+        }
+        
+        const member = global.tempMembers.find(m => m.email === email);
+        if (!member) {
+            return res.status(401).json({
+                success: false,
+                error: 'invalid_credentials',
+                message: 'メールアドレスまたはパスワードが正しくありません'
+            });
+        }
+        
+        // パスワード検証
+        if (!verifyPassword(password, member.password_hash)) {
+            return res.status(401).json({
+                success: false,
+                error: 'invalid_credentials',
+                message: 'メールアドレスまたはパスワードが正しくありません'
+            });
+        }
+        
+        if (!member.email_verified) {
+            return res.status(401).json({
+                success: false,
+                error: 'email_not_verified',
+                message: 'メール認証が完了していません'
+            });
+        }
+        
+        // セッショントークン生成
+        const sessionToken = generateSessionToken();
+        
+        console.log('🔐 ログイン成功（フォールバック）:', email);
+        res.json({
+            success: true,
+            session_token: sessionToken,
+            member: {
+                id: member.id,
+                email: member.email,
+                name: member.name,
+                diving_experience: member.diving_experience,
+                certification_level: member.certification_level
+            },
+            source: 'fallback'
+        });
+        
+    } catch (error) {
+        console.error('ログインAPI エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message,
+            message: 'ログインに失敗しました'
+        });
+    }
+});
+
+// バリデーション関数
+function validateMemberData(data) {
+    const errors = [];
+    
+    // メールアドレス検証
+    if (!data.email) {
+        errors.push({ field: 'email', message: 'メールアドレスは必須です' });
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
+        errors.push({ field: 'email', message: 'メールアドレスの形式が正しくありません' });
+    }
+    
+    // パスワード検証
+    if (!data.password) {
+        errors.push({ field: 'password', message: 'パスワードは必須です' });
+    } else if (data.password.length < 8) {
+        errors.push({ field: 'password', message: 'パスワードは8文字以上である必要があります' });
+    } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(data.password)) {
+        errors.push({ field: 'password', message: 'パスワードは大文字、小文字、数字を含む必要があります' });
+    }
+    
+    // 名前検証
+    if (!data.name) {
+        errors.push({ field: 'name', message: '名前は必須です' });
+    } else if (data.name.length < 2) {
+        errors.push({ field: 'name', message: '名前は2文字以上である必要があります' });
+    }
+    
+    // 電話番号検証（任意）
+    if (data.phone && !/^[\d-+()]+$/.test(data.phone)) {
+        errors.push({ field: 'phone', message: '電話番号の形式が正しくありません' });
+    }
+    
+    return {
+        valid: errors.length === 0,
+        errors: errors
+    };
+}
+
+// パスワードハッシュ化（実際の実装では bcrypt 使用）
+function hashPassword(password) {
+    // 簡易実装（本番では bcrypt.hash 使用）
+    return 'hashed_' + Buffer.from(password).toString('base64');
+}
+
+// パスワード検証
+function verifyPassword(password, hash) {
+    return hash === hashPassword(password);
+}
+
+// 認証トークン生成
+function generateVerificationToken() {
+    return 'verify_' + Date.now() + '_' + Math.random().toString(36).substr(2, 16);
+}
+
+// セッショントークン生成
+function generateSessionToken() {
+    return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 16);
+}
+
+// メール認証送信（模擬実装）
+async function sendVerificationEmail(email, token) {
+    // 実際の実装では SendGrid, AWS SES等を使用
+    console.log(`📧 認証メール送信（模擬）: ${email}`);
+    console.log(`認証URL: https://dive-buddys.com/member/verify?token=${token}`);
+    return Promise.resolve();
+}
 
 // ===== メインページリダイレクト =====
 app.get('/', (req, res) => {
@@ -1855,6 +4199,421 @@ function getDivingAreaInfo(area) {
     
     return areaInfo[area.toLowerCase()] || null;
 }
+
+// ===== 交通ルート検索API関数 =====
+
+// Google Maps API - ルート検索
+async function getDirections(origin, destination, mode = 'driving') {
+    try {
+        if (!GOOGLE_MAPS_CONFIG.api_key) {
+            console.log('⚠️ Google Maps API未設定 - フォールバックデータ使用');
+            return getFallbackDirections(origin, destination, mode);
+        }
+        
+        const params = new URLSearchParams({
+            origin: origin,
+            destination: destination,
+            mode: mode, // driving, walking, transit, bicycling
+            key: GOOGLE_MAPS_CONFIG.api_key,
+            language: 'ja',
+            region: 'jp'
+        });
+        
+        console.log(`🗺️ Google Maps ルート検索: ${origin} → ${destination} (${mode})`);
+        
+        const response = await axios.get(`${GOOGLE_MAPS_CONFIG.endpoints.directions}?${params}`);
+        
+        if (response.data.status === 'OK') {
+            return {
+                success: true,
+                data: response.data,
+                routes: response.data.routes || []
+            };
+        } else {
+            throw new Error(`Google Maps API Error: ${response.data.status}`);
+        }
+        
+    } catch (error) {
+        console.error('❌ Google Maps API エラー:', error.response?.data || error.message);
+        return getFallbackDirections(origin, destination, mode);
+    }
+}
+
+// 交通手段別最適ルート取得
+async function getTransportOptions(origin, destination, area = 'okinawa') {
+    try {
+        console.log(`🚗 交通手段検索: ${origin} → ${destination} (${area})`);
+        
+        // 複数の交通手段で並行取得
+        const [drivingRoute, transitRoute, walkingRoute] = await Promise.all([
+            getDirections(origin, destination, 'driving'),
+            getDirections(origin, destination, 'transit'),
+            getDirections(origin, destination, 'walking')
+        ]);
+        
+        // 沖縄特化情報追加
+        const transportInfo = getOkinawaTransportInfo(area, origin, destination);
+        
+        return {
+            success: true,
+            origin: origin,
+            destination: destination,
+            area: area,
+            options: {
+                driving: {
+                    route: drivingRoute.data,
+                    rental_cars: transportInfo.rental_cars,
+                    parking_info: transportInfo.parking
+                },
+                transit: {
+                    route: transitRoute.data,
+                    bus_info: transportInfo.buses,
+                    ferry_info: transportInfo.ferries
+                },
+                walking: {
+                    route: walkingRoute.data,
+                    walkable: isWalkableDistance(walkingRoute.data)
+                }
+            },
+            recommendations: generateTransportRecommendations(drivingRoute, transitRoute, walkingRoute, area),
+            timestamp: new Date().toISOString()
+        };
+        
+    } catch (error) {
+        console.error('❌ 交通手段検索エラー:', error);
+        return {
+            success: false,
+            error: error.message,
+            message: '交通手段検索でエラーが発生しました'
+        };
+    }
+}
+
+// 沖縄特化交通情報取得
+function getOkinawaTransportInfo(area, origin, destination) {
+    const areaKey = area === 'ishigaki' ? 'ishigaki' : 
+                   area === 'miyako' ? 'miyako' : 'okinawa_main';
+    
+    return {
+        rental_cars: OKINAWA_TRANSPORT_DATA.rental_car_companies.filter(company => 
+            company.locations.includes(getLocationForArea(area))
+        ),
+        buses: OKINAWA_TRANSPORT_DATA.bus_companies[areaKey] || [],
+        ferries: OKINAWA_TRANSPORT_DATA.ferry_routes.filter(route => 
+            route.name.includes(getAreaName(area))
+        ),
+        parking: {
+            availability: area === 'okinawa_main' ? 'limited' : 'available',
+            cost: area === 'okinawa_main' ? '200-500円/時間' : '無料〜200円/時間',
+            recommendation: 'ダイビングショップに駐車場確認を推奨'
+        }
+    };
+}
+
+// 交通手段推奨アルゴリズム
+function generateTransportRecommendations(driving, transit, walking, area) {
+    const recommendations = [];
+    
+    // レンタカー推奨条件
+    if (driving.success && driving.data?.routes?.[0]) {
+        const drivingTime = getDuration(driving.data.routes[0]);
+        if (drivingTime < 60 && area !== 'kerama') {
+            recommendations.push({
+                method: 'rental_car',
+                priority: 1,
+                reason: '最も便利で時間効率が良い',
+                duration: `${drivingTime}分`,
+                cost: '2,500-8,000円/日',
+                pros: ['自由度が高い', '荷物運搬楽', '複数箇所回れる'],
+                cons: ['運転必要', '駐車場確認必要', '燃料費別途']
+            });
+        }
+    }
+    
+    // 公共交通推奨条件
+    if (transit.success && area === 'okinawa_main') {
+        recommendations.push({
+            method: 'public_transit',
+            priority: 2,
+            reason: '運転不要で環境に優しい',
+            duration: '30-90分',
+            cost: '200-800円',
+            pros: ['運転不要', '安価', '地元体験'],
+            cons: ['時間制約', '荷物運搬大変', '乗り継ぎ必要']
+        });
+    }
+    
+    // フェリー推奨（離島）
+    if (area === 'kerama') {
+        recommendations.push({
+            method: 'ferry',
+            priority: 1,
+            reason: '慶良間諸島唯一のアクセス手段',
+            duration: '35-50分',
+            cost: '往復4,160-4,750円',
+            pros: ['海上移動の爽快感', '景色が良い'],
+            cons: ['天候に左右される', '時刻表制約', '事前予約推奨']
+        });
+    }
+    
+    return recommendations.sort((a, b) => a.priority - b.priority);
+}
+
+// フォールバックデータ（Google Maps API未設定時）
+function getFallbackDirections(origin, destination, mode) {
+    console.log('🔄 交通ルート フォールバックデータ使用');
+    
+    const estimatedTime = estimateTravelTime(origin, destination, mode);
+    const estimatedDistance = estimateDistance(origin, destination);
+    
+    return {
+        success: true,
+        fallback: true,
+        data: {
+            routes: [{
+                legs: [{
+                    duration: { text: `${estimatedTime}分`, value: estimatedTime * 60 },
+                    distance: { text: `${estimatedDistance}km`, value: estimatedDistance * 1000 },
+                    start_address: origin,
+                    end_address: destination
+                }],
+                summary: `${mode}での移動`,
+                overview_polyline: { points: 'fallback_route' }
+            }],
+            status: 'OK'
+        }
+    };
+}
+
+// 移動時間推定（フォールバック用）
+function estimateTravelTime(origin, destination, mode) {
+    const baseTime = {
+        driving: 30,
+        transit: 60,
+        walking: 120,
+        bicycling: 45
+    };
+    
+    // 沖縄内の距離による調整
+    const isLongDistance = origin.includes('空港') || destination.includes('空港');
+    const multiplier = isLongDistance ? 1.5 : 1.0;
+    
+    return Math.round(baseTime[mode] * multiplier);
+}
+
+// 距離推定（フォールバック用）
+function estimateDistance(origin, destination) {
+    // 沖縄内の平均的な距離
+    if (origin.includes('空港')) return 25;
+    if (destination.includes('空港')) return 25;
+    return 15;
+}
+
+// ユーティリティ関数
+function getDuration(route) {
+    return route.legs?.[0]?.duration?.value ? 
+           Math.round(route.legs[0].duration.value / 60) : 30;
+}
+
+function isWalkableDistance(routeData) {
+    const distance = routeData.routes?.[0]?.legs?.[0]?.distance?.value || 0;
+    return distance < 2000; // 2km以下は徒歩可能
+}
+
+function getLocationForArea(area) {
+    const mapping = {
+        okinawa: '那覇空港',
+        ishigaki: '石垣空港', 
+        miyako: '宮古空港'
+    };
+    return mapping[area] || '那覇空港';
+}
+
+function getAreaName(area) {
+    const mapping = {
+        kerama: '泊港',
+        ishigaki: '石垣',
+        miyako: '宮古'
+    };
+    return mapping[area] || '';
+}
+
+// ===== 交通ルート検索APIエンドポイント =====
+
+// 基本ルート検索API
+app.get('/api/transport/directions', async (req, res) => {
+    try {
+        const { origin, destination, mode = 'driving' } = req.query;
+        
+        if (!origin || !destination) {
+            return res.status(400).json({
+                success: false,
+                error: 'missing_parameters',
+                message: '出発地と目的地が必要です',
+                required: ['origin', 'destination']
+            });
+        }
+        
+        console.log(`🗺️ ルート検索API: ${origin} → ${destination} (${mode})`);
+        
+        const result = await getDirections(origin, destination, mode);
+        
+        if (result.success) {
+            res.json({
+                success: true,
+                origin: origin,
+                destination: destination,
+                mode: mode,
+                routes: result.data?.routes || [],
+                status: result.data?.status || 'OK',
+                timestamp: new Date().toISOString()
+            });
+        } else {
+            res.status(500).json(result);
+        }
+        
+    } catch (error) {
+        console.error('❌ ルート検索APIエラー:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message,
+            message: 'ルート検索でエラーが発生しました'
+        });
+    }
+});
+
+// 交通手段比較API
+app.get('/api/transport/options', async (req, res) => {
+    try {
+        const { origin, destination, area = 'okinawa' } = req.query;
+        
+        if (!origin || !destination) {
+            return res.status(400).json({
+                success: false,
+                error: 'missing_parameters',
+                message: '出発地と目的地が必要です'
+            });
+        }
+        
+        console.log(`🚗 交通手段比較API: ${origin} → ${destination} (${area})`);
+        
+        const result = await getTransportOptions(origin, destination, area);
+        
+        res.json(result);
+        
+    } catch (error) {
+        console.error('❌ 交通手段比較APIエラー:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message,
+            message: '交通手段比較でエラーが発生しました'
+        });
+    }
+});
+
+// 沖縄交通情報API
+app.get('/api/transport/okinawa-info/:area?', async (req, res) => {
+    try {
+        const { area = 'all' } = req.params;
+        
+        console.log(`🏝️ 沖縄交通情報API: ${area}`);
+        
+        let transportData = {};
+        
+        if (area === 'all') {
+            transportData = OKINAWA_TRANSPORT_DATA;
+        } else {
+            transportData = {
+                airports: OKINAWA_TRANSPORT_DATA.airports,
+                buses: OKINAWA_TRANSPORT_DATA.bus_companies[area] || [],
+                rental_cars: OKINAWA_TRANSPORT_DATA.rental_car_companies,
+                ferries: OKINAWA_TRANSPORT_DATA.ferry_routes.filter(route => 
+                    route.name.includes(getAreaName(area))
+                ),
+                diving_areas: OKINAWA_TRANSPORT_DATA.diving_areas
+            };
+        }
+        
+        res.json({
+            success: true,
+            area: area,
+            data: transportData,
+            timestamp: new Date().toISOString()
+        });
+        
+    } catch (error) {
+        console.error('❌ 沖縄交通情報APIエラー:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message,
+            message: '沖縄交通情報の取得に失敗しました'
+        });
+    }
+});
+
+// 空港からダイビングショップへのルート特化API
+app.get('/api/transport/airport-to-shop', async (req, res) => {
+    try {
+        const { airport, shop_id, shop_area } = req.query;
+        
+        if (!airport) {
+            return res.status(400).json({
+                success: false,
+                error: 'missing_airport',
+                message: '空港が指定されていません'
+            });
+        }
+        
+        // 空港情報取得
+        const airportInfo = OKINAWA_TRANSPORT_DATA.airports[airport];
+        if (!airportInfo) {
+            return res.status(400).json({
+                success: false,
+                error: 'invalid_airport',
+                message: '無効な空港です'
+            });
+        }
+        
+        // 目的地設定（ショップID指定時はショップ情報取得、未指定時はエリア中心）
+        let destination = '';
+        if (shop_id) {
+            // ショップの詳細な位置を取得する場合の処理
+            destination = `沖縄県のダイビングショップ`; // 実際のショップ位置情報取得
+        } else if (shop_area) {
+            destination = `${shop_area}のダイビングエリア`;
+        } else {
+            destination = '那覇市内';
+        }
+        
+        console.log(`✈️ 空港→ショップ ルート: ${airportInfo.name} → ${destination}`);
+        
+        const result = await getTransportOptions(airportInfo.name, destination, airport);
+        
+        // ダイビング特化情報を追加
+        result.diving_specific = {
+            equipment_transport: {
+                rental_car: '最適 - 重器材も楽々',
+                bus: '注意 - 大きな荷物制限あり',
+                taxi: '可能 - 追加料金の可能性'
+            },
+            arrival_timing: {
+                recommendation: '到着後2時間以上の余裕を推奨',
+                reason: 'レンタカー手続き・移動・ショップでの説明時間'
+            },
+            area_specific: getDivingAreaInfo(shop_area || airport)
+        };
+        
+        res.json(result);
+        
+    } catch (error) {
+        console.error('❌ 空港→ショップ ルートAPIエラー:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message,
+            message: '空港からショップへのルート検索でエラーが発生しました'
+        });
+    }
+});
 
 // ===== 404ハンドリング =====
 app.use((req, res) => {
