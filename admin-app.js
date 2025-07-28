@@ -1776,29 +1776,25 @@ app.get('/api/blog/search', async (req, res) => {
 });
 
 // 関連記事取得API
-app.get('/api/blog/articles/:id/related', async (req, res) => {
+app.get('/api/blog/related/:articleId', async (req, res) => {
     try {
-        const { id } = req.params;
+        const { articleId } = req.params;
         const { limit = 6 } = req.query;
         
-        console.log('🔗 関連記事取得:', { id, limit });
-        
-        // まず基準となる記事を取得
-        let targetArticle = null;
+        console.log('🔗 関連記事取得:', { articleId, limit });
         
         // Supabase接続試行
         if (supabase && supabaseStatus === 'connected') {
             try {
-                const { data: article, error } = await supabase
+                // 対象記事を取得
+                const { data: targetArticle, error: targetError } = await supabase
                     .from('blogs')
                     .select('*')
-                    .eq('id', id)
+                    .eq('id', articleId)
                     .single();
                 
-                if (!error && article) {
-                    targetArticle = article;
-                    
-                    // 全記事を取得して関連記事を計算
+                if (!targetError && targetArticle) {
+                    // 全記事を取得
                     const { data: allArticles, error: allError } = await supabase
                         .from('blogs')
                         .select('*')
@@ -1810,8 +1806,9 @@ app.get('/api/blog/articles/:id/related', async (req, res) => {
                         console.log('🔗 関連記事取得成功（Supabase）:', relatedArticles.length, '件');
                         return res.json({
                             success: true,
-                            related_articles: relatedArticles,
+                            articles: relatedArticles,
                             count: relatedArticles.length,
+                            target_article: targetArticle,
                             source: 'supabase'
                         });
                     }
@@ -1821,7 +1818,7 @@ app.get('/api/blog/articles/:id/related', async (req, res) => {
             }
         }
         
-        // フォールバック: サンプルデータから関連記事を取得
+        // フォールバック: サンプルデータ
         let allArticles = [
             {
                 id: 'article_001',
@@ -1832,9 +1829,7 @@ app.get('/api/blog/articles/:id/related', async (req, res) => {
                 status: 'published',
                 author: 'Jiji編集部',
                 views: 2150,
-                featured: true,
-                published_at: '2025-07-25T10:00:00Z',
-                created_at: '2025-07-25T09:00:00Z'
+                published_at: '2025-07-25T10:00:00Z'
             },
             {
                 id: 'article_002',
@@ -1845,35 +1840,44 @@ app.get('/api/blog/articles/:id/related', async (req, res) => {
                 status: 'published',
                 author: 'ダイビングインストラクター田中',
                 views: 1650,
-                published_at: '2025-07-24T14:00:00Z',
-                created_at: '2025-07-24T13:00:00Z'
+                published_at: '2025-07-24T14:00:00Z'
+            },
+            {
+                id: 'article_003',
+                title: '宮古島のダイビングスポット総まとめ',
+                excerpt: '宮古島の代表的なダイビングスポットを網羅的に紹介。',
+                category: 'diving_spots',
+                tags: ['宮古島', 'ダイビングポイント', '青の洞窟', '地形派'],
+                status: 'published',
+                author: 'Jiji編集部',
+                views: 1850,
+                published_at: '2025-07-23T12:00:00Z'
             }
         ];
         
-        // 20記事のデータを追加
+        // 20記事のデータを追加（BLOG-002で作成済み）
         if (global.tempArticles) {
             allArticles.push(...global.tempArticles);
         }
         
-        // 基準記事を見つける
-        targetArticle = allArticles.find(article => article.id === id);
+        const targetArticle = allArticles.find(article => article.id === articleId);
         
         if (!targetArticle) {
             return res.status(404).json({
                 success: false,
-                error: 'Article not found',
+                error: 'article_not_found',
                 message: '指定された記事が見つかりません'
             });
         }
         
-        // 関連記事を計算
         const relatedArticles = findRelatedArticles(targetArticle, allArticles, parseInt(limit));
         
         console.log('🔗 関連記事取得成功（フォールバック）:', relatedArticles.length, '件');
         res.json({
             success: true,
-            related_articles: relatedArticles,
+            articles: relatedArticles,
             count: relatedArticles.length,
+            target_article: targetArticle,
             source: 'fallback'
         });
         
@@ -1886,6 +1890,176 @@ app.get('/api/blog/articles/:id/related', async (req, res) => {
         });
     }
 });
+
+// SEO最適化・メタタグ生成API
+app.get('/api/blog/seo/:articleId', async (req, res) => {
+    try {
+        const { articleId } = req.params;
+        
+        console.log('🔍 SEO情報生成:', articleId);
+        
+        // Supabase接続試行
+        if (supabase && supabaseStatus === 'connected') {
+            try {
+                const { data: article, error } = await supabase
+                    .from('blogs')
+                    .select('*')
+                    .eq('id', articleId)
+                    .single();
+                
+                if (!error && article) {
+                    const seoData = generateSEOMetadata(article);
+                    
+                    console.log('🔍 SEO情報生成成功（Supabase）');
+                    return res.json({
+                        success: true,
+                        seo: seoData,
+                        source: 'supabase'
+                    });
+                }
+            } catch (supabaseError) {
+                console.warn('Supabase SEO情報取得エラー、フォールバックへ:', supabaseError.message);
+            }
+        }
+        
+        // フォールバック: サンプルデータ
+        const sampleArticles = {
+            'article_001': {
+                id: 'article_001',
+                title: '石垣島のマンタポイント完全ガイド',
+                excerpt: '石垣島の代表的なダイビングスポット、マンタポイントの攻略法を詳しく解説。',
+                content: '石垣島のマンタポイントは、石垣島の北部に位置する世界的に有名なダイビングスポットです...',
+                category: 'diving_spots',
+                tags: ['石垣島', 'マンタ', 'ダイビングポイント', '上級者', '大物'],
+                author: 'Jiji編集部',
+                published_at: '2025-07-25T10:00:00Z'
+            }
+        };
+        
+        const article = sampleArticles[articleId];
+        
+        if (!article) {
+            return res.status(404).json({
+                success: false,
+                error: 'article_not_found',
+                message: '指定された記事が見つかりません'
+            });
+        }
+        
+        const seoData = generateSEOMetadata(article);
+        
+        console.log('🔍 SEO情報生成成功（フォールバック）');
+        res.json({
+            success: true,
+            seo: seoData,
+            source: 'fallback'
+        });
+        
+    } catch (error) {
+        console.error('SEO情報生成API エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message,
+            message: 'SEO情報の生成に失敗しました'
+        });
+    }
+});
+
+// ===== SEO最適化ヘルパー関数 =====
+
+// SEOメタデータ生成
+function generateSEOMetadata(article) {
+    const baseURL = 'https://dive-buddys.com';
+    const siteName = 'Dive Buddy\'s';
+    
+    // タイトル生成（60文字以内推奨）
+    let title = article.title;
+    if (title.length > 60) {
+        title = title.substring(0, 57) + '...';
+    }
+    title += ` | ${siteName}`;
+    
+    // ディスクリプション生成（160文字以内推奨）
+    let description = article.excerpt || '';
+    if (!description && article.content) {
+        description = article.content.replace(/<[^>]*>/g, '').substring(0, 160);
+    }
+    if (description.length > 160) {
+        description = description.substring(0, 157) + '...';
+    }
+    
+    // キーワード生成
+    const keywords = [
+        ...(article.tags || []),
+        'ダイビング',
+        '沖縄',
+        'スキューバダイビング',
+        'ダイビングスポット'
+    ].join(', ');
+    
+    // 構造化データ生成
+    const structuredData = {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": article.title,
+        "description": description,
+        "author": {
+            "@type": "Person",
+            "name": article.author || "Dive Buddy's編集部"
+        },
+        "publisher": {
+            "@type": "Organization",
+            "name": siteName,
+            "logo": {
+                "@type": "ImageObject",
+                "url": `${baseURL}/images/logo.png`
+            }
+        },
+        "datePublished": article.published_at || article.created_at,
+        "dateModified": article.updated_at || article.published_at || article.created_at,
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": `${baseURL}/blog/article/${article.id}`
+        },
+        "keywords": keywords
+    };
+    
+    // 画像がある場合は追加
+    if (article.featured_image) {
+        structuredData.image = {
+            "@type": "ImageObject",
+            "url": article.featured_image,
+            "width": 1200,
+            "height": 630
+        };
+    }
+    
+    return {
+        title,
+        description,
+        keywords,
+        canonical: `${baseURL}/blog/article/${article.id}`,
+        openGraph: {
+            type: 'article',
+            title: article.title,
+            description,
+            url: `${baseURL}/blog/article/${article.id}`,
+            siteName,
+            image: article.featured_image || `${baseURL}/images/og-default.jpg`,
+            locale: 'ja_JP'
+        },
+        twitter: {
+            card: 'summary_large_image',
+            site: '@diveBuddysOki',
+            title: article.title,
+            description,
+            image: article.featured_image || `${baseURL}/images/twitter-default.jpg`
+        },
+        structuredData,
+        robots: 'index, follow',
+        viewport: 'width=device-width, initial-scale=1.0'
+    };
+}
 
 // ===== 宿泊施設検索API =====
 
