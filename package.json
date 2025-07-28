@@ -6,7 +6,7 @@
   "scripts": {
     "start": "NODE_ENV=production node admin-app.js",
     "build": "echo 'Build complete - static files ready'",
-    "dev": "nodemon api-server-railway.js",
+    "dev": "nodemon admin-app.js",
     "test": "node test-phase4a-complete.js",
     "test:api": "node test-railway-api.js",
     "test:db": "node test-supabase-integration.js",

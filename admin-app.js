@@ -180,6 +180,12 @@ const OKINAWA_TRANSPORT_DATA = {
 app.use(express.json());
 app.use(express.static('public'));
 
+// 全リクエストログ（デバッグ用）
+app.use((req, res, next) => {
+    console.log(`📡 ${req.method} ${req.url} - IP: ${req.ip}`);
+    next();
+});
+
 // ===== ヘルスチェック =====
 app.get('/health', (req, res) => {
     res.json({ 
@@ -266,7 +272,24 @@ app.get('/member', (req, res) => {
 
 // 会員登録ページ
 app.get('/member/register', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public/member/register.html'));
+    console.log('🔍 /member/register アクセス - IP:', req.ip, 'UA:', req.get('User-Agent'));
+    const filePath = path.join(__dirname, 'public/member/register.html');
+    console.log('📁 送信ファイルパス:', filePath);
+    
+    // ファイル存在確認
+    const fs = require('fs');
+    try {
+        if (fs.existsSync(filePath)) {
+            console.log('✅ register.html存在確認 - サイズ:', fs.statSync(filePath).size, 'bytes');
+            res.sendFile(filePath);
+        } else {
+            console.error('❌ register.htmlが見つかりません:', filePath);
+            res.status(404).json({ error: 'Register page not found', path: filePath });
+        }
+    } catch (error) {
+        console.error('💥 register.html送信エラー:', error);
+        res.status(500).json({ error: 'Internal server error', message: error.message });
+    }
 });
 
 // 口コミ投稿ページ
