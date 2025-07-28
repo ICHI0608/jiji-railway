@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>プロフィール編集 | Dive Buddy's - ダイビング情報管理</title>
+    <meta name="description" content="Dive Buddy'sプロフィール編集。ダイビング経験、好みのエリア、スキルレベルを設定してパーソナライズ。">
+    
+    <link rel="stylesheet" href="/app/v28-styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        .profile-page {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+        }
+
+        .profile-header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            color: white;
+            padding: 2rem 0;
+        }
+
+        .profile-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .back-button {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: opacity 0.3s ease;
+        }
+
+        .back-button:hover {
+            opacity: 0.8;
+        }
+
+        .profile-title {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .profile-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 2rem;
+        }
+
+        .profile-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .profile-main {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .profile-avatar-section {
+            text-align: center;
+        }
+
+        .avatar-container {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+
+        .profile-avatar-large {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 4px solid #667eea;
+            object-fit: cover;
+        }
+
+        .avatar-edit-button {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: #667eea;
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .avatar-edit-button:hover {
+            background: #5a6fd8;
+            transform: scale(1.1);
+        }
+
+        .user-basic-info {
+            margin-bottom: 1rem;
+        }
+
+        .user-name {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 0.3rem;
+        }
+
+        .user-status {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .profile-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.8rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+
+        .stat-number {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 0.3rem;
+        }
+
+        .form-section {
+            margin-bottom: 2rem;
+        }
+
+        .form-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #333;
+            font-size: 0.95rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: #fff;
+            box-sizing: border-box;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .form-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .diving-experience-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 0.8rem;
+            margin-top: 0.5rem;
+        }
+
+        .experience-option {
+            position: relative;
+        }
+
+        .experience-radio {
+            appearance: none;
+            position: absolute;
+            opacity: 0;
+        }
+
+        .experience-label {
+            display: block;
+            padding: 0.8rem;
+            background: #f8f9fa;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .experience-radio:checked + .experience-label {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-color: #667eea;
+        }
+
+        .areas-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 0.8rem;
+            margin-top: 0.5rem;
+        }
+
+        .area-checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .area-checkbox-item:has(.checkbox-custom:checked) {
+            background: rgba(102, 126, 234, 0.1);
+            border: 1px solid #667eea;
+        }
+
+        .checkbox-custom {
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border: 2px solid #667eea;
+            border-radius: 4px;
+            position: relative;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .checkbox-custom:checked {
+            background: #667eea;
+        }
+
+        .checkbox-custom:checked::after {
+            content: '✓';
+            position: absolute;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            top: -2px;
+            left: 1px;
+        }
+
+        .checkbox-label {
+            font-size: 0.9rem;
+            color: #555;
+            cursor: pointer;
+        }
+
+        .save-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 1.2rem 2rem;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 200px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .save-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+        }
+
+        .save-button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .save-button .loading-spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 0.5rem;
+        }
+
+        .save-button.loading .loading-spinner {
+            display: inline-block;
+        }
+
+        .success-message, .error-message {
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 1024px) {
+            .profile-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .diving-experience-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .areas-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .save-button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="profile-page">
+        <!-- ヘッダー -->
+        <header class="profile-header">
+            <div class="profile-nav">
+                <a href="/member/dashboard" class="back-button">
+                    <i class="fas fa-arrow-left"></i>
+                    ダッシュボードに戻る
+                </a>
+                
+                <h1 class="profile-title">プロフィール編集</h1>
+                
+                <div></div>
+            </div>
+        </header>
+
+        <div class="profile-container">
+            <!-- サイドバー -->
+            <aside class="profile-sidebar">
+                <!-- プロフィール概要 -->
+                <div class="card profile-avatar-section">
+                    <div class="avatar-container">
+                        <img id="profileAvatar" class="profile-avatar-large" src="/images/default-avatar.png" alt="プロフィール画像">
+                        <button class="avatar-edit-button" title="画像を変更">
+                            <i class="fas fa-camera"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="user-basic-info">
+                        <h2 id="userName" class="user-name">読み込み中...</h2>
+                        <p id="userStatus" class="user-status">LINE連携ユーザー</p>
+                    </div>
+                    
+                    <div class="profile-stats">
+                        <div class="stat-item">
+                            <div class="stat-number" id="divingCount">0</div>
+                            <div class="stat-label">ダイビング回数</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="favoriteCount">0</div>
+                            <div class="stat-label">お気に入り</div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- メインコンテンツ -->
+            <main class="profile-main">
+                <!-- 成功・エラーメッセージ -->
+                <div id="successMessage" class="success-message"></div>
+                <div id="errorMessage" class="error-message"></div>
+
+                <form id="profileForm">
+                    <!-- 基本情報 -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-user"></i> 基本情報
+                            </h3>
+                        </div>
+
+                        <div class="form-section">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="displayName">表示名</label>
+                                    <input type="text" id="displayName" name="display_name" class="form-input" placeholder="表示名を入力">
+                                </div>
+                                <div class="form-group">
+                                    <label for="email">メールアドレス</label>
+                                    <input type="email" id="email" name="email" class="form-input" placeholder="メールアドレス（任意）">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="bio">自己紹介</label>
+                                <textarea id="bio" name="bio" class="form-input form-textarea" placeholder="ダイビングについて、好きなポイント、経験などを自由に書いてください"></textarea>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="location">居住地域</label>
+                                    <select id="location" name="location" class="form-input form-select">
+                                        <option value="">選択してください</option>
+                                        <option value="北海道">北海道</option>
+                                        <option value="東北">東北地方</option>
+                                        <option value="関東">関東地方</option>
+                                        <option value="中部">中部地方</option>
+                                        <option value="関西">関西地方</option>
+                                        <option value="中国">中国地方</option>
+                                        <option value="四国">四国地方</option>
+                                        <option value="九州">九州地方</option>
+                                        <option value="沖縄">沖縄県</option>
+                                        <option value="海外">海外</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="age">年代</label>
+                                    <select id="age" name="age" class="form-input form-select">
+                                        <option value="">選択してください</option>
+                                        <option value="10代">10代</option>
+                                        <option value="20代">20代</option>
+                                        <option value="30代">30代</option>
+                                        <option value="40代">40代</option>
+                                        <option value="50代">50代</option>
+                                        <option value="60代以上">60代以上</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ダイビング情報 -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-water"></i> ダイビング情報
+                            </h3>
+                        </div>
+
+                        <div class="form-section">
+                            <div class="section-title">
+                                <i class="fas fa-certificate"></i>
+                                ダイビング経験レベル
+                            </div>
+                            <div class="diving-experience-grid">
+                                <div class="experience-option">
+                                    <input type="radio" id="beginner" name="diving_experience" value="beginner" class="experience-radio">
+                                    <label for="beginner" class="experience-label">初心者</label>
+                                </div>
+                                <div class="experience-option">
+                                    <input type="radio" id="openwater" name="diving_experience" value="openwater" class="experience-radio">
+                                    <label for="openwater" class="experience-label">オープンウォーター</label>
+                                </div>
+                                <div class="experience-option">
+                                    <input type="radio" id="advanced" name="diving_experience" value="advanced" class="experience-radio">
+                                    <label for="advanced" class="experience-label">アドバンス</label>
+                                </div>
+                                <div class="experience-option">
+                                    <input type="radio" id="rescue" name="diving_experience" value="rescue" class="experience-radio">
+                                    <label for="rescue" class="experience-label">レスキュー</label>
+                                </div>
+                                <div class="experience-option">
+                                    <input type="radio" id="divemaster" name="diving_experience" value="divemaster" class="experience-radio">
+                                    <label for="divemaster" class="experience-label">ダイブマスター</label>
+                                </div>
+                                <div class="experience-option">
+                                    <input type="radio" id="instructor" name="diving_experience" value="instructor" class="experience-radio">
+                                    <label for="instructor" class="experience-label">インストラクター</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="totalDives">総ダイブ数</label>
+                                    <input type="number" id="totalDives" name="total_dives" class="form-input" min="0" placeholder="例: 50">
+                                </div>
+                                <div class="form-group">
+                                    <label for="certification">認定団体</label>
+                                    <select id="certification" name="certification" class="form-input form-select">
+                                        <option value="">選択してください</option>
+                                        <option value="PADI">PADI</option>
+                                        <option value="NAUI">NAUI</option>
+                                        <option value="SSI">SSI</option>
+                                        <option value="BSAC">BSAC</option>
+                                        <option value="CMAS">CMAS</option>
+                                        <option value="その他">その他</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <div class="section-title">
+                                <i class="fas fa-map-marker-alt"></i>
+                                好みのダイビングエリア（複数選択可）
+                            </div>
+                            <div class="areas-grid">
+                                <div class="area-checkbox-item">
+                                    <input type="checkbox" id="okinawa" name="preferred_areas" value="沖縄本島" class="checkbox-custom">
+                                    <label for="okinawa" class="checkbox-label">沖縄本島</label>
+                                </div>
+                                <div class="area-checkbox-item">
+                                    <input type="checkbox" id="ishigaki" name="preferred_areas" value="石垣島" class="checkbox-custom">
+                                    <label for="ishigaki" class="checkbox-label">石垣島</label>
+                                </div>
+                                <div class="area-checkbox-item">
+                                    <input type="checkbox" id="miyako" name="preferred_areas" value="宮古島" class="checkbox-custom">
+                                    <label for="miyako" class="checkbox-label">宮古島</label>
+                                </div>
+                                <div class="area-checkbox-item">
+                                    <input type="checkbox" id="kerama" name="preferred_areas" value="慶良間諸島" class="checkbox-custom">
+                                    <label for="kerama" class="checkbox-label">慶良間諸島</label>
+                                </div>
+                                <div class="area-checkbox-item">
+                                    <input type="checkbox" id="iriomote" name="preferred_areas" value="西表島" class="checkbox-custom">
+                                    <label for="iriomote" class="checkbox-label">西表島</label>
+                                </div>
+                                <div class="area-checkbox-item">
+                                    <input type="checkbox" id="yonaguni" name="preferred_areas" value="与那国島" class="checkbox-custom">
+                                    <label for="yonaguni" class="checkbox-label">与那国島</label>
+                                </div>
+                                <div class="area-checkbox-item">
+                                    <input type="checkbox" id="amami" name="preferred_areas" value="奄美大島" class="checkbox-custom">
+                                    <label for="amami" class="checkbox-label">奄美大島</label>
+                                </div>
+                                <div class="area-checkbox-item">
+                                    <input type="checkbox" id="ogasawara" name="preferred_areas" value="小笠原諸島" class="checkbox-custom">
+                                    <label for="ogasawara" class="checkbox-label">小笠原諸島</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 設定 -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-cog"></i> 通知設定
+                            </h3>
+                        </div>
+
+                        <div class="form-section">
+                            <div class="area-checkbox-item">
+                                <input type="checkbox" id="emailNotifications" name="email_notifications" class="checkbox-custom">
+                                <label for="emailNotifications" class="checkbox-label">メール通知を受け取る</label>
+                            </div>
+                            <div class="area-checkbox-item">
+                                <input type="checkbox" id="lineNotifications" name="line_notifications" class="checkbox-custom">
+                                <label for="lineNotifications" class="checkbox-label">LINE通知を受け取る</label>
+                            </div>
+                            <div class="area-checkbox-item">
+                                <input type="checkbox" id="weatherAlerts" name="weather_alerts" class="checkbox-custom">
+                                <label for="weatherAlerts" class="checkbox-label">天候アラートを受け取る</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 保存ボタン -->
+                    <div style="text-align: center;">
+                        <button type="submit" class="save-button" id="saveButton">
+                            <div class="loading-spinner"></div>
+                            <i class="fas fa-save"></i> プロフィールを保存
+                        </button>
+                    </div>
+                </form>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        class ProfileEditor {
+            constructor() {
+                this.form = document.getElementById('profileForm');
+                this.saveButton = document.getElementById('saveButton');
+                this.init();
+            }
+
+            async init() {
+                await this.checkAuth();
+                this.setupEventListeners();
+                this.loadUserProfile();
+            }
+
+            async checkAuth() {
+                try {
+                    const response = await fetch('/api/auth/line/status');
+                    const data = await response.json();
+                    
+                    if (!data.authenticated) {
+                        window.location.href = '/member/login';
+                        return;
+                    }
+                } catch (error) {
+                    console.error('認証確認エラー:', error);
+                    window.location.href = '/member/login';
+                }
+            }
+
+            setupEventListeners() {
+                this.form.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.saveProfile();
+                });
+
+                // アバター編集ボタン
+                document.querySelector('.avatar-edit-button').addEventListener('click', () => {
+                    this.showMessage('アバター編集機能は近日実装予定です', 'info');
+                });
+            }
+
+            async loadUserProfile() {
+                try {
+                    const response = await fetch('/api/member/profile');
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        this.populateForm(data.profile || {});
+                    } else {
+                        // 新規ユーザーの場合はデフォルト値
+                        this.populateForm({});
+                    }
+                } catch (error) {
+                    console.error('プロフィール読み込みエラー:', error);
+                    this.populateForm({});
+                }
+            }
+
+            populateForm(profile) {
+                // 基本情報
+                if (profile.display_name) {
+                    document.getElementById('displayName').value = profile.display_name;
+                    document.getElementById('userName').textContent = profile.display_name;
+                }
+                if (profile.email) document.getElementById('email').value = profile.email;
+                if (profile.bio) document.getElementById('bio').value = profile.bio;
+                if (profile.location) document.getElementById('location').value = profile.location;
+                if (profile.age) document.getElementById('age').value = profile.age;
+
+                // ダイビング情報
+                if (profile.diving_experience) {
+                    const experienceRadio = document.querySelector(`[name="diving_experience"][value="${profile.diving_experience}"]`);
+                    if (experienceRadio) experienceRadio.checked = true;
+                }
+                if (profile.total_dives) document.getElementById('totalDives').value = profile.total_dives;
+                if (profile.certification) document.getElementById('certification').value = profile.certification;
+
+                // 好みのエリア
+                if (profile.preferred_areas && Array.isArray(profile.preferred_areas)) {
+                    profile.preferred_areas.forEach(area => {
+                        const checkbox = document.querySelector(`[name="preferred_areas"][value="${area}"]`);
+                        if (checkbox) checkbox.checked = true;
+                    });
+                }
+
+                // 通知設定
+                if (profile.email_notifications) document.getElementById('emailNotifications').checked = true;
+                if (profile.line_notifications) document.getElementById('lineNotifications').checked = true;
+                if (profile.weather_alerts) document.getElementById('weatherAlerts').checked = true;
+
+                // 統計情報
+                document.getElementById('divingCount').textContent = profile.total_dives || 0;
+                document.getElementById('favoriteCount').textContent = profile.favorite_count || 0;
+            }
+
+            async saveProfile() {
+                this.setLoading(true);
+
+                try {
+                    const formData = new FormData(this.form);
+                    
+                    // 好みのエリアを配列として収集
+                    const preferredAreas = [];
+                    document.querySelectorAll('[name="preferred_areas"]:checked').forEach(checkbox => {
+                        preferredAreas.push(checkbox.value);
+                    });
+
+                    const profileData = {
+                        display_name: formData.get('display_name'),
+                        email: formData.get('email'),
+                        bio: formData.get('bio'),
+                        location: formData.get('location'),
+                        age: formData.get('age'),
+                        diving_experience: formData.get('diving_experience'),
+                        total_dives: parseInt(formData.get('total_dives')) || 0,
+                        certification: formData.get('certification'),
+                        preferred_areas: preferredAreas,
+                        email_notifications: formData.get('email_notifications') === 'on',
+                        line_notifications: formData.get('line_notifications') === 'on',
+                        weather_alerts: formData.get('weather_alerts') === 'on'
+                    };
+
+                    console.log('💾 プロフィール保存:', profileData);
+
+                    const response = await fetch('/api/member/profile', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(profileData)
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        this.showMessage('プロフィールを保存しました！', 'success');
+                        
+                        // 表示名を更新
+                        if (profileData.display_name) {
+                            document.getElementById('userName').textContent = profileData.display_name;
+                        }
+                    } else {
+                        this.showMessage('保存に失敗しました: ' + data.message, 'error');
+                    }
+
+                } catch (error) {
+                    console.error('プロフィール保存エラー:', error);
+                    this.showMessage('ネットワークエラーが発生しました', 'error');
+                } finally {
+                    this.setLoading(false);
+                }
+            }
+
+            setLoading(loading) {
+                if (loading) {
+                    this.saveButton.disabled = true;
+                    this.saveButton.classList.add('loading');
+                } else {
+                    this.saveButton.disabled = false;
+                    this.saveButton.classList.remove('loading');
+                }
+            }
+
+            showMessage(message, type) {
+                const successElement = document.getElementById('successMessage');
+                const errorElement = document.getElementById('errorMessage');
+                
+                // リセット
+                successElement.style.display = 'none';
+                errorElement.style.display = 'none';
+                
+                if (type === 'success') {
+                    successElement.textContent = message;
+                    successElement.style.display = 'block';
+                } else {
+                    errorElement.textContent = message;
+                    errorElement.style.display = 'block';
+                }
+                
+                // 3秒後に非表示
+                setTimeout(() => {
+                    successElement.style.display = 'none';
+                    errorElement.style.display = 'none';
+                }, 3000);
+            }
+        }
+
+        // 初期化
+        document.addEventListener('DOMContentLoaded', () => {
+            window.profileEditor = new ProfileEditor();
+        });
+    </script>
+</body>
+</html>

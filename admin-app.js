@@ -303,6 +303,11 @@ app.get('/member/dashboard', (req, res) => {
     res.sendFile(path.join(__dirname, 'public/member/dashboard.html'));
 });
 
+// 会員プロフィール編集
+app.get('/member/profile', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/member/profile.html'));
+});
+
 // 会員登録ページ（本番: https://dive-buddys.com で提供中）
 
 // 口コミ投稿ページ
@@ -4699,6 +4704,7 @@ app.use((req, res) => {
             '/member',
             '/member/login',
             '/member/dashboard',
+            '/member/profile',
             '/member/review-post',
             '/auth/line/login',
             '/auth/line/callback',
@@ -4820,6 +4826,193 @@ app.post('/api/auth/line/logout', (req, res) => {
     req.session = null;
     console.log('🔐 LINE認証ログアウト完了');
     res.json({ success: true, message: 'ログアウトしました' });
+});
+
+// ===== メンバープロフィール管理API =====
+
+// プロフィール取得
+app.get('/api/member/profile', async (req, res) => {
+    try {
+        if (!req.session?.isAuthenticated || !req.session?.lineUserId) {
+            return res.status(401).json({ success: false, error: 'unauthorized' });
+        }
+
+        const lineUserId = req.session.lineUserId;
+        console.log('👤 プロフィール取得:', { lineUserId });
+
+        // Supabase接続試行
+        if (supabase && supabaseStatus === 'connected') {
+            try {
+                const { data: profile, error } = await supabase
+                    .from('member_profiles')
+                    .select('*')
+                    .eq('line_user_id', lineUserId)
+                    .single();
+
+                if (!error && profile) {
+                    console.log('✅ プロフィール取得成功（Supabase）');
+                    return res.json({
+                        success: true,
+                        profile: profile,
+                        source: 'supabase'
+                    });
+                }
+            } catch (supabaseError) {
+                console.warn('Supabaseプロフィール取得エラー、フォールバックへ:', supabaseError.message);
+            }
+        }
+
+        // フォールバック: メモリベース検索
+        if (!global.memberProfiles) {
+            global.memberProfiles = [];
+        }
+
+        const profile = global.memberProfiles.find(p => p.line_user_id === lineUserId);
+        
+        if (profile) {
+            console.log('✅ プロフィール取得成功（フォールバック）');
+            return res.json({
+                success: true,
+                profile: profile,
+                source: 'fallback'
+            });
+        } else {
+            // プロフィール未作成
+            return res.json({
+                success: true,
+                profile: null,
+                source: 'none'
+            });
+        }
+
+    } catch (error) {
+        console.error('プロフィール取得エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: 'server_error',
+            message: 'プロフィールの取得に失敗しました'
+        });
+    }
+});
+
+// プロフィール保存/更新
+app.post('/api/member/profile', async (req, res) => {
+    try {
+        if (!req.session?.isAuthenticated || !req.session?.lineUserId) {
+            return res.status(401).json({ success: false, error: 'unauthorized' });
+        }
+
+        const lineUserId = req.session.lineUserId;
+        const profileData = {
+            line_user_id: lineUserId,
+            display_name: req.body.display_name || '',
+            email: req.body.email || null,
+            bio: req.body.bio || '',
+            location: req.body.location || '',
+            age: req.body.age || '',
+            diving_experience: req.body.diving_experience || '',
+            total_dives: parseInt(req.body.total_dives) || 0,
+            certification: req.body.certification || '',
+            preferred_areas: req.body.preferred_areas || [],
+            email_notifications: req.body.email_notifications || false,
+            line_notifications: req.body.line_notifications || false,
+            weather_alerts: req.body.weather_alerts || false,
+            updated_at: new Date().toISOString()
+        };
+
+        console.log('💾 プロフィール保存:', { lineUserId, display_name: profileData.display_name });
+
+        // Supabase保存試行
+        if (supabase && supabaseStatus === 'connected') {
+            try {
+                // 既存プロフィール確認
+                const { data: existingProfile } = await supabase
+                    .from('member_profiles')
+                    .select('*')
+                    .eq('line_user_id', lineUserId)
+                    .single();
+
+                if (existingProfile) {
+                    // 更新
+                    const { data: updatedProfile, error } = await supabase
+                        .from('member_profiles')
+                        .update(profileData)
+                        .eq('line_user_id', lineUserId)
+                        .select()
+                        .single();
+
+                    if (!error) {
+                        console.log('✅ プロフィール更新成功（Supabase）');
+                        return res.json({
+                            success: true,
+                            profile: updatedProfile,
+                            source: 'supabase',
+                            action: 'updated'
+                        });
+                    }
+                } else {
+                    // 新規作成
+                    profileData.created_at = new Date().toISOString();
+                    const { data: newProfile, error } = await supabase
+                        .from('member_profiles')
+                        .insert([profileData])
+                        .select()
+                        .single();
+
+                    if (!error) {
+                        console.log('✅ プロフィール作成成功（Supabase）');
+                        return res.json({
+                            success: true,
+                            profile: newProfile,
+                            source: 'supabase',
+                            action: 'created'
+                        });
+                    }
+                }
+            } catch (supabaseError) {
+                console.warn('Supabaseプロフィール保存エラー、フォールバックへ:', supabaseError.message);
+            }
+        }
+
+        // フォールバック: メモリベース保存
+        if (!global.memberProfiles) {
+            global.memberProfiles = [];
+        }
+
+        const existingIndex = global.memberProfiles.findIndex(p => p.line_user_id === lineUserId);
+
+        if (existingIndex >= 0) {
+            // 更新
+            global.memberProfiles[existingIndex] = { ...global.memberProfiles[existingIndex], ...profileData };
+            console.log('✅ プロフィール更新成功（フォールバック）');
+            return res.json({
+                success: true,
+                profile: global.memberProfiles[existingIndex],
+                source: 'fallback',
+                action: 'updated'
+            });
+        } else {
+            // 新規作成
+            profileData.id = 'profile_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            profileData.created_at = new Date().toISOString();
+            global.memberProfiles.push(profileData);
+            console.log('✅ プロフィール作成成功（フォールバック）');
+            return res.json({
+                success: true,
+                profile: profileData,
+                source: 'fallback',
+                action: 'created'
+            });
+        }
+
+    } catch (error) {
+        console.error('プロフィール保存エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: 'server_error',
+            message: 'プロフィールの保存に失敗しました'
+        });
+    }
 });
 
 // ===== LINE Login ヘルパー関数 =====
