@@ -2555,6 +2555,9 @@ function getBasePrices(destination) {
 
 // 季節倍率取得
 function getSeasonMultiplier(destination, travel_dates) {
+    if (!travel_dates || !travel_dates.start) {
+        return 1.0;
+    }
     const month = new Date(travel_dates.start).getMonth() + 1; // 1-12
     
     // 沖縄の季節料金倍率
@@ -3028,7 +3031,7 @@ app.post('/api/travel/cost-simulator', async (req, res) => {
         };
 
         // 時期別料金倍率
-        const seasonMultipliers = getSeasonMultiplier(travel_dates.start);
+        const seasonMultipliers = getDetailedSeasonMultiplier(travel_dates.start);
 
         // 費用計算
         const flightCost = (basePrices.flights[destination]?.[transport_type] || 35000) * participants * seasonMultipliers.flight;
@@ -3048,7 +3051,7 @@ app.post('/api/travel/cost-simulator', async (req, res) => {
         );
 
         // 節約提案生成
-        const savingTips = generateSavingTips({
+        const savingTips = generateDetailedSavingTips({
             destination, accommodation_level, diving_plan, meal_plan, 
             transport_type, totalCost, participants
         });
@@ -3089,8 +3092,8 @@ app.post('/api/travel/cost-simulator', async (req, res) => {
     }
 });
 
-// 時期別料金倍率取得
-function getSeasonMultiplier(travelDate) {
+// 時期別料金倍率取得（詳細版）
+function getDetailedSeasonMultiplier(travelDate) {
     const date = new Date(travelDate);
     const month = date.getMonth() + 1; // 1-12
 
@@ -3144,14 +3147,14 @@ function generateSeasonalComparison(destination, duration, participants, accommo
     ];
 
     const currentMonth = new Date(currentDate).getMonth() + 1;
-    const currentMultiplier = getSeasonMultiplier(currentDate);
+    const currentMultiplier = getDetailedSeasonMultiplier(currentDate);
     
     // 基本費用（倍率なし）
     const baseCost = calculateBaseCost(destination, duration, participants, accommodation, diving, meals, transport);
 
     return months.map(monthData => {
         const testDate = `2024-${monthData.month.toString().padStart(2, '0')}-15`;
-        const multiplier = getSeasonMultiplier(testDate);
+        const multiplier = getDetailedSeasonMultiplier(testDate);
         const estimatedCost = Math.round(baseCost * 
             (multiplier.flight * 0.3 + multiplier.accommodation * 0.4 + multiplier.diving * 0.2 + multiplier.meals * 0.1));
         
@@ -3191,7 +3194,7 @@ function calculateBaseCost(destination, duration, participants, accommodation, d
 }
 
 // 節約提案生成
-function generateSavingTips(params) {
+function generateDetailedSavingTips(params) {
     const tips = [];
     const { accommodation_level, diving_plan, meal_plan, transport_type, totalCost, participants } = params;
 
