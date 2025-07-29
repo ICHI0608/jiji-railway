@@ -3847,3 +3847,630 @@ async function sendVerificationEmail(email, token, fullName) {
     
     return true;
 }
+
+// ===== LINE Login認証システム =====
+
+// LINE Login開始エンドポイント
+app.get('/auth/line/login', (req, res) => {
+    try {
+        console.log('🔗 LINE Login開始');
+        
+        if (!LINE_LOGIN_CONFIG.channel_id) {
+            console.warn('⚠️ LINE_LOGIN_CHANNEL_ID が設定されていません');
+            return res.status(503).json({
+                success: false,
+                error: 'line_not_configured',
+                message: 'LINE Login機能は現在利用できません',
+                fallback_url: '/member/register'
+            });
+        }
+
+        // OAuth認証URL生成
+        const state = generateStateToken();
+        const nonce = generateNonce();
+        
+        // セッションに状態を保存（実際の実装ではRedisやDB使用）
+        if (!global.lineLoginSessions) {
+            global.lineLoginSessions = new Map();
+        }
+        global.lineLoginSessions.set(state, {
+            nonce,
+            timestamp: Date.now(),
+            expires: Date.now() + (10 * 60 * 1000) // 10分後に期限切れ
+        });
+
+        const authUrl = new URL(LINE_LOGIN_CONFIG.base_url);
+        authUrl.searchParams.set('response_type', 'code');
+        authUrl.searchParams.set('client_id', LINE_LOGIN_CONFIG.channel_id);
+        authUrl.searchParams.set('redirect_uri', LINE_LOGIN_CONFIG.callback_url);
+        authUrl.searchParams.set('state', state);
+        authUrl.searchParams.set('scope', 'profile openid email');
+        authUrl.searchParams.set('nonce', nonce);
+
+        console.log('🔗 LINE認証リダイレクト:', authUrl.toString());
+        res.redirect(authUrl.toString());
+
+    } catch (error) {
+        console.error('LINE Login開始エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message,
+            message: 'LINE認証の開始に失敗しました',
+            fallback_url: '/member/register'
+        });
+    }
+});
+
+// LINE Login コールバックエンドポイント
+app.get('/auth/line/callback', async (req, res) => {
+    try {
+        const { code, state, error: authError } = req.query;
+        
+        console.log('🔄 LINE Login コールバック:', { code: code ? '受信' : '未受信', state, authError });
+
+        if (authError) {
+            console.error('LINE認証エラー:', authError);
+            return res.redirect('/member/login?error=line_auth_failed');
+        }
+
+        if (!code || !state) {
+            console.error('認証パラメータ不足:', { code: !!code, state: !!state });
+            return res.redirect('/member/login?error=invalid_callback');
+        }
+
+        // 状態検証
+        if (!global.lineLoginSessions || !global.lineLoginSessions.has(state)) {
+            console.error('無効な状態トークン:', state);
+            return res.redirect('/member/login?error=invalid_state');
+        }
+
+        const session = global.lineLoginSessions.get(state);
+        if (session.expires < Date.now()) {
+            global.lineLoginSessions.delete(state);
+            console.error('期限切れの状態トークン');
+            return res.redirect('/member/login?error=session_expired');
+        }
+
+        // アクセストークン取得
+        const tokenData = await exchangeCodeForToken(code);
+        if (!tokenData.access_token) {
+            console.error('アクセストークン取得失敗');
+            return res.redirect('/member/login?error=token_exchange_failed');
+        }
+
+        // ユーザープロフィール取得
+        const profile = await getLINEUserProfile(tokenData.access_token);
+        if (!profile) {
+            console.error('プロフィール取得失敗');
+            return res.redirect('/member/login?error=profile_fetch_failed');
+        }
+
+        // ユーザー作成または更新
+        const user = await findOrCreateLINEUser(profile, tokenData);
+        
+        // セッション作成（実装は簡易版）
+        const userSession = {
+            user_id: user.id,
+            line_user_id: profile.userId,
+            access_token: tokenData.access_token,
+            login_time: new Date().toISOString(),
+            expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // 24時間
+        };
+
+        if (!global.userSessions) {
+            global.userSessions = new Map();
+        }
+        global.userSessions.set(user.id, userSession);
+
+        // クリーンアップ
+        global.lineLoginSessions.delete(state);
+
+        console.log('✅ LINE Login成功:', user.display_name || user.username);
+        res.redirect('/member/dashboard?login=success');
+
+    } catch (error) {
+        console.error('LINE Login コールバックエラー:', error);
+        res.redirect('/member/login?error=login_failed');
+    }
+});
+
+// LINE認証状態確認API
+app.get('/api/auth/line/status', async (req, res) => {
+    try {
+        // 簡易的なセッション確認（実際はJWTやセッションストア使用）
+        const sessionId = req.headers['x-session-id'] || req.query.session_id;
+        
+        if (!sessionId || !global.userSessions || !global.userSessions.has(sessionId)) {
+            return res.json({
+                authenticated: false,
+                user: null
+            });
+        }
+
+        const session = global.userSessions.get(sessionId);
+        if (new Date(session.expires) < new Date()) {
+            global.userSessions.delete(sessionId);
+            return res.json({
+                authenticated: false,
+                user: null
+            });
+        }
+
+        // ユーザー情報取得
+        const user = await getUserById(session.user_id);
+        
+        res.json({
+            authenticated: true,
+            user: {
+                id: user.id,
+                username: user.username,
+                display_name: user.display_name,
+                avatar_url: user.avatar_url,
+                points_balance: user.points_balance
+            },
+            session: {
+                login_time: session.login_time,
+                expires: session.expires
+            }
+        });
+
+    } catch (error) {
+        console.error('認証状態確認エラー:', error);
+        res.status(500).json({
+            authenticated: false,
+            error: error.message
+        });
+    }
+});
+
+// ログアウトAPI
+app.post('/api/auth/line/logout', (req, res) => {
+    try {
+        const sessionId = req.headers['x-session-id'] || req.query.session_id;
+        
+        if (sessionId && global.userSessions) {
+            global.userSessions.delete(sessionId);
+        }
+
+        res.json({
+            success: true,
+            message: 'ログアウトしました'
+        });
+
+    } catch (error) {
+        console.error('ログアウトエラー:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// ===== LINE Login ヘルパー関数 =====
+
+// 状態トークン生成
+function generateStateToken() {
+    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+}
+
+// ノンス生成
+function generateNonce() {
+    return Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
+}
+
+// 認証コードをアクセストークンに交換
+async function exchangeCodeForToken(code) {
+    try {
+        const response = await fetch(LINE_LOGIN_CONFIG.token_url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: new URLSearchParams({
+                grant_type: 'authorization_code',
+                code: code,
+                redirect_uri: LINE_LOGIN_CONFIG.callback_url,
+                client_id: LINE_LOGIN_CONFIG.channel_id,
+                client_secret: LINE_LOGIN_CONFIG.channel_secret
+            })
+        });
+
+        const data = await response.json();
+        
+        if (!response.ok) {
+            console.error('トークン交換エラー:', data);
+            throw new Error('トークンの取得に失敗しました');
+        }
+
+        return data;
+    } catch (error) {
+        console.error('exchangeCodeForToken エラー:', error);
+        throw error;
+    }
+}
+
+// LINEユーザープロフィール取得
+async function getLINEUserProfile(accessToken) {
+    try {
+        const response = await fetch(LINE_LOGIN_CONFIG.profile_url, {
+            headers: {
+                'Authorization': `Bearer ${accessToken}`
+            }
+        });
+
+        const profile = await response.json();
+        
+        if (!response.ok) {
+            console.error('プロフィール取得エラー:', profile);
+            throw new Error('プロフィールの取得に失敗しました');
+        }
+
+        return profile;
+    } catch (error) {
+        console.error('getLINEUserProfile エラー:', error);
+        throw error;
+    }
+}
+
+// LINEユーザー検索または作成
+async function findOrCreateLINEUser(profile, tokenData) {
+    try {
+        const lineUserId = profile.userId;
+        
+        // Supabase接続試行
+        if (supabase && supabaseStatus === 'connected') {
+            try {
+                // 既存ユーザー検索
+                const { data: existingUser, error: findError } = await supabase
+                    .from('users')
+                    .select('*')
+                    .eq('line_user_id', lineUserId)
+                    .single();
+
+                if (!findError && existingUser) {
+                    // 既存ユーザー更新
+                    const { data: updatedUser, error: updateError } = await supabase
+                        .from('users')
+                        .update({
+                            display_name: profile.displayName,
+                            avatar_url: profile.pictureUrl,
+                            last_login: new Date().toISOString()
+                        })
+                        .eq('id', existingUser.id)
+                        .select()
+                        .single();
+
+                    if (!updateError) {
+                        console.log('✅ 既存LINEユーザー更新:', profile.displayName);
+                        return updatedUser;
+                    }
+                }
+
+                // 新規ユーザー作成
+                const userData = {
+                    line_user_id: lineUserId,
+                    username: `line_${lineUserId.substring(-8)}`,
+                    display_name: profile.displayName,
+                    avatar_url: profile.pictureUrl,
+                    email: null, // LINEからはメールアドレス取得できない場合が多い
+                    registration_date: new Date().toISOString(),
+                    last_login: new Date().toISOString(),
+                    points_balance: 100, // 新規登録ボーナス
+                    status: 'active',
+                    auth_provider: 'line'
+                };
+
+                const { data: newUser, error: createError } = await supabase
+                    .from('users')
+                    .insert([userData])
+                    .select()
+                    .single();
+
+                if (!createError) {
+                    console.log('✅ 新規LINEユーザー作成:', profile.displayName);
+                    return newUser;
+                }
+
+                console.warn('Supabaseユーザー作成エラー:', createError.message);
+                
+            } catch (supabaseError) {
+                console.warn('Supabase LINEユーザー処理エラー:', supabaseError.message);
+            }
+        }
+
+        // フォールバック: ローカルストレージ
+        const userId = `line_user_${Date.now()}`;
+        const userData = {
+            id: userId,
+            line_user_id: lineUserId,
+            username: `line_${lineUserId.substring(-8)}`,
+            display_name: profile.displayName,
+            avatar_url: profile.pictureUrl,
+            registration_date: new Date().toISOString(),
+            last_login: new Date().toISOString(),
+            points_balance: 100,
+            status: 'active',
+            auth_provider: 'line'
+        };
+
+        if (!global.lineUsers) {
+            global.lineUsers = new Map();
+        }
+        global.lineUsers.set(lineUserId, userData);
+
+        console.log('✅ 新規LINEユーザー作成（フォールバック）:', profile.displayName);
+        return userData;
+
+    } catch (error) {
+        console.error('findOrCreateLINEUser エラー:', error);
+        throw error;
+    }
+}
+
+// ユーザーID検索
+async function getUserById(userId) {
+    // Supabase接続試行
+    if (supabase && supabaseStatus === 'connected') {
+        try {
+            const { data: user, error } = await supabase
+                .from('users')
+                .select('*')
+                .eq('id', userId)
+                .single();
+
+            if (!error && user) {
+                return user;
+            }
+        } catch (supabaseError) {
+            console.warn('Supabaseユーザー検索エラー:', supabaseError.message);
+        }
+    }
+
+    // フォールバック検索
+    if (global.lineUsers) {
+        for (const [lineId, userData] of global.lineUsers.entries()) {
+            if (userData.id === userId) {
+                return userData;
+            }
+        }
+    }
+
+    if (global.registeredUsers) {
+        for (const [key, userData] of global.registeredUsers.entries()) {
+            if (userData.id === userId) {
+                return userData;
+            }
+        }
+    }
+
+    throw new Error('ユーザーが見つかりません');
+}
+
+// ===== 会員プロフィール管理 API =====
+
+// プロフィール取得
+app.get('/api/member/profile', async (req, res) => {
+    try {
+        console.log('📋 プロフィール取得リクエスト');
+
+        // セッション確認
+        const userSession = req.session.user;
+        if (!userSession) {
+            return res.status(401).json({
+                success: false,
+                error: 'not_authenticated',
+                message: '認証が必要です'
+            });
+        }
+
+        let profile = null;
+
+        // Supabase接続試行
+        if (supabase && supabaseStatus === 'connected') {
+            try {
+                const { data, error } = await supabase
+                    .from('user_profiles')
+                    .select('*')
+                    .eq('user_id', userSession.id)
+                    .single();
+
+                if (!error && data) {
+                    profile = data;
+                    console.log('✅ Supabaseからプロフィール取得:', userSession.display_name);
+                }
+            } catch (supabaseError) {
+                console.warn('Supabaseプロフィール取得エラー:', supabaseError.message);
+            }
+        }
+
+        // フォールバック: デフォルトプロフィール
+        if (!profile) {
+            profile = {
+                user_id: userSession.id,
+                display_name: userSession.display_name || '',
+                email: userSession.email || '',
+                bio: '',
+                location: '',
+                age: '',
+                diving_experience: '',
+                total_dives: 0,
+                certification: '',
+                preferred_areas: [],
+                email_notifications: true,
+                line_notifications: true,
+                weather_alerts: true,
+                profile_completion: 30
+            };
+        }
+
+        res.json({
+            success: true,
+            profile: profile
+        });
+
+    } catch (error) {
+        console.error('プロフィール取得エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: 'fetch_error',
+            message: 'プロフィールの取得に失敗しました'
+        });
+    }
+});
+
+// プロフィール更新
+app.post('/api/member/profile', async (req, res) => {
+    try {
+        console.log('💾 プロフィール更新リクエスト:', req.body);
+
+        // セッション確認
+        const userSession = req.session.user;
+        if (!userSession) {
+            return res.status(401).json({
+                success: false,
+                error: 'not_authenticated',
+                message: '認証が必要です'
+            });
+        }
+
+        const profileData = {
+            user_id: userSession.id,
+            display_name: req.body.display_name || userSession.display_name,
+            email: req.body.email || '',
+            bio: req.body.bio || '',
+            location: req.body.location || '',
+            age: req.body.age || '',
+            diving_experience: req.body.diving_experience || '',
+            total_dives: parseInt(req.body.total_dives) || 0,
+            certification: req.body.certification || '',
+            preferred_areas: req.body.preferred_areas || [],
+            email_notifications: req.body.email_notifications || false,
+            line_notifications: req.body.line_notifications || false,
+            weather_alerts: req.body.weather_alerts || false,
+            updated_at: new Date().toISOString()
+        };
+
+        // プロフィール完成度計算
+        profileData.profile_completion = calculateProfileCompletion(profileData);
+
+        let success = false;
+
+        // Supabase接続試行
+        if (supabase && supabaseStatus === 'connected') {
+            try {
+                const { data, error } = await supabase
+                    .from('user_profiles')
+                    .upsert([profileData])
+                    .select()
+                    .single();
+
+                if (!error) {
+                    success = true;
+                    console.log('✅ Supabaseプロフィール更新:', userSession.display_name);
+                    
+                    // セッションのdisplay_nameも更新
+                    if (profileData.display_name) {
+                        req.session.user.display_name = profileData.display_name;
+                    }
+                } else {
+                    console.warn('Supabaseプロフィール更新エラー:', error.message);
+                }
+            } catch (supabaseError) {
+                console.warn('Supabaseプロフィール更新エラー:', supabaseError.message);
+            }
+        }
+
+        // フォールバック: ローカルストレージ
+        if (!success) {
+            if (!global.userProfiles) {
+                global.userProfiles = new Map();
+            }
+            global.userProfiles.set(userSession.id, profileData);
+            success = true;
+            console.log('✅ フォールバック プロフィール更新:', userSession.display_name);
+        }
+
+        if (success) {
+            res.json({
+                success: true,
+                message: 'プロフィールを更新しました',
+                profile: profileData
+            });
+        } else {
+            throw new Error('プロフィールの更新に失敗しました');
+        }
+
+    } catch (error) {
+        console.error('プロフィール更新エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: 'update_error',
+            message: 'プロフィールの更新に失敗しました'
+        });
+    }
+});
+
+// アバター画像アップロード
+app.post('/api/member/avatar', async (req, res) => {
+    try {
+        console.log('📸 アバター画像アップロードリクエスト');
+
+        // セッション確認
+        const userSession = req.session.user;
+        if (!userSession) {
+            return res.status(401).json({
+                success: false,
+                error: 'not_authenticated',
+                message: '認証が必要です'
+            });
+        }
+
+        // TODO: 実際のファイルアップロード処理実装
+        // 現在はデモ用の固定レスポンス
+        const demoAvatarUrl = '/images/demo-avatar.jpg';
+
+        res.json({
+            success: true,
+            message: 'アバター画像を更新しました',
+            avatar_url: demoAvatarUrl
+        });
+
+    } catch (error) {
+        console.error('アバターアップロードエラー:', error);
+        res.status(500).json({
+            success: false,
+            error: 'upload_error',
+            message: 'アバター画像のアップロードに失敗しました'
+        });
+    }
+});
+
+// プロフィール完成度計算
+function calculateProfileCompletion(profile) {
+    const fields = [
+        'display_name',
+        'email', 
+        'bio',
+        'location',
+        'age',
+        'diving_experience',
+        'total_dives',
+        'certification'
+    ];
+    
+    let completedFields = 0;
+    const totalFields = fields.length;
+    
+    fields.forEach(field => {
+        if (profile[field] && profile[field] !== '' && profile[field] !== 0) {
+            completedFields++;
+        }
+    });
+    
+    // preferred_areasも考慮
+    if (profile.preferred_areas && profile.preferred_areas.length > 0) {
+        completedFields += 0.5;
+    }
+    
+    return Math.round((completedFields / (totalFields + 0.5)) * 100);
+}

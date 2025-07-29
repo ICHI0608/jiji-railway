@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ダイビング履歴管理 | Dive Buddy's会員システム</title>
+    <meta name="description" content="Dive Buddy'sダイビング履歴管理。ダイブログ記録、ライセンス管理、統計情報を確認できます。">
+    
+    <link rel="stylesheet" href="/app/v28-styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        .diving-page {
+            background: #f8f9ff;
+            min-height: 100vh;
+        }
+
+        .diving-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 80px 0 40px;
+            position: relative;
+        }
+
+        .diving-nav {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .nav-tab {
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .nav-tab.active {
+            background: white;
+            color: #667eea;
+            border-color: white;
+        }
+
+        .nav-tab:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .nav-tab.active:hover {
+            background: white;
+            color: #667eea;
+        }
+
+        .diving-container {
+            max-width: 1200px;
+            margin: -40px auto 0;
+            padding: 0 1rem 4rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .diving-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .diving-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: between;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #f1f5f9;
+        }
+
+        .card-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            margin-right: 1rem;
+        }
+
+        .card-title h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-title p {
+            color: #6b7280;
+            margin: 0;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: #f8f9ff;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            border: 2px solid #e5e7eb;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: #667eea;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #6b7280;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .dive-log-section {
+            grid-column: 1 / -1;
+        }
+
+        .dive-log-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .add-dive-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .add-dive-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .dive-log-list {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .dive-log-item {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .dive-log-item:hover {
+            border-color: #667eea;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .dive-header {
+            display: flex;
+            justify-content: between;
+            align-items: start;
+            margin-bottom: 1rem;
+        }
+
+        .dive-title {
+            font-weight: 700;
+            color: #1f2937;
+            font-size: 1.1rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .dive-date {
+            color: #667eea;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .dive-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .dive-detail {
+            text-align: center;
+        }
+
+        .detail-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #667eea;
+            display: block;
+        }
+
+        .detail-label {
+            font-size: 0.8rem;
+            color: #6b7280;
+            margin-top: 0.2rem;
+        }
+
+        .dive-notes {
+            color: #6b7280;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            border-top: 1px solid #f3f4f6;
+            padding-top: 1rem;
+            margin-top: 1rem;
+        }
+
+        .license-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .license-card {
+            background: #f8f9ff;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .license-card.completed {
+            border-color: #10b981;
+            background: #ecfdf5;
+        }
+
+        .license-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .license-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            margin: 0 auto 1rem;
+        }
+
+        .license-card.completed .license-icon {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .license-name {
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+
+        .license-date {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: white;
+            text-decoration: none;
+            margin-bottom: 2rem;
+            padding: 0.8rem 1.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .back-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(-5px);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: #6b7280;
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            color: #d1d5db;
+        }
+
+        .empty-state h3 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            color: #374151;
+        }
+
+        .empty-state p {
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .diving-header {
+                padding: 60px 0 20px;
+            }
+
+            .diving-nav {
+                flex-direction: column;
+                gap: 1rem;
+                padding: 0 1rem;
+            }
+
+            .nav-tab {
+                text-align: center;
+            }
+
+            .diving-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .dive-details {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ヘッダー -->
+    <header class="main-header">
+        <nav class="main-nav">
+            <a href="/" class="main-logo">
+                <h1>🌺 Dive Buddy's</h1>
+                <span>会員システム</span>
+            </a>
+            
+            <ul class="main-nav-menu">
+                <li><a href="/">ホーム</a></li>
+                <li><a href="/about">サービス</a></li>
+                <li><a href="/member" class="active">会員システム</a></li>
+                <li><a href="/shops-database">ショップDB</a></li>
+                <li><a href="/travel-guide">旅行ガイド</a></li>
+                <li><a href="/weather-ocean">海況・天気</a></li>
+                <li><a href="/partners">ショップ向け</a></li>
+                <li><a href="/contact">お問い合わせ</a></li>
+            </ul>
+            
+            <div class="main-nav-buttons">
+                <a href="https://line.me/ti/p/@2007331165" class="btn btn-primary btn-line-connect" target="_blank">
+                    <i class="fab fa-line"></i> Jijiに相談
+                </a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- ダイビング履歴ヘッダー -->
+    <section class="diving-header">
+        <div class="container">
+            <a href="/member" class="back-link">
+                <i class="fas fa-arrow-left"></i>
+                マイページに戻る
+            </a>
+
+            <nav class="diving-nav">
+                <a href="/member/profile" class="nav-tab">
+                    <i class="fas fa-user"></i> 基本情報
+                </a>
+                <a href="/member/profile/diving" class="nav-tab active">
+                    <i class="fas fa-fish"></i> ダイビング経験
+                </a>
+                <a href="/member/profile/settings" class="nav-tab">
+                    <i class="fas fa-cog"></i> アカウント設定
+                </a>
+            </nav>
+        </div>
+    </section>
+
+    <!-- ダイビング履歴管理 -->
+    <section class="diving-page">
+        <div class="diving-container">
+            <!-- 統計サマリー -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-number" id="totalDives">12</span>
+                    <div class="stat-label">総ダイブ数</div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="maxDepth">32</span>
+                    <div class="stat-label">最大深度 (m)</div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="totalTime">720</span>
+                    <div class="stat-label">総潜水時間 (分)</div>
+                </div>
+            </div>
+
+            <div class="diving-grid">
+                <!-- ダイブログ -->
+                <div class="diving-card dive-log-section">
+                    <div class="card-header">
+                        <div style="display: flex; align-items: center;">
+                            <div class="card-icon">
+                                <i class="fas fa-book"></i>
+                            </div>
+                            <div>
+                                <h2>ダイブログ</h2>
+                                <p>あなたのダイビング記録</p>
+                            </div>
+                        </div>
+                        <button class="add-dive-button" id="addDiveButton">
+                            <i class="fas fa-plus"></i>
+                            新しいダイブ記録
+                        </button>
+                    </div>
+
+                    <div class="dive-log-list" id="diveLogList">
+                        <!-- デモデータ -->
+                        <div class="dive-log-item">
+                            <div class="dive-header">
+                                <div>
+                                    <div class="dive-title">石垣島 - 川平石崎マンタスクランブル</div>
+                                    <div class="dive-date">2025年7月20日</div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <i class="fas fa-star" style="color: #fbbf24;"></i>
+                                    <span style="color: #fbbf24; font-weight: 600;">5.0</span>
+                                </div>
+                            </div>
+                            
+                            <div class="dive-details">
+                                <div class="dive-detail">
+                                    <span class="detail-value">28m</span>
+                                    <div class="detail-label">最大深度</div>
+                                </div>
+                                <div class="dive-detail">
+                                    <span class="detail-value">45分</span>
+                                    <div class="detail-label">潜水時間</div>
+                                </div>
+                                <div class="dive-detail">
+                                    <span class="detail-value">26°C</span>
+                                    <div class="detail-label">水温</div>
+                                </div>
+                                <div class="dive-detail">
+                                    <span class="detail-value">20m</span>
+                                    <div class="detail-label">透明度</div>
+                                </div>
+                            </div>
+                            
+                            <div class="dive-notes">
+                                念願のマンタに遭遇！3匹のマンタがクリーニングステーションで旋回していました。透明度も抜群で、最高のダイビングでした。ガイドの方も親切で、次回もお願いしたいです。
+                            </div>
+                        </div>
+
+                        <div class="dive-log-item">
+                            <div class="dive-header">
+                                <div>
+                                    <div class="dive-title">宮古島 - 魔王の宮殿</div>
+                                    <div class="dive-date">2025年6月15日</div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <i class="fas fa-star" style="color: #fbbf24;"></i>
+                                    <span style="color: #fbbf24; font-weight: 600;">4.5</span>
+                                </div>
+                            </div>
+                            
+                            <div class="dive-details">
+                                <div class="dive-detail">
+                                    <span class="detail-value">18m</span>
+                                    <div class="detail-label">最大深度</div>
+                                </div>
+                                <div class="dive-detail">
+                                    <span class="detail-value">40分</span>
+                                    <div class="detail-label">潜水時間</div>
+                                </div>
+                                <div class="dive-detail">
+                                    <span class="detail-value">25°C</span>
+                                    <div class="detail-label">水温</div>
+                                </div>
+                                <div class="dive-detail">
+                                    <span class="detail-value">15m</span>
+                                    <div class="detail-label">透明度</div>
+                                </div>
+                            </div>
+                            
+                            <div class="dive-notes">
+                                宮古島の地形ダイビングは本当に素晴らしい！光のカーテンが幻想的で、洞窟内の青い光に感動しました。中性浮力の練習にもなり、スキルアップを実感できました。
+                            </div>
+                        </div>
+
+                        <div class="dive-log-item">
+                            <div class="dive-header">
+                                <div>
+                                    <div class="dive-title">沖縄本島 - 青の洞窟</div>
+                                    <div class="dive-date">2025年5月10日</div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <i class="fas fa-star" style="color: #fbbf24;"></i>
+                                    <span style="color: #fbbf24; font-weight: 600;">4.0</span>
+                                </div>
+                            </div>
+                            
+                            <div class="dive-details">
+                                <div class="dive-detail">
+                                    <span class="detail-value">12m</span>
+                                    <div class="detail-label">最大深度</div>
+                                </div>
+                                <div class="dive-detail">
+                                    <span class="detail-value">35分</span>
+                                    <div class="detail-label">潜水時間</div>
+                                </div>
+                                <div class="dive-detail">
+                                    <span class="detail-value">24°C</span>
+                                    <div class="detail-label">水温</div>
+                                </div>
+                                <div class="dive-detail">
+                                    <span class="detail-value">12m</span>
+                                    <div class="detail-label">透明度</div>
+                                </div>
+                            </div>
+                            
+                            <div class="dive-notes">
+                                初めての青の洞窟体験。神秘的な青い光に包まれて、まるで別世界にいるようでした。熱帯魚もたくさんいて、写真もたくさん撮れました。初心者にもおすすめのポイントです。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ライセンス管理 -->
+                <div class="diving-card">
+                    <div class="card-header">
+                        <div style="display: flex; align-items: center;">
+                            <div class="card-icon">
+                                <i class="fas fa-certificate"></i>
+                            </div>
+                            <div>
+                                <h2>ライセンス</h2>
+                                <p>取得済み認定証</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="license-grid">
+                        <div class="license-card completed">
+                            <div class="license-icon">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <div class="license-name">オープンウォーター</div>
+                            <div class="license-date">2024年3月取得</div>
+                        </div>
+
+                        <div class="license-card completed">
+                            <div class="license-icon">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <div class="license-name">アドバンス</div>
+                            <div class="license-date">2024年8月取得</div>
+                        </div>
+
+                        <div class="license-card">
+                            <div class="license-icon">
+                                <i class="fas fa-target"></i>
+                            </div>
+                            <div class="license-name">レスキュー</div>
+                            <div class="license-date">目標</div>
+                        </div>
+
+                        <div class="license-card">
+                            <div class="license-icon">
+                                <i class="fas fa-graduation-cap"></i>
+                            </div>
+                            <div class="license-name">ダイブマスター</div>
+                            <div class="license-date">将来の目標</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- フッター -->
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>🌺 Dive Buddy's会員システム</h3>
+                    <p>あなたのダイビングライフをJijiがサポート</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>会員サービス</h3>
+                    <ul>
+                        <li><a href="/member">マイページ</a></li>
+                        <li><a href="/member/profile">プロフィール編集</a></li>
+                        <li><a href="/member/points">ポイント管理</a></li>
+                        <li><a href="/member/settings">設定</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>サポート</h3>
+                    <ul>
+                        <li><a href="https://line.me/ti/p/@2007331165" target="_blank">LINE Bot相談</a></li>
+                        <li><a href="/contact">お問い合わせ</a></li>
+                        <li><a href="/help">ヘルプ</a></li>
+                        <li><a href="/legal">利用規約</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>ダイビング情報</h3>
+                    <ul>
+                        <li><a href="/shops-database">ショップDB</a></li>
+                        <li><a href="/travel-guide">旅行ガイド</a></li>
+                        <li><a href="/weather-ocean">海況・天気</a></li>
+                        <li><a href="/diving-blog">ダイビングブログ</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 Dive Buddy's会員システム - あなた専属のダイビングバディ</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        class DivingHistoryManager {
+            constructor() {
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.loadDivingHistory();
+                this.animateStats();
+            }
+
+            setupEventListeners() {
+                // 新しいダイブ記録ボタン
+                document.getElementById('addDiveButton').addEventListener('click', () => {
+                    this.showAddDiveForm();
+                });
+
+                // ダイブログアイテムクリック
+                document.querySelectorAll('.dive-log-item').forEach(item => {
+                    item.addEventListener('click', (e) => {
+                        this.showDiveDetails(e.currentTarget);
+                    });
+                });
+            }
+
+            async loadDivingHistory() {
+                try {
+                    console.log('🏊‍♂️ ダイビング履歴を読み込み中...');
+                    
+                    const response = await fetch('/api/member/diving-history');
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        this.updateDivingStats(data.stats || {});
+                        this.renderDiveLog(data.dive_logs || []);
+                        this.renderLicenses(data.licenses || []);
+                    } else {
+                        console.warn('ダイビング履歴取得エラー');
+                        // デモデータで継続
+                    }
+                } catch (error) {
+                    console.error('ダイビング履歴読み込みエラー:', error);
+                    // デモデータで継続
+                }
+            }
+
+            updateDivingStats(stats) {
+                document.getElementById('totalDives').textContent = stats.total_dives || 12;
+                document.getElementById('maxDepth').textContent = stats.max_depth || 32;
+                document.getElementById('totalTime').textContent = stats.total_time || 720;
+            }
+
+            renderDiveLog(diveLogs) {
+                const container = document.getElementById('diveLogList');
+                
+                if (diveLogs.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-fish"></i>
+                            <h3>まだダイブログがありません</h3>
+                            <p>最初のダイビング記録を追加して、<br>あなたの水中アドベンチャーを記録しましょう！</p>
+                            <button class="add-dive-button" onclick="window.divingManager.showAddDiveForm()">
+                                <i class="fas fa-plus"></i>
+                                初回ダイブ記録を追加
+                            </button>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // 実際のデータでレンダリング
+                // 現在はデモデータを使用
+            }
+
+            renderLicenses(licenses) {
+                // ライセンス情報のレンダリング
+                // 現在はデモデータを使用
+            }
+
+            showAddDiveForm() {
+                // ダイブ記録追加フォームを表示
+                alert('ダイブ記録追加フォームは近日実装予定です！\n\n追加予定機能:\n• 潜水地点の選択\n• 深度・時間の記録\n• 水温・透明度の記録\n• 写真アップロード\n• メモ・評価の追加');
+            }
+
+            showDiveDetails(diveElement) {
+                const title = diveElement.querySelector('.dive-title').textContent;
+                const date = diveElement.querySelector('.dive-date').textContent;
+                const notes = diveElement.querySelector('.dive-notes').textContent;
+                
+                alert(`📋 ダイブ詳細\n\n${title}\n${date}\n\n${notes}`);
+            }
+
+            animateStats() {
+                // 統計数字のアニメーション
+                document.querySelectorAll('.stat-number').forEach(stat => {
+                    const target = parseInt(stat.textContent);
+                    this.animateNumber(stat, target, 1500);
+                });
+            }
+
+            animateNumber(element, target, duration) {
+                const start = 0;
+                const startTime = performance.now();
+                
+                function update(currentTime) {
+                    const elapsed = currentTime - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    
+                    const easeOut = 1 - Math.pow(1 - progress, 3);
+                    const current = Math.round(start + (target - start) * easeOut);
+                    
+                    element.textContent = current;
+                    
+                    if (progress < 1) {
+                        requestAnimationFrame(update);
+                    }
+                }
+                
+                requestAnimationFrame(update);
+            }
+        }
+
+        // 初期化
+        document.addEventListener('DOMContentLoaded', () => {
+            window.divingManager = new DivingHistoryManager();
+        });
+    </script>
+</body>
+</html>
