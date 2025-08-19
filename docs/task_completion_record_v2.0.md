@@ -27,7 +27,7 @@
   ```
 
 #### **API設定**
-- **APIキー**: `AIzaSyCRebQiuofGEtqyM0FQ4JUZbf7053mpjkc` 
+- **APIキー**: `[REDACTED_GOOGLE_API_KEY]` 
 - **制限設定**: Google Cloud Console HTTP Referer制限対応済み
 - **対応ドメイン**: 
   ```

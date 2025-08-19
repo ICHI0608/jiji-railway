@@ -24,7 +24,7 @@
 ### **🎥 ダイビングクリエイター機能** - ✅ **100%完成**
 
 #### **YouTube API統合**
-- **API Key**: `AIzaSyCRebQiuofGEtqyM0FQ4JUZbf7053mpjkc` (最新)
+- **API Key**: `[REDACTED_GOOGLE_API_KEY]` (最新)
 - **状況**: HTTP Referer制限対応済み、全チャンネル動作確認済み
 - **実装ファイル**: 
   - `/src/youtube-api.js` - APIクラス
@@ -182,7 +182,7 @@ POST /webhook                    // LINE Bot Webhook
 
 ### **環境変数**
 ```bash
-YOUTUBE_API_KEY=AIzaSyCRebQiuofGEtqyM0FQ4JUZbf7053mpjkc
+YOUTUBE_API_KEY=[REDACTED_GOOGLE_API_KEY]
 SUPABASE_URL=[設定済み]
 SUPABASE_ANON_KEY=[208文字、設定済み]
 OPENAI_API_KEY=[設定済み]

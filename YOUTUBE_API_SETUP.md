@@ -3,7 +3,7 @@
 ## ✅ API キー設定状況
 
 ### **YouTube Data API v3**
-- **API キー**: `AIzaSyCRebQiuofGEtqyM0FQ4JUZbf7053mpjkc` ⬅️ **更新済み**
+- **API キー**: `[REDACTED_GOOGLE_API_KEY]` ⬅️ **更新済み**
 - **設定場所**: `/src/youtube-api.js` に環境変数フォールバック付きで設定済み
 - **接続状態**: ✅ 正常接続確認済み
 - **Referer制限**: ✅ HTTP Refererヘッダー対応済み

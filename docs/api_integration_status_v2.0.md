@@ -9,7 +9,7 @@
 ### **1. YouTube Data API v3** ✅ **完全実装**
 
 #### **設定状況**
-- **API Key**: `AIzaSyCRebQiuofGEtqyM0FQ4JUZbf7053mpjkc`
+- **API Key**: `[REDACTED_GOOGLE_API_KEY]`
 - **プロジェクト**: Dive Buddy's専用
 - **日次制限**: 10,000ユニット
 - **課金**: 従量課金設定（現在無料枠内）

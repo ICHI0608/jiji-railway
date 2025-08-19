@@ -219,7 +219,7 @@ class YouTubeAPI {
 ### **API キー管理**
 ```javascript
 // 環境変数 + フォールバック設定
-this.apiKey = process.env.YOUTUBE_API_KEY || 'AIzaSyCRebQiuofGEtqyM0FQ4JUZbf7053mpjkc';
+this.apiKey = process.env.YOUTUBE_API_KEY || '[REDACTED_GOOGLE_API_KEY]';
 
 // Google Cloud Console HTTP Referer制限
 const allowedReferrers = [
@@ -354,7 +354,7 @@ sequenceDiagram
 - **SSL**: 自動取得・更新
 - **Environment Variables**:
   ```bash
-  YOUTUBE_API_KEY=AIzaSyCRebQiuofGEtqyM0FQ4JUZbf7053mpjkc
+  YOUTUBE_API_KEY=[REDACTED_GOOGLE_API_KEY]
   NODE_ENV=production
   ```
 
