@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>詳細海況・天気情報 | Dive Buddy's</title>
+    <meta name="description" content="沖縄各地の詳細海況・天気情報をリアルタイムで確認。風向・風速・波高・潮汐・水温・透明度まで、ダイビングに必要な情報を7日間先まで詳しく表示。">
+    <meta name="keywords" content="沖縄海況,天気予報,ダイビング天気,海況詳細,波高,風速,潮汐,水温,透明度">
+    
+    <!-- 統一デザインシステム -->
+    <link rel="stylesheet" href="/css/design-system.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        /* 詳細海況ページ特化スタイル */
+        .hero-section {
+            background: linear-gradient(135deg, #0EA5E9 0%, #1E40AF 100%);
+            color: white;
+            padding: 120px 0 80px;
+            text-align: center;
+            position: relative;
+        }
+
+        .hero-title {
+            font-family: var(--font-heading-en);
+            font-size: var(--text-4xl);
+            font-weight: 700;
+            margin-bottom: var(--space-4);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .hero-subtitle {
+            font-size: var(--text-lg);
+            margin-bottom: var(--space-8);
+            opacity: 0.9;
+        }
+
+        .location-selector {
+            background: white;
+            padding: var(--space-6);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin: -40px auto 40px;
+            max-width: 800px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .selector-title {
+            font-size: var(--text-lg);
+            font-weight: 600;
+            color: var(--color-text-main);
+            margin-bottom: var(--space-4);
+            text-align: center;
+        }
+
+        .location-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: var(--space-3);
+        }
+
+        .location-btn {
+            background: var(--color-bg-light);
+            color: var(--color-text-main);
+            padding: var(--space-3) var(--space-4);
+            border: 2px solid var(--color-border-light);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .location-btn:hover {
+            border-color: var(--color-accent-1);
+            background: var(--color-accent-2);
+        }
+
+        .location-btn.active {
+            background: var(--color-accent-1);
+            color: white;
+            border-color: var(--color-accent-1);
+        }
+
+        .weather-overview {
+            padding: var(--space-16) 0;
+            background: var(--color-base-bg);
+        }
+
+        .current-conditions {
+            background: white;
+            padding: var(--space-8);
+            border-radius: var(--radius-xl);
+            box-shadow: 0 4px 20px var(--color-shadow);
+            margin-bottom: var(--space-12);
+            text-align: center;
+        }
+
+        .current-status {
+            display: inline-block;
+            padding: var(--space-2) var(--space-6);
+            border-radius: var(--radius-full);
+            font-weight: 600;
+            font-size: var(--text-lg);
+            margin-bottom: var(--space-6);
+        }
+
+        .status-excellent {
+            background: #10B981;
+            color: white;
+        }
+
+        .status-good {
+            background: #F59E0B;
+            color: white;
+        }
+
+        .status-poor {
+            background: #EF4444;
+            color: white;
+        }
+
+        .current-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: var(--space-6);
+            margin-top: var(--space-8);
+        }
+
+        .current-item {
+            text-align: center;
+        }
+
+        .current-value {
+            font-size: var(--text-2xl);
+            font-weight: 700;
+            color: var(--color-accent-1);
+            margin-bottom: var(--space-2);
+        }
+
+        .current-label {
+            color: var(--color-text-sub);
+            font-size: var(--text-sm);
+        }
+
+        .forecast-section {
+            padding: var(--space-16) 0;
+            background: var(--color-bg-light);
+        }
+
+        .forecast-timeline {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: var(--space-4);
+            margin-top: var(--space-8);
+        }
+
+        .forecast-card {
+            background: white;
+            padding: var(--space-4);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 2px 10px var(--color-shadow);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .forecast-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 20px var(--color-shadow-hover);
+        }
+
+        .forecast-date {
+            font-size: var(--text-sm);
+            color: var(--color-text-sub);
+            margin-bottom: var(--space-2);
+        }
+
+        .forecast-weather {
+            font-size: var(--text-2xl);
+            margin-bottom: var(--space-2);
+        }
+
+        .forecast-temp {
+            font-size: var(--text-lg);
+            font-weight: 600;
+            color: var(--color-text-main);
+            margin-bottom: var(--space-3);
+        }
+
+        .forecast-details {
+            font-size: var(--text-xs);
+            color: var(--color-text-sub);
+            line-height: 1.4;
+        }
+
+        .detailed-info {
+            padding: var(--space-16) 0;
+            background: var(--color-base-bg);
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--space-8);
+            margin-top: var(--space-12);
+        }
+
+        .info-card {
+            background: white;
+            padding: var(--space-6);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 4px 15px var(--color-shadow);
+        }
+
+        .info-title {
+            font-size: var(--text-xl);
+            font-weight: 600;
+            color: var(--color-text-main);
+            margin-bottom: var(--space-4);
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+
+        .info-icon {
+            color: var(--color-accent-1);
+            font-size: var(--text-xl);
+        }
+
+        .info-content {
+            color: var(--color-text-sub);
+            line-height: 1.6;
+        }
+
+        .tidal-chart {
+            height: 200px;
+            background: var(--color-bg-light);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--color-text-sub);
+            margin-top: var(--space-4);
+        }
+
+        .diving-recommendations {
+            padding: var(--space-16) 0;
+            background: var(--color-bg-light);
+        }
+
+        .recommendation-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: var(--space-6);
+            margin-top: var(--space-8);
+        }
+
+        .recommendation-card {
+            background: white;
+            padding: var(--space-6);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 4px 15px var(--color-shadow);
+            border-left: 4px solid var(--color-accent-1);
+        }
+
+        .recommendation-card.excellent {
+            border-left-color: #10B981;
+        }
+
+        .recommendation-card.good {
+            border-left-color: #F59E0B;
+        }
+
+        .recommendation-card.poor {
+            border-left-color: #EF4444;
+        }
+
+        .recommendation-title {
+            font-size: var(--text-lg);
+            font-weight: 600;
+            color: var(--color-text-main);
+            margin-bottom: var(--space-3);
+        }
+
+        .recommendation-text {
+            color: var(--color-text-sub);
+            line-height: 1.6;
+            margin-bottom: var(--space-4);
+        }
+
+        .recommendation-points {
+            list-style: none;
+            padding: 0;
+        }
+
+        .recommendation-points li {
+            padding: var(--space-1) 0;
+            color: var(--color-text-sub);
+            font-size: var(--text-sm);
+            position: relative;
+            padding-left: var(--space-4);
+        }
+
+        .recommendation-points li::before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            color: var(--color-accent-1);
+            font-weight: bold;
+        }
+
+        .marine-conditions {
+            padding: var(--space-16) 0;
+            background: var(--color-base-bg);
+        }
+
+        .marine-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--space-6);
+            margin-top: var(--space-8);
+        }
+
+        .marine-card {
+            background: white;
+            padding: var(--space-6);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 4px 15px var(--color-shadow);
+            text-align: center;
+        }
+
+        .marine-value {
+            font-size: var(--text-3xl);
+            font-weight: 700;
+            color: var(--color-accent-1);
+            margin-bottom: var(--space-2);
+        }
+
+        .marine-label {
+            color: var(--color-text-main);
+            font-weight: 500;
+            margin-bottom: var(--space-2);
+        }
+
+        .marine-description {
+            color: var(--color-text-sub);
+            font-size: var(--text-sm);
+            line-height: 1.4;
+        }
+
+        .update-info {
+            background: #F3F4F6;
+            padding: var(--space-4);
+            border-radius: var(--radius-md);
+            margin-top: var(--space-8);
+            text-align: center;
+            color: var(--color-text-sub);
+            font-size: var(--text-sm);
+        }
+
+        /* レスポンシブ */
+        @media (max-width: 768px) {
+            .forecast-timeline {
+                grid-template-columns: repeat(3, 1fr);
+                gap: var(--space-2);
+            }
+
+            .forecast-card {
+                padding: var(--space-3);
+            }
+
+            .current-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: var(--space-4);
+            }
+
+            .location-buttons {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ナビゲーション -->
+    <nav class="main-nav">
+        <div class="nav-container">
+            <a href="/" class="logo">Dive Buddy's</a>
+            <ul class="nav-links">
+                <li><a href="/shops-database">ショップ検索</a></li>
+                <li><a href="/weather-ocean" class="active">海況情報</a></li>
+                <li><a href="/diving-guide">沖縄ガイド</a></li>
+                <li><a href="/travel-guide">旅行ガイド</a></li>
+                <li><a href="/blog">ダイビング情報</a></li>
+                <li><a href="/member">会員登録</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- パンくずナビ -->
+    <div class="breadcrumb">
+        <div class="container">
+            <a href="/">ホーム</a> &gt; <a href="/weather-ocean">海況情報</a> &gt; <span>詳細情報</span>
+        </div>
+    </div>
+
+    <!-- ヒーローセクション -->
+    <section class="hero-section">
+        <div class="container">
+            <h1 class="hero-title">詳細海況・天気情報</h1>
+            <p class="hero-subtitle">沖縄各地のリアルタイム海況データで最適なダイビング日程を計画</p>
+        </div>
+    </section>
+
+    <!-- エリア選択 -->
+    <section class="weather-overview">
+        <div class="container">
+            <div class="location-selector">
+                <h3 class="selector-title">📍 エリアを選択</h3>
+                <div class="location-buttons">
+                    <button class="location-btn active" data-location="ishigaki">石垣島</button>
+                    <button class="location-btn" data-location="miyako">宮古島</button>
+                    <button class="location-btn" data-location="okinawa">沖縄本島</button>
+                    <button class="location-btn" data-location="kerama">慶良間諸島</button>
+                    <button class="location-btn" data-location="iriomote">西表島</button>
+                </div>
+            </div>
+
+            <!-- 現在の海況 -->
+            <div class="current-conditions">
+                <div class="current-status status-excellent">ダイビング適性: 最適</div>
+                <h3>現在の海況 - 石垣島</h3>
+                <div class="current-grid">
+                    <div class="current-item">
+                        <div class="current-value">26°C</div>
+                        <div class="current-label">気温</div>
+                    </div>
+                    <div class="current-item">
+                        <div class="current-value">24°C</div>
+                        <div class="current-label">水温</div>
+                    </div>
+                    <div class="current-item">
+                        <div class="current-value">1.2m</div>
+                        <div class="current-label">波高</div>
+                    </div>
+                    <div class="current-item">
+                        <div class="current-value">12kt</div>
+                        <div class="current-label">風速</div>
+                    </div>
+                    <div class="current-item">
+                        <div class="current-value">北東</div>
+                        <div class="current-label">風向</div>
+                    </div>
+                    <div class="current-item">
+                        <div class="current-value">35m</div>
+                        <div class="current-label">透明度</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 7日間予報 -->
+    <section class="forecast-section">
+        <div class="container">
+            <h2 class="section-title">7日間海況予報</h2>
+            <div class="forecast-timeline">
+                <div class="forecast-card">
+                    <div class="forecast-date">今日</div>
+                    <div class="forecast-weather">☀️</div>
+                    <div class="forecast-temp">26°C</div>
+                    <div class="forecast-details">
+                        波高: 1.2m<br>
+                        風: 北東 12kt<br>
+                        適性: 最適
+                    </div>
+                </div>
+
+                <div class="forecast-card">
+                    <div class="forecast-date">明日</div>
+                    <div class="forecast-weather">⛅</div>
+                    <div class="forecast-temp">25°C</div>
+                    <div class="forecast-details">
+                        波高: 1.5m<br>
+                        風: 東 15kt<br>
+                        適性: 良好
+                    </div>
+                </div>
+
+                <div class="forecast-card">
+                    <div class="forecast-date">明後日</div>
+                    <div class="forecast-weather">🌤️</div>
+                    <div class="forecast-temp">27°C</div>
+                    <div class="forecast-details">
+                        波高: 1.0m<br>
+                        風: 南東 10kt<br>
+                        適性: 最適
+                    </div>
+                </div>
+
+                <div class="forecast-card">
+                    <div class="forecast-date">4日後</div>
+                    <div class="forecast-weather">☀️</div>
+                    <div class="forecast-temp">28°C</div>
+                    <div class="forecast-details">
+                        波高: 0.8m<br>
+                        風: 南 8kt<br>
+                        適性: 最適
+                    </div>
+                </div>
+
+                <div class="forecast-card">
+                    <div class="forecast-date">5日後</div>
+                    <div class="forecast-weather">🌦️</div>
+                    <div class="forecast-temp">25°C</div>
+                    <div class="forecast-details">
+                        波高: 2.0m<br>
+                        風: 北 18kt<br>
+                        適性: 注意
+                    </div>
+                </div>
+
+                <div class="forecast-card">
+                    <div class="forecast-date">6日後</div>
+                    <div class="forecast-weather">⛈️</div>
+                    <div class="forecast-temp">23°C</div>
+                    <div class="forecast-details">
+                        波高: 2.5m<br>
+                        風: 北東 22kt<br>
+                        適性: 不適
+                    </div>
+                </div>
+
+                <div class="forecast-card">
+                    <div class="forecast-date">7日後</div>
+                    <div class="forecast-weather">🌤️</div>
+                    <div class="forecast-temp">26°C</div>
+                    <div class="forecast-details">
+                        波高: 1.3m<br>
+                        風: 東 14kt<br>
+                        適性: 良好
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 詳細情報 -->
+    <section class="detailed-info">
+        <div class="container">
+            <h2 class="section-title">詳細気象・海洋情報</h2>
+            <div class="info-grid">
+                <!-- 潮汐情報 -->
+                <div class="info-card">
+                    <h3 class="info-title">
+                        <i class="fas fa-water info-icon"></i>
+                        潮汐情報
+                    </h3>
+                    <div class="info-content">
+                        <p><strong>満潮:</strong> 06:42 (147cm), 18:15 (152cm)</p>
+                        <p><strong>干潮:</strong> 00:31 (42cm), 12:28 (38cm)</p>
+                        <p><strong>月齢:</strong> 上弦の月 (8.2)</p>
+                        <div class="tidal-chart">
+                            【潮汐グラフ挿入箇所】<br>
+                            24時間の潮位変化グラフ
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 風向・風速 -->
+                <div class="info-card">
+                    <h3 class="info-title">
+                        <i class="fas fa-wind info-icon"></i>
+                        風向・風速
+                    </h3>
+                    <div class="info-content">
+                        <p><strong>現在:</strong> 北東 12kt (時速22km)</p>
+                        <p><strong>最大瞬間風速:</strong> 18kt</p>
+                        <p><strong>風向の変化:</strong> 北東→東→南東</p>
+                        <p><strong>ダイビング影響:</strong> 北側ポイント推奨</p>
+                        <p>午後にかけて風向が東寄りに変わり、風速は若干強まる予報です。</p>
+                    </div>
+                </div>
+
+                <!-- 波浪情報 -->
+                <div class="info-card">
+                    <h3 class="info-title">
+                        <i class="fas fa-wave-square info-icon"></i>
+                        波浪情報
+                    </h3>
+                    <div class="info-content">
+                        <p><strong>有義波高:</strong> 1.2m</p>
+                        <p><strong>最大波高:</strong> 1.8m</p>
+                        <p><strong>波周期:</strong> 6.5秒</p>
+                        <p><strong>波向:</strong> 北東</p>
+                        <p>北東からのうねりが主体。ビーチエントリーポイントでは注意が必要です。</p>
+                    </div>
+                </div>
+
+                <!-- 海水温・透明度 -->
+                <div class="info-card">
+                    <h3 class="info-title">
+                        <i class="fas fa-thermometer-half info-icon"></i>
+                        海水温・透明度
+                    </h3>
+                    <div class="info-content">
+                        <p><strong>表面水温:</strong> 24.2°C</p>
+                        <p><strong>10m水深:</strong> 23.8°C</p>
+                        <p><strong>20m水深:</strong> 23.5°C</p>
+                        <p><strong>透明度:</strong> 35m</p>
+                        <p>水温は安定しており、5mmウェットスーツが最適です。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- マリンコンディション -->
+    <section class="marine-conditions">
+        <div class="container">
+            <h2 class="section-title">マリンコンディション詳細</h2>
+            <div class="marine-grid">
+                <div class="marine-card">
+                    <div class="marine-value">8.2</div>
+                    <div class="marine-label">UV指数</div>
+                    <div class="marine-description">非常に強い<br>日焼け対策必須</div>
+                </div>
+
+                <div class="marine-card">
+                    <div class="marine-value">1015</div>
+                    <div class="marine-label">気圧 (hPa)</div>
+                    <div class="marine-description">安定<br>体調良好</div>
+                </div>
+
+                <div class="marine-card">
+                    <div class="marine-value">72%</div>
+                    <div class="marine-label">湿度</div>
+                    <div class="marine-description">やや高め<br>快適</div>
+                </div>
+
+                <div class="marine-card">
+                    <div class="marine-value">15km</div>
+                    <div class="marine-label">視界</div>
+                    <div class="marine-description">良好<br>遠方まで見渡せる</div>
+                </div>
+
+                <div class="marine-card">
+                    <div class="marine-value">0%</div>
+                    <div class="marine-label">降水確率</div>
+                    <div class="marine-description">晴天<br>ダイビング日和</div>
+                </div>
+
+                <div class="marine-card">
+                    <div class="marine-value">6m/s</div>
+                    <div class="marine-label">海流</div>
+                    <div class="marine-description">南西方向<br>中程度</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ダイビング推奨情報 -->
+    <section class="diving-recommendations">
+        <div class="container">
+            <h2 class="section-title">本日のダイビング推奨情報</h2>
+            <div class="recommendation-cards">
+                <!-- 最適ポイント -->
+                <div class="recommendation-card excellent">
+                    <h3 class="recommendation-title">🌟 本日の最適ポイント</h3>
+                    <p class="recommendation-text">
+                        現在の風向・波向を考慮した最もコンディションの良いダイビングポイント
+                    </p>
+                    <ul class="recommendation-points">
+                        <li>川平湾（石垣島）- 穏やか、透明度35m</li>
+                        <li>マンタポイント - 風裏で安全</li>
+                        <li>白保 - 初心者にも最適</li>
+                        <li>米原 - ビーチエントリー可能</li>
+                    </ul>
+                </div>
+
+                <!-- 注意ポイント -->
+                <div class="recommendation-card good">
+                    <h3 class="recommendation-title">⚠️ 注意が必要なポイント</h3>
+                    <p class="recommendation-text">
+                        海況によりエントリーや潜水に注意が必要なポイント
+                    </p>
+                    <ul class="recommendation-points">
+                        <li>北側ビーチポイント - 波が高め</li>
+                        <li>外洋ポイント - 海流やや強</li>
+                        <li>浅場エリア - うねりに注意</li>
+                        <li>船酔いしやすい方は午前中推奨</li>
+                    </ul>
+                </div>
+
+                <!-- 装備・注意事項 -->
+                <div class="recommendation-card">
+                    <h3 class="recommendation-title">🎯 推奨装備・注意事項</h3>
+                    <p class="recommendation-text">
+                        本日の海況に適した装備と安全のための注意事項
+                    </p>
+                    <ul class="recommendation-points">
+                        <li>ウェットスーツ: 5mm推奨</li>
+                        <li>日焼け対策: 日焼け止め・ラッシュガード</li>
+                        <li>水分補給: こまめな水分補給を</li>
+                        <li>酔い止め: 船酔いが心配な方は事前服用</li>
+                        <li>水中ライト: 洞窟ダイビング時必須</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- データ更新情報 -->
+    <section class="update-info">
+        <div class="container">
+            <p>
+                <i class="fas fa-clock"></i> 
+                データ更新: 2024年11月19日 14:30 JST | 
+                次回更新予定: 18:00 JST |
+                データ提供: 気象庁・海上保安庁・Dive Buddy's独自観測網
+            </p>
+        </div>
+    </section>
+
+    <!-- フッター -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>海況・天気情報</h3>
+                    <ul class="footer-links">
+                        <li><a href="/weather-ocean">簡易海況情報</a></li>
+                        <li><a href="/weather-ocean/details">詳細海況情報</a></li>
+                        <li><a href="/weather-ocean/forecast">週間予報</a></li>
+                        <li><a href="/weather-ocean/alert">警報・注意報</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>エリア別情報</h3>
+                    <ul class="footer-links">
+                        <li><a href="/weather-ocean/details?area=ishigaki">石垣島海況</a></li>
+                        <li><a href="/weather-ocean/details?area=miyako">宮古島海況</a></li>
+                        <li><a href="/weather-ocean/details?area=okinawa">沖縄本島海況</a></li>
+                        <li><a href="/weather-ocean/details?area=kerama">慶良間諸島海況</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>関連サービス</h3>
+                    <ul class="footer-links">
+                        <li><a href="/diving-guide">沖縄ダイビングガイド</a></li>
+                        <li><a href="/shops-database">ダイビングショップ検索</a></li>
+                        <li><a href="/travel-guide">旅行プランニング</a></li>
+                        <li><a href="/member">会員サービス</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2024 Dive Buddy's. All rights reserved. | 沖縄海況・天気情報詳細ページ</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // エリア選択機能
+        document.querySelectorAll('.location-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                // アクティブ状態を切り替え
+                document.querySelectorAll('.location-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                
+                // エリアデータを更新（実装時はAPI連携）
+                const location = this.dataset.location;
+                updateWeatherData(location);
+            });
+        });
+
+        function updateWeatherData(location) {
+            // 実際の実装ではAPIから最新データを取得
+            console.log(`Loading weather data for: ${location}`);
+            
+            // サンプル: 選択したエリアに応じてデータを更新
+            const locationNames = {
+                'ishigaki': '石垣島',
+                'miyako': '宮古島', 
+                'okinawa': '沖縄本島',
+                'kerama': '慶良間諸島',
+                'iriomote': '西表島'
+            };
+            
+            document.querySelector('.current-conditions h3').textContent = 
+                `現在の海況 - ${locationNames[location]}`;
+        }
+
+        // ダイビング適性判定の色分け
+        function updateDivingStatus(waveHeight, windSpeed) {
+            const statusElement = document.querySelector('.current-status');
+            
+            if (waveHeight <= 1.0 && windSpeed <= 10) {
+                statusElement.className = 'current-status status-excellent';
+                statusElement.textContent = 'ダイビング適性: 最適';
+            } else if (waveHeight <= 1.5 && windSpeed <= 15) {
+                statusElement.className = 'current-status status-good';
+                statusElement.textContent = 'ダイビング適性: 良好';
+            } else {
+                statusElement.className = 'current-status status-poor';
+                statusElement.textContent = 'ダイビング適性: 注意';
+            }
+        }
+
+        // 予報カードのクリックイベント
+        document.querySelectorAll('.forecast-card').forEach(card => {
+            card.addEventListener('click', function() {
+                this.style.transform = 'scale(1.05)';
+                setTimeout(() => {
+                    this.style.transform = '';
+                }, 200);
+            });
+        });
+
+        // スムーススクロール
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        // ページ読み込み時の初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 現在のコンディションに基づいて適性を更新
+            updateDivingStatus(1.2, 12);
+            
+            // 自動更新（実装時は定期的にAPIから最新データを取得）
+            setInterval(() => {
+                console.log('Weather data refresh check...');
+                // updateWeatherData('ishigaki');
+            }, 300000); // 5分間隔
+        });
+    </script>
+</body>
+</html>

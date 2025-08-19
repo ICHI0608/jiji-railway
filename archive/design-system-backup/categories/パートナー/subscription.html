@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>サブスクリプション管理 | Dive Buddy's</title>
+    <meta name="description" content="Dive Buddy's ショップ向けサブスクリプションプランの管理・変更・決済を行えます。">
+    
+    <!-- 統一デザインシステム -->
+    <link rel="stylesheet" href="/css/design-system.css">
+    <link rel="stylesheet" href="/app/v28-styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        .subscription-page {
+            background: #f8f9ff;
+            min-height: 100vh;
+            padding-top: 20px;
+        }
+
+        .subscription-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-info h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .header-info p {
+            opacity: 0.9;
+            font-size: 1rem;
+        }
+
+        .back-button {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            background: rgba(255,255,255,0.3);
+            border-color: rgba(255,255,255,0.5);
+        }
+
+        .subscription-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem 2rem;
+        }
+
+        .current-plan-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 3rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .current-plan-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .current-plan-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 2rem;
+        }
+
+        .plan-info h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+
+        .plan-price {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #10b981;
+            margin-bottom: 0.5rem;
+        }
+
+        .plan-price .currency {
+            font-size: 1.2rem;
+            color: #6b7280;
+        }
+
+        .plan-status {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .plan-status.active {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .plan-status.canceled {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+
+        .plan-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .usage-stats {
+            background: #f8f9ff;
+            border-radius: 15px;
+            padding: 1.5rem;
+        }
+
+        .usage-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .usage-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .usage-label {
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .usage-value {
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .usage-limit {
+            font-size: 0.9rem;
+            color: #6b7280;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            transition: width 0.3s ease;
+        }
+
+        .progress-fill.warning {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+
+        .progress-fill.danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+
+        .plan-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .plans-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .plan-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            position: relative;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .plan-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+
+        .plan-card.popular {
+            border-color: #667eea;
+            position: relative;
+        }
+
+        .plan-card.popular::before {
+            content: '人気';
+            position: absolute;
+            top: -10px;
+            right: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        .plan-card.current {
+            border-color: #10b981;
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+        }
+
+        .card-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-description {
+            color: #6b7280;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-price {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-price .currency {
+            font-size: 1rem;
+            color: #6b7280;
+        }
+
+        .card-billing {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        .features-list {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 2rem 0;
+        }
+
+        .features-list li {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.8rem;
+            color: #374151;
+        }
+
+        .features-list li i {
+            color: #10b981;
+            font-size: 1.1rem;
+        }
+
+        .select-plan-button {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 1.5rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .select-plan-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .select-plan-button:disabled {
+            background: #d1d5db;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .select-plan-button.current {
+            background: #10b981;
+        }
+
+        .billing-section {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .billing-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .payment-method {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: #f8f9ff;
+            border-radius: 12px;
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .payment-history {
+            margin-top: 2rem;
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .history-table th {
+            background: #f8f9ff;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: #374151;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .history-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+            color: #374151;
+        }
+
+        .history-table tr:hover {
+            background: #f8f9ff;
+        }
+
+        .success-message,
+        .error-message {
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            font-weight: 600;
+        }
+
+        .success-message {
+            background: #dcfce7;
+            color: #166534;
+            border: 2px solid #22c55e;
+        }
+
+        .error-message {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 2px solid #ef4444;
+        }
+
+        .loading-spinner {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .current-plan-header {
+                flex-direction: column;
+                text-align: center;
+                gap: 1rem;
+            }
+
+            .plan-details {
+                grid-template-columns: 1fr;
+            }
+
+            .plans-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .billing-info {
+                grid-template-columns: 1fr;
+            }
+
+            .plan-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ヘッダー -->
+    <div class="subscription-header">
+        <div class="header-content">
+            <div class="header-info">
+                <h1><i class="fas fa-credit-card"></i> サブスクリプション管理</h1>
+                <p>プラン変更・決済管理・使用状況確認</p>
+            </div>
+            <a href="/shop/dashboard.html" class="back-button">
+                <i class="fas fa-arrow-left"></i> ダッシュボードに戻る
+            </a>
+        </div>
+    </div>
+
+    <!-- メインコンテンツ -->
+    <div class="subscription-page">
+        <div class="subscription-container">
+            <!-- メッセージエリア -->
+            <div id="messageArea"></div>
+
+            <!-- 現在のプラン -->
+            <div class="current-plan-card">
+                <div class="current-plan-header">
+                    <div class="plan-info">
+                        <h2 id="currentPlanName">プラン読み込み中...</h2>
+                        <div class="plan-price">
+                            <span id="currentPlanPrice">---</span>
+                            <span class="currency">円/月</span>
+                        </div>
+                    </div>
+                    <div class="plan-status active" id="planStatus">アクティブ</div>
+                </div>
+
+                <div class="plan-details">
+                    <div>
+                        <h3 style="margin-bottom: 1rem; color: #1f2937;">プラン詳細</h3>
+                        <div id="planFeatures">
+                            <!-- プラン機能は動的に生成 -->
+                        </div>
+                    </div>
+                    <div>
+                        <h3 style="margin-bottom: 1rem; color: #1f2937;">使用状況</h3>
+                        <div class="usage-stats" id="usageStats">
+                            <!-- 使用状況は動的に生成 -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="plan-actions">
+                    <button class="select-plan-button" onclick="showPlanSelection()">
+                        <i class="fas fa-exchange-alt"></i> プラン変更
+                    </button>
+                    <button class="select-plan-button" style="background: #6b7280;" onclick="showBillingInfo()">
+                        <i class="fas fa-receipt"></i> 請求履歴
+                    </button>
+                </div>
+            </div>
+
+            <!-- プラン選択セクション -->
+            <div id="planSelectionSection" style="display: none;">
+                <h2 class="section-title" style="text-align: center; margin-bottom: 2rem;">
+                    <i class="fas fa-layer-group"></i> プラン選択
+                </h2>
+                
+                <div id="plansLoading" class="loading-spinner">
+                    <div class="spinner"></div>
+                    <p>プランを読み込み中...</p>
+                </div>
+                
+                <div id="plansGrid" class="plans-grid">
+                    <!-- プランカードは動的に生成 -->
+                </div>
+            </div>
+
+            <!-- 請求情報セクション -->
+            <div id="billingSection" class="billing-section" style="display: none;">
+                <h2 class="section-title">
+                    <i class="fas fa-file-invoice-dollar"></i> 請求情報
+                </h2>
+
+                <div class="billing-info">
+                    <div>
+                        <h3 style="margin-bottom: 1rem;">支払い方法</h3>
+                        <div class="payment-method" id="paymentMethod">
+                            <!-- 支払い方法は動的に生成 -->
+                        </div>
+                    </div>
+                    <div>
+                        <h3 style="margin-bottom: 1rem;">次回請求</h3>
+                        <div style="padding: 1rem; background: #f8f9ff; border-radius: 12px;">
+                            <div id="nextBilling">読み込み中...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="payment-history">
+                    <h3 style="margin-bottom: 1rem;">支払い履歴</h3>
+                    <div id="paymentHistoryLoading" class="loading-spinner" style="display: none;">
+                        <div class="spinner"></div>
+                        <p>履歴を読み込み中...</p>
+                    </div>
+                    <table class="history-table" id="paymentHistoryTable">
+                        <thead>
+                            <tr>
+                                <th>日付</th>
+                                <th>金額</th>
+                                <th>ステータス</th>
+                                <th>請求書</th>
+                            </tr>
+                        </thead>
+                        <tbody id="paymentHistoryBody">
+                            <!-- 支払い履歴は動的に生成 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class SubscriptionManager {
+            constructor() {
+                this.currentShopId = null;
+                this.shopInfo = null;
+                this.currentSubscription = null;
+                this.plans = [];
+                this.init();
+            }
+
+            init() {
+                this.checkAuthentication();
+                this.loadSubscriptionData();
+            }
+
+            checkAuthentication() {
+                const sessionToken = localStorage.getItem('shop_session_token'); 
+                const shopInfo = localStorage.getItem('shop_info');
+                
+                if (!sessionToken || !shopInfo) {
+                    window.location.href = '/shop/login.html';
+                    return;
+                }
+
+                this.shopInfo = JSON.parse(shopInfo);
+                this.currentShopId = this.shopInfo.id;
+            }
+
+            async loadSubscriptionData() {
+                try {
+                    // 現在のサブスクリプション情報を取得
+                    const response = await fetch(`/api/shop/subscription/${this.currentShopId}`);
+                    const data = await response.json();
+
+                    if (data.success) {
+                        this.currentSubscription = data.subscription;
+                        this.renderCurrentPlan(data.subscription, data.plan);
+                        this.renderUsageStats(data.subscription.usage, data.plan.limits);
+                    } else {
+                        this.showError('サブスクリプション情報の取得に失敗しました。');
+                    }
+                } catch (error) {
+                    console.error('サブスクリプション情報取得エラー:', error);
+                    this.showError('サブスクリプション情報の読み込み中にエラーが発生しました。');
+                }
+            }
+
+            renderCurrentPlan(subscription, plan) {
+                document.getElementById('currentPlanName').textContent = plan.name;
+                document.getElementById('currentPlanPrice').textContent = plan.price === 0 ? '無料' : plan.price.toLocaleString();
+                
+                const statusElement = document.getElementById('planStatus');
+                statusElement.textContent = subscription.status === 'active' ? 'アクティブ' : 'キャンセル済み';
+                statusElement.className = `plan-status ${subscription.status}`;
+
+                // プラン機能表示
+                const featuresContainer = document.getElementById('planFeatures');
+                featuresContainer.innerHTML = plan.features.map(feature => `
+                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                        <i class="fas fa-check" style="color: #10b981;"></i>
+                        <span>${feature}</span>
+                    </div>
+                `).join('');
+            }
+
+            renderUsageStats(usage, limits) {
+                const container = document.getElementById('usageStats');
+                
+                const usageItems = [
+                    {
+                        label: '月間PV',
+                        current: usage.monthly_views,
+                        limit: limits.monthly_views,
+                        suffix: 'PV'
+                    },
+                    {
+                        label: '写真数',
+                        current: usage.photos_used,
+                        limit: limits.photos,
+                        suffix: '枚'
+                    }
+                ];
+
+                container.innerHTML = usageItems.map(item => {
+                    const percentage = item.limit === -1 ? 0 : (item.current / item.limit) * 100;
+                    const limitText = item.limit === -1 ? '無制限' : `${item.limit}${item.suffix}`;
+                    
+                    let progressClass = '';
+                    if (percentage > 90) progressClass = 'danger';
+                    else if (percentage > 70) progressClass = 'warning';
+
+                    return `
+                        <div class="usage-item">
+                            <div>
+                                <div class="usage-label">${item.label}</div>
+                                <div class="usage-limit">上限: ${limitText}</div>
+                            </div>
+                            <div class="usage-value">${item.current}${item.suffix}</div>
+                        </div>
+                        ${item.limit !== -1 ? `
+                            <div class="progress-bar">
+                                <div class="progress-fill ${progressClass}" style="width: ${Math.min(percentage, 100)}%"></div>
+                            </div>
+                        ` : ''}
+                    `;
+                }).join('');
+            }
+
+            async showPlanSelection() {
+                const section = document.getElementById('planSelectionSection');
+                const loading = document.getElementById('plansLoading');
+                const grid = document.getElementById('plansGrid');
+
+                section.style.display = 'block';
+                loading.style.display = 'block';
+                section.scrollIntoView({ behavior: 'smooth' });
+
+                try {
+                    const response = await fetch('/api/subscription/plans');
+                    const data = await response.json();
+
+                    if (data.success) {
+                        this.plans = data.plans;
+                        this.renderPlansGrid(data.plans);
+                    } else {
+                        this.showError('プラン情報の取得に失敗しました。');
+                    }
+                } catch (error) {
+                    console.error('プラン取得エラー:', error);
+                    this.showError('プラン情報の読み込み中にエラーが発生しました。');
+                } finally {
+                    loading.style.display = 'none';
+                }
+            }
+
+            renderPlansGrid(plans) {
+                const container = document.getElementById('plansGrid');
+                
+                container.innerHTML = plans.map(plan => {
+                    const isCurrent = this.currentSubscription && this.currentSubscription.plan_id === plan.id;
+                    
+                    return `
+                        <div class="plan-card ${plan.popular ? 'popular' : ''} ${isCurrent ? 'current' : ''}">
+                            <div class="card-header">
+                                <h3 class="card-title">${plan.name}</h3>
+                                <p class="card-description">${plan.description}</p>
+                                <div class="card-price">
+                                    ${plan.price === 0 ? '無料' : plan.price.toLocaleString()}
+                                    <span class="currency">円</span>
+                                </div>
+                                <div class="card-billing">月額（税込）</div>
+                            </div>
+                            
+                            <ul class="features-list">
+                                ${plan.features.map(feature => `
+                                    <li><i class="fas fa-check"></i> ${feature}</li>
+                                `).join('')}
+                            </ul>
+                            
+                            <button class="select-plan-button ${isCurrent ? 'current' : ''}" ${isCurrent ? 'disabled' : ''} 
+                                    onclick="window.subscriptionManager.selectPlan('${plan.id}')">
+                                ${isCurrent ? '現在のプラン' : 'このプランを選択'}
+                            </button>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            async selectPlan(planId) {
+                if (this.currentSubscription && this.currentSubscription.plan_id === planId) {
+                    return;
+                }
+
+                const plan = this.plans.find(p => p.id === planId);
+                if (!confirm(`${plan.name} に変更しますか？`)) {
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/api/shop/subscription/change', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            shop_id: this.currentShopId,
+                            new_plan_id: planId
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        this.showSuccess(`${plan.name} に変更しました。`);
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 2000);
+                    } else {
+                        this.showError(data.message || 'プラン変更に失敗しました。');
+                    }
+                } catch (error) {
+                    console.error('プラン変更エラー:', error);
+                    this.showError('プラン変更中にエラーが発生しました。');
+                }
+            }
+
+            async showBillingInfo() {
+                const section = document.getElementById('billingSection');
+                section.style.display = 'block';
+                section.scrollIntoView({ behavior: 'smooth' });
+
+                // 支払い方法表示
+                const paymentMethodContainer = document.getElementById('paymentMethod');
+                if (this.currentSubscription.payment_method) {
+                    const pm = this.currentSubscription.payment_method;
+                    paymentMethodContainer.innerHTML = `
+                        <div class="card-icon">
+                            <i class="fas fa-credit-card"></i>
+                        </div>
+                        <div>
+                            <div style="font-weight: 600;">${pm.brand.toUpperCase()} •••• ${pm.last4}</div>
+                            <div style="color: #6b7280; font-size: 0.9rem;">クレジットカード</div>
+                        </div>
+                    `;
+                } else {
+                    paymentMethodContainer.innerHTML = `
+                        <div class="card-icon" style="background: #6b7280;">
+                            <i class="fas fa-times"></i>
+                        </div>
+                        <div>
+                            <div style="font-weight: 600;">支払い方法未設定</div>
+                            <div style="color: #6b7280; font-size: 0.9rem;">無料プラン</div>
+                        </div>
+                    `;
+                }
+
+                // 次回請求日表示
+                const nextBillingContainer = document.getElementById('nextBilling');
+                if (this.currentSubscription.current_period_end) {
+                    const endDate = new Date(this.currentSubscription.current_period_end);
+                    nextBillingContainer.innerHTML = `
+                        <div style="font-weight: 600;">${endDate.toLocaleDateString('ja-JP')}</div>
+                        <div style="color: #6b7280; font-size: 0.9rem;">次回請求日</div>
+                    `;
+                } else {
+                    nextBillingContainer.innerHTML = `
+                        <div style="font-weight: 600;">-</div>
+                        <div style="color: #6b7280; font-size: 0.9rem;">無料プラン</div>
+                    `;
+                }
+
+                // 支払い履歴読み込み
+                await this.loadPaymentHistory();
+            }
+
+            async loadPaymentHistory() {
+                try {
+                    document.getElementById('paymentHistoryLoading').style.display = 'block';
+                    
+                    const response = await fetch(`/api/shop/subscription/${this.currentShopId}/payments`);
+                    const data = await response.json();
+
+                    if (data.success) {
+                        this.renderPaymentHistory(data.payments);
+                    } else {
+                        this.showError('支払い履歴の取得に失敗しました。');
+                    }
+                } catch (error) {
+                    console.error('支払い履歴取得エラー:', error);
+                    this.showError('支払い履歴の読み込み中にエラーが発生しました。');
+                } finally {
+                    document.getElementById('paymentHistoryLoading').style.display = 'none';
+                }
+            }
+
+            renderPaymentHistory(payments) {
+                const tbody = document.getElementById('paymentHistoryBody');
+                
+                if (payments.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="4" style="text-align: center; color: #6b7280; padding: 2rem;">
+                                支払い履歴はありません
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                tbody.innerHTML = payments.map(payment => {
+                    const date = new Date(payment.payment_date).toLocaleDateString('ja-JP');
+                    const statusColor = payment.status === 'succeeded' ? '#10b981' : '#ef4444';
+                    const statusText = payment.status === 'succeeded' ? '成功' : '失敗';
+                    
+                    return `
+                        <tr>
+                            <td>${date}</td>
+                            <td>¥${payment.amount.toLocaleString()}</td>
+                            <td style="color: ${statusColor}; font-weight: 600;">${statusText}</td>
+                            <td>
+                                <a href="${payment.invoice_url}" target="_blank" style="color: #667eea; text-decoration: none;">
+                                    <i class="fas fa-download"></i> ダウンロード
+                                </a>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            showSuccess(message) {
+                const messageArea = document.getElementById('messageArea');
+                messageArea.innerHTML = `
+                    <div class="success-message">
+                        <i class="fas fa-check-circle"></i> ${message}
+                    </div>
+                `;
+                messageArea.scrollIntoView({ behavior: 'smooth' });
+            }
+
+            showError(message) {
+                const messageArea = document.getElementById('messageArea');
+                messageArea.innerHTML = `
+                    <div class="error-message">
+                        <i class="fas fa-exclamation-triangle"></i> ${message}
+                    </div>
+                `;
+                messageArea.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        // グローバル関数
+        function showPlanSelection() {
+            window.subscriptionManager.showPlanSelection();
+        }
+
+        function showBillingInfo() {
+            window.subscriptionManager.showBillingInfo();
+        }
+
+        // 初期化
+        document.addEventListener('DOMContentLoaded', () => {
+            window.subscriptionManager = new SubscriptionManager();
+        });
+    </script>
+</body>
+</html>

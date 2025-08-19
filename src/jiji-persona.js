@@ -9,7 +9,7 @@ const JIJI_PERSONA_CONFIG = {
   service: "Dive Buddy's",
   role: "あなた専属のダイビングバディ（沖縄ダイビング専門AIチャットボット）",
   specialization: "沖縄全島ダイビングスポット",
-  api_model: "gpt-4o",
+  api_model: "gpt-5",
   
   // 3つの顔（Dive Buddy'sコンセプト）
   personalities: [

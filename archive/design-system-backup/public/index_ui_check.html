@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dive Buddy's - 沖縄ダイビング総合プラットフォーム</title>
+    <meta name="description" content="沖縄ダイビングの総合プラットフォーム。石垣島・宮古島・沖縄本島の厳選ショップ情報、リアルタイム海況、旅行プランニング。あなたに最適なダイビング体験をご提案。">
+    <meta name="keywords" content="沖縄ダイビング,石垣島,宮古島,ダイビングショップ,海況情報,ダイビング旅行,スキューバダイビング">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Gentlemens+Script&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- 統一デザインシステム -->
+    <link rel="stylesheet" href="/css/design-system.css">
+    
+    <style>
+        /* リセット・基本設定 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* 統一デザインシステム使用 - 既存の変数は削除
+        :root {
+            --primary-blue: #1e40af;
+            --ocean-blue: #0ea5e9;
+            --deep-blue: #0c4a6e;
+            --light-blue: #e0f2fe;
+            --coral-accent: #f97316;
+            --text-dark: #1f2937;
+            --text-gray: #6b7280;
+            --white: #ffffff;
+            --section-padding: 80px 0;
+        }
+
+        body {
+            font-family: 'Noto Sans JP', 'Inter', sans-serif;
+            line-height: 1.7;
+            color: var(--text-dark);
+            background-color: var(--white);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* ヘッダー - 水中写真背景 */
+        .hero-section {
+            position: relative;
+            height: 100vh;
+            min-height: 600px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        /* 波模様の境界 - SVGパス使用 */
+        .hero-section::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 120px;
+            background: var(--white);
+            clip-path: url(#wave-clip);
+            z-index: 3;
+        }
+
+        .hero-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0ea5e9 0%, #1e40af 100%), url('images/hero-background.png');
+            background-size: cover, cover;
+            background-position: center, center;
+            background-repeat: no-repeat, no-repeat;
+            z-index: -2;
+        }
+
+        .hero-background::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: 1;
+        }
+
+        .photo-placeholder {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px dashed rgba(255, 255, 255, 0.5);
+            padding: 40px;
+            border-radius: 12px;
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.8);
+            z-index: 0;
+        }
+
+        /* ナビゲーション */
+        .main-nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-blue);
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 30px;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-dark);
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--ocean-blue);
+        }
+
+        /* ヒーローコンテンツ */
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            color: white;
+            max-width: 800px;
+        }
+
+        .hero-title {
+            font-family: 'Gentlemens Script', cursive;
+            font-size: 5rem;
+            font-weight: 400;
+            margin-bottom: 20px;
+            line-height: 1.1;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .hero-subtitle {
+            font-family: 'Gentlemens Script', cursive;
+            font-size: 2rem;
+            font-weight: 400;
+            margin-bottom: 20px;
+            opacity: 0.95;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        .hero-description {
+            font-size: 1.1rem;
+            margin-bottom: 40px;
+            opacity: 0.8;
+            line-height: 1.6;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: var(--coral-accent);
+            color: white;
+            padding: 16px 32px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .cta-button:hover {
+            background: #ea580c;
+            transform: translateY(-2px);
+        }
+
+        /* ヒーローボタンコンテナ */
+        .hero-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 40px;
+        }
+
+        /* LINEボタン専用スタイル */
+        .cta-button-line {
+            background: #00c300 !important;
+            color: white !important;
+        }
+
+        .cta-button-line:hover {
+            background: #00b300 !important;
+            transform: translateY(-2px);
+        }
+
+        /* アイコンナビゲーション */
+        .icon-navigation {
+            background: var(--white);
+            padding: 60px 0;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .icon-nav-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 30px;
+            text-align: center;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .icon-nav-item {
+            text-decoration: none;
+            color: var(--text-dark);
+            transition: all 0.3s ease;
+            padding: 20px;
+            border-radius: 12px;
+        }
+
+        .icon-nav-item:hover {
+            background: var(--light-blue);
+            transform: translateY(-5px);
+        }
+
+        .icon-nav-icon {
+            font-size: 3rem;
+            color: var(--ocean-blue);
+            margin-bottom: 20px;
+        }
+
+        .icon-nav-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .icon-nav-desc {
+            font-size: 0.9rem;
+            color: var(--text-gray);
+            line-height: 1.4;
+        }
+
+        /* メインコンテンツセクション */
+        .main-section {
+            padding: var(--section-padding);
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 20px;
+            color: var(--text-dark);
+        }
+
+        .section-subtitle {
+            font-size: 1.2rem;
+            text-align: center;
+            color: var(--text-gray);
+            margin-bottom: 60px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* 特徴セクション */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 40px;
+            margin-bottom: 80px;
+        }
+
+        .feature-card {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            border: 1px solid #f3f4f6;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        }
+
+        .feature-photo-placeholder {
+            height: 200px;
+            background: #f8fafc;
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 24px;
+            color: var(--text-gray);
+            font-size: 14px;
+        }
+
+        .feature-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--text-dark);
+        }
+
+        .feature-description {
+            color: var(--text-gray);
+            line-height: 1.6;
+        }
+
+        /* 統計セクション */
+        .stats-section {
+            background: var(--light-blue);
+            padding: var(--section-padding);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 40px;
+            text-align: center;
+        }
+
+        .stat-item {
+            background: white;
+            padding: 40px 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--ocean-blue);
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            font-size: 1.1rem;
+            color: var(--text-dark);
+            font-weight: 500;
+        }
+
+        /* フッター */
+        .footer {
+            background: var(--deep-blue);
+            color: white;
+            padding: 60px 0 30px;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .footer-section h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: white;
+        }
+
+        .footer-links {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 12px;
+        }
+
+        .footer-links a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: white;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            padding-top: 30px;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* レスポンシブ */
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 3.5rem;
+            }
+            
+            .hero-subtitle {
+                font-size: 1.5rem;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+            
+            .icon-nav-grid {
+                grid-template-columns: repeat(2, 1fr);
+                grid-template-rows: repeat(3, 1fr);
+                gap: 20px;
+            }
+            
+            .icon-nav-icon {
+                font-size: 2.5rem;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+            
+            .section-title {
+                font-size: 2rem;
+            }
+            
+            .hero-buttons {
+                flex-direction: column;
+                align-items: center;
+                gap: 15px;
+            }
+            
+            .cta-button {
+                width: 100%;
+                max-width: 300px;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ナビゲーション -->
+    <nav class="main-nav">
+        <div class="nav-container">
+            <a href="/" class="logo">Dive Buddy's</a>
+            <ul class="nav-links">
+                <li><a href="/shops-database">ショップ検索</a></li>
+                <li><a href="/weather-ocean">海況情報</a></li>
+                <li><a href="/travel-guide">旅行ガイド</a></li>
+                <li><a href="/blog">ダイビング情報</a></li>
+                <li><a href="/member">会員登録</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- SVG波形クリッピングマスク -->
+    <svg width="0" height="0" style="position: absolute;">
+        <defs>
+            <clipPath id="wave-clip" clipPathUnits="objectBoundingBox">
+                <path d="M0,1 L0,0.85 
+                    C0.03125,0.65 0.046875,0.65 0.0625,0.85 
+                    C0.09375,1.05 0.109375,1.05 0.125,0.85 
+                    C0.15625,0.65 0.171875,0.65 0.1875,0.85 
+                    C0.21875,1.05 0.234375,1.05 0.25,0.85 
+                    C0.28125,0.65 0.296875,0.65 0.3125,0.85 
+                    C0.34375,1.05 0.359375,1.05 0.375,0.85 
+                    C0.40625,0.65 0.421875,0.65 0.4375,0.85 
+                    C0.46875,1.05 0.484375,1.05 0.5,0.85 
+                    C0.53125,0.65 0.546875,0.65 0.5625,0.85 
+                    C0.59375,1.05 0.609375,1.05 0.625,0.85 
+                    C0.65625,0.65 0.671875,0.65 0.6875,0.85 
+                    C0.71875,1.05 0.734375,1.05 0.75,0.85 
+                    C0.78125,0.65 0.796875,0.65 0.8125,0.85 
+                    C0.84375,1.05 0.859375,1.05 0.875,0.85 
+                    C0.90625,0.65 0.921875,0.65 0.9375,0.85 
+                    C0.96875,1.05 0.984375,1.05 1,0.85 
+                    L1,1 Z" />
+            </clipPath>
+        </defs>
+    </svg>
+
+    <!-- ヒーローセクション -->
+    <section class="hero-section">
+        <div class="hero-background">
+            <img src="images/hero-background.png" alt="沖縄ダイビング背景" style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0;">
+        </div>
+        <div class="hero-content">
+            <h1 class="hero-title">Dive Buddy's</h1>
+            <p class="hero-subtitle">「『どうしよう...』が『楽しみ！』に変わる瞬間」</p>
+            <p class="hero-description">AIチャットで気軽に相談。AIチャット（Jiji）があなたの希望を聞いて、<br>
+            ベストなショップをマッチング！初めての沖縄ダイビングも、もう一人で悩まなくて大丈夫。</p>
+            <div class="hero-buttons">
+                <a href="/shops-database" class="cta-button">ダイビングショップを探す</a>
+                <a href="https://line.me/ti/p/@2007331165" class="cta-button cta-button-line" target="_blank">
+                    <i class="fab fa-line"></i> 公式LINE（AIチャット）に登録
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- アイコンナビゲーション -->
+    <section class="icon-navigation">
+        <div class="container">
+            <div class="icon-nav-grid">
+                <a href="/shops-database" class="icon-nav-item">
+                    <div class="icon-nav-icon">
+                        <i class="fas fa-store"></i>
+                    </div>
+                    <div class="icon-nav-title">ショップ検索</div>
+                    <div class="icon-nav-desc">79店舗から最適なショップを検索</div>
+                </a>
+                
+                <a href="/weather-ocean" class="icon-nav-item">
+                    <div class="icon-nav-icon">
+                        <i class="fas fa-water"></i>
+                    </div>
+                    <div class="icon-nav-title">海況情報</div>
+                    <div class="icon-nav-desc">リアルタイム天気・海況データ</div>
+                </a>
+                
+                <a href="/travel-guide" class="icon-nav-item">
+                    <div class="icon-nav-icon">
+                        <i class="fas fa-plane"></i>
+                    </div>
+                    <div class="icon-nav-title">旅行プランニング</div>
+                    <div class="icon-nav-desc">航空券・宿泊・交通の一括サポート</div>
+                </a>
+                
+                <a href="/blog" class="icon-nav-item">
+                    <div class="icon-nav-icon">
+                        <i class="fas fa-fish"></i>
+                    </div>
+                    <div class="icon-nav-title">ダイビング情報</div>
+                    <div class="icon-nav-desc">最新スポット・海洋生物情報</div>
+                </a>
+                
+                <a href="/member" class="icon-nav-item">
+                    <div class="icon-nav-icon">
+                        <i class="fas fa-user-friends"></i>
+                    </div>
+                    <div class="icon-nav-title">会員サービス</div>
+                    <div class="icon-nav-desc">ポイント・履歴・限定情報</div>
+                </a>
+                
+                <a href="/partners" class="icon-nav-item">
+                    <div class="icon-nav-icon">
+                        <i class="fas fa-handshake"></i>
+                    </div>
+                    <div class="icon-nav-title">ショップ向け</div>
+                    <div class="icon-nav-desc">掲載・集客サポートサービス</div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- メイン特徴セクション -->
+    <section class="main-section">
+        <div class="container">
+            <h2 class="section-title">沖縄ダイビングを完全サポート</h2>
+            <p class="section-subtitle">石垣島・宮古島・沖縄本島の全エリアをカバー。初心者から上級者まで、最適なダイビング体験をお届けします。</p>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-photo-placeholder">
+                        【石垣島ダイビング写真挿入箇所】<br>
+                        マンタやウミガメとの遭遇シーン
+                    </div>
+                    <h3 class="feature-title">石垣島 プレミアムダイビング</h3>
+                    <p class="feature-description">世界屈指の透明度を誇る石垣島の海。マンタポイントや川平湾での幻想的なダイビング体験。22店舗の厳選ショップから、あなたのレベルに合わせた最適なプランをご提案します。</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-photo-placeholder">
+                        【宮古島ダイビング写真挿入箇所】<br>
+                        八重干瀬や地形ダイビングシーン
+                    </div>
+                    <h3 class="feature-title">宮古島 地形ダイビング</h3>
+                    <p class="feature-description">神秘的な洞窟やアーチが魅力の宮古島。八重干瀬での壮大なリーフダイビングから、魔王の宮殿での冒険まで。18店舗のプロショップが、安全で感動的な体験をサポートします。</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-photo-placeholder">
+                        【沖縄本島ダイビング写真挿入箇所】<br>
+                        青の洞窟や慶良間諸島の海
+                    </div>
+                    <h3 class="feature-title">沖縄本島 多彩なダイビング</h3>
+                    <p class="feature-description">青の洞窟から慶良間諸島まで、多彩なポイントが魅力の沖縄本島。初心者体験から上級者向けディープダイビングまで。39店舗の豊富な選択肢で、理想のダイビングが見つかります。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 統計セクション -->
+    <section class="stats-section">
+        <div class="container">
+            <h2 class="section-title">信頼の実績</h2>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number">79</div>
+                    <div class="stat-label">提携ショップ</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">3</div>
+                    <div class="stat-label">対応エリア</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">47</div>
+                    <div class="stat-label">ダイビング情報記事</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">24h</div>
+                    <div class="stat-label">リアルタイム海況更新</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 追加サービスセクション -->
+    <section class="main-section">
+        <div class="container">
+            <h2 class="section-title">トータルサポートサービス</h2>
+            <p class="section-subtitle">ダイビングだけでなく、沖縄旅行全体をサポート。あなたの理想の沖縄体験を実現します。</p>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-photo-placeholder">
+                        【リアルタイム海況情報画面写真挿入箇所】<br>
+                        気象データ・波高・風向き表示画面
+                    </div>
+                    <h3 class="feature-title">リアルタイム海況情報</h3>
+                    <p class="feature-description">気象庁データと連携したリアルタイム海況情報を提供。風向き、波高、透明度予測で、最適なダイビング日程をプランニング。安全で快適なダイビングをサポートします。</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-photo-placeholder">
+                        【旅行プランニング写真挿入箇所】<br>
+                        航空券・ホテル・レンタカー予約画面
+                    </div>
+                    <h3 class="feature-title">旅行プランニング</h3>
+                    <p class="feature-description">航空券検索から宿泊施設、レンタカー、島間移動まで一括サポート。沖縄特化の専門知識で、効率的で充実した旅程をご提案。ダイビング旅行の全てをお任せください。</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-photo-placeholder">
+                        【会員サービス画面写真挿入箇所】<br>
+                        ポイント管理・ダイビング履歴画面
+                    </div>
+                    <h3 class="feature-title">会員限定サービス</h3>
+                    <p class="feature-description">LINE連携でかんたん会員登録。ダイビング履歴管理、ポイント特典、限定情報配信など、会員だけの特別なサービス。あなたのダイビングライフをより豊かにします。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- フッター -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Dive Buddy's</h3>
+                    <p>沖縄ダイビングの総合プラットフォーム。石垣島・宮古島・沖縄本島の厳選ショップ情報、リアルタイム海況、旅行プランニングサービスを提供しています。</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>サービス</h3>
+                    <ul class="footer-links">
+                        <li><a href="/shops-database">ダイビングショップ検索</a></li>
+                        <li><a href="/weather-ocean">海況・天気情報</a></li>
+                        <li><a href="/travel-guide">旅行プランニング</a></li>
+                        <li><a href="/blog">ダイビング情報</a></li>
+                        <li><a href="/member">会員サービス</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>エリア情報</h3>
+                    <ul class="footer-links">
+                        <li><a href="/travel-guide/ishigaki">石垣島ダイビング</a></li>
+                        <li><a href="/travel-guide/miyako">宮古島ダイビング</a></li>
+                        <li><a href="/travel-guide/okinawa">沖縄本島ダイビング</a></li>
+                        <li><a href="/travel-guide/kerama">慶良間諸島</a></li>
+                        <li><a href="/travel-guide/yonaguni">与那国島</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>サポート</h3>
+                    <ul class="footer-links">
+                        <li><a href="/about">サービス概要</a></li>
+                        <li><a href="/contact">お問い合わせ</a></li>
+                        <li><a href="/help">よくある質問</a></li>
+                        <li><a href="/partners">ショップ向けサービス</a></li>
+                        <li><a href="/privacy">プライバシーポリシー</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2024 Dive Buddy's. All rights reserved. | 沖縄ダイビング総合プラットフォーム</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // スムーススクロール
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // ナビゲーションの背景変更
+        window.addEventListener('scroll', function() {
+            const nav = document.querySelector('.main-nav');
+            if (window.scrollY > 100) {
+                nav.style.background = 'rgba(255, 255, 255, 0.98)';
+                nav.style.boxShadow = '0 2px 20px rgba(0, 0, 0, 0.1)';
+            } else {
+                nav.style.background = 'rgba(255, 255, 255, 0.95)';
+                nav.style.boxShadow = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

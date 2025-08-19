@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>航空券検索・料金比較 | Dive Buddy's</title>
+    <meta name="description" content="沖縄ダイビング旅行の航空券を簡単検索・料金比較。JAL・ANA・LCC各社の最安値を一括比較で見つけよう。">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- 統一デザインシステム -->
+    <link rel="stylesheet" href="/css/design-system.css">
+    <link rel="stylesheet" href="../app/v28-styles.css">
+    
+    <style>
+        .flights-header {
+            background: linear-gradient(135deg, var(--color-accent-1) 0%, var(--color-accent-1-dark) 100%);
+            color: var(--color-base-bg);
+            padding: var(--section-gap) 0 var(--space-16);
+            text-align: center;
+        }
+        
+        .search-section {
+            padding: 60px 0;
+            background: #f8fafc;
+        }
+        
+        .search-form {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 40px;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #374151;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .form-input, .form-select {
+            padding: 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-input:focus, .form-select:focus {
+            border-color: #2563eb;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        
+        .btn-search {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            justify-self: center;
+        }
+        
+        .btn-search:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3);
+        }
+        
+        .btn-search:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .results-section {
+            margin-top: 40px;
+        }
+        
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .results-info {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .view-toggle {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .toggle-btn {
+            padding: 8px 16px;
+            border: 2px solid #e5e7eb;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .toggle-btn.active {
+            background: #2563eb;
+            color: white;
+            border-color: #2563eb;
+        }
+        
+        .flight-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .flight-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+        
+        .flight-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .airline-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .airline-logo {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        
+        .airline-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+        
+        .flight-number {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+        
+        .price-info {
+            text-align: right;
+        }
+        
+        .price-main {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #059669;
+        }
+        
+        .price-per-person {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+        
+        .flight-details {
+            display: grid;
+            grid-template-columns: 2fr 1fr 2fr;
+            gap: 20px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .departure-info, .arrival-info {
+            text-align: center;
+        }
+        
+        .time {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+        
+        .airport {
+            color: #6b7280;
+            margin-top: 5px;
+        }
+        
+        .duration-info {
+            text-align: center;
+            position: relative;
+        }
+        
+        .duration {
+            font-weight: 600;
+            color: #6b7280;
+        }
+        
+        .flight-line {
+            width: 100%;
+            height: 2px;
+            background: #e5e7eb;
+            margin: 10px 0;
+            position: relative;
+        }
+        
+        .flight-line::after {
+            content: '✈️';
+            position: absolute;
+            right: -10px;
+            top: -10px;
+            background: white;
+            padding: 0 5px;
+        }
+        
+        .flight-amenities {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .amenity-tag {
+            background: #f0f9ff;
+            color: #0369a1;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .flight-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .availability-info {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+        
+        .btn-select {
+            background: #2563eb;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-select:hover {
+            background: #1d4ed8;
+            transform: translateY(-1px);
+        }
+        
+        .comparison-section {
+            margin-top: 40px;
+            padding: 30px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .comparison-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 25px;
+            color: #2c3e50;
+        }
+        
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        .comparison-card {
+            padding: 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .comparison-card:hover {
+            border-color: #2563eb;
+            box-shadow: 0 5px 15px rgba(37, 99, 235, 0.1);
+        }
+        
+        .comparison-airline {
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .comparison-price {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #059669;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e5e7eb;
+            border-top: 4px solid #2563eb;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error-message {
+            background: #fef2f2;
+            color: #dc2626;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #dc2626;
+            margin: 20px 0;
+        }
+        
+        .trends-section {
+            margin-top: 40px;
+            padding: 30px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .trends-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 25px;
+            color: #2c3e50;
+        }
+        
+        .trends-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+        
+        .trend-month {
+            padding: 15px;
+            border-radius: 10px;
+            background: #f8fafc;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .trend-month:hover {
+            background: #e0e7ff;
+        }
+        
+        .month-name {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+        
+        .month-price {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #059669;
+        }
+        
+        .month-recommendation {
+            font-size: 0.8rem;
+            color: #6b7280;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <!-- ヘッダー -->
+    <header class="main-header">
+        <nav class="main-nav">
+            <a href="/" class="main-logo">
+                <h1>🌺 Dive Buddy's</h1>
+                <span>航空券検索</span>
+            </a>
+            
+            <ul class="main-nav-menu">
+                <li><a href="/">ホーム</a></li>
+                <li><a href="/about">サービス</a></li>
+                <li><a href="/member">会員システム</a></li>
+                <li><a href="/shops-database">ショップDB</a></li>
+                <li><a href="/travel-guide">旅行ガイド</a></li>
+                <li><a href="/travel-guide/flights" class="active">航空券検索</a></li>
+                <li><a href="/weather-ocean">海況・天気</a></li>
+                <li><a href="/partners">ショップ向け</a></li>
+                <li><a href="/contact">お問い合わせ</a></li>
+            </ul>
+            
+            <div class="main-nav-buttons">
+                <a href="/member" class="btn btn-secondary">
+                    <i class="fas fa-user-plus"></i> 会員登録
+                </a>
+                <a href="https://line.me/ti/p/@2007331165" class="btn btn-primary btn-line-connect" target="_blank">
+                    <i class="fab fa-line"></i> Jijiに相談
+                </a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- 航空券検索ヘッダー -->
+    <section class="flights-header">
+        <div class="container">
+            <h1 class="database-title">✈️ 沖縄航空券検索・料金比較</h1>
+            <p class="database-subtitle">
+                JAL・ANA・LCC各社の料金を一括比較。最安値であなたのダイビング旅行をサポート。
+            </p>
+        </div>
+    </section>
+
+    <!-- 検索セクション -->
+    <section class="search-section">
+        <div class="container">
+            <div class="search-form">
+                <h2 class="section-title">🔍 航空券検索</h2>
+                
+                <form id="flight-search-form" class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-plane-departure"></i> 出発地
+                        </label>
+                        <select class="form-select" id="departure" required>
+                            <option value="">出発地を選択</option>
+                            <option value="tokyo">東京（成田・羽田）</option>
+                            <option value="osaka">大阪（関西・伊丹）</option>
+                            <option value="nagoya">名古屋（中部）</option>
+                            <option value="fukuoka">福岡</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-plane-arrival"></i> 目的地
+                        </label>
+                        <select class="form-select" id="destination" required>
+                            <option value="">目的地を選択</option>
+                            <option value="okinawa">沖縄本島（那覇）</option>
+                            <option value="ishigaki">石垣島</option>
+                            <option value="miyako">宮古島</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-calendar-alt"></i> 出発日
+                        </label>
+                        <input type="date" class="form-input" id="departureDate" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-calendar-alt"></i> 復路日（往復の場合）
+                        </label>
+                        <input type="date" class="form-input" id="returnDate">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-users"></i> 人数
+                        </label>
+                        <select class="form-select" id="passengers">
+                            <option value="1">1名</option>
+                            <option value="2">2名</option>
+                            <option value="3">3名</option>
+                            <option value="4">4名</option>
+                            <option value="5">5名以上</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-chair"></i> 座席クラス
+                        </label>
+                        <select class="form-select" id="class">
+                            <option value="economy">エコノミー</option>
+                            <option value="premium">プレミアムエコノミー</option>
+                            <option value="business">ビジネス</option>
+                        </select>
+                    </div>
+                </form>
+                
+                <button type="submit" class="btn-search" id="search-btn">
+                    <i class="fas fa-search"></i>
+                    航空券を検索
+                </button>
+            </div>
+            
+            <!-- 検索結果セクション -->
+            <div id="results-container" style="display: none;">
+                <div class="results-header">
+                    <div class="results-info" id="results-info">
+                        検索結果: 0件
+                    </div>
+                    
+                    <div class="view-toggle">
+                        <button class="toggle-btn active" data-view="list">
+                            <i class="fas fa-list"></i> リスト
+                        </button>
+                        <button class="toggle-btn" data-view="comparison">
+                            <i class="fas fa-chart-bar"></i> 比較
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- フライト一覧 -->
+                <div id="flights-list"></div>
+                
+                <!-- 料金比較 -->
+                <div id="comparison-section" class="comparison-section" style="display: none;">
+                    <h3 class="comparison-title">💰 航空会社別料金比較</h3>
+                    <div id="comparison-grid" class="comparison-grid"></div>
+                </div>
+            </div>
+            
+            <!-- 月別料金トレンド -->
+            <div id="trends-section" class="trends-section" style="display: none;">
+                <h3 class="trends-title">📊 月別料金トレンド</h3>
+                <div id="trends-grid" class="trends-grid"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- フッター -->
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>🌊 Jiji知識ベース</h3>
+                    <p>LINE Bot完結型・Web知識ベース統合システム</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>航空券検索</h3>
+                    <ul>
+                        <li><a href="/travel-guide/flights">料金比較</a></li>
+                        <li><a href="/travel-guide/flights">月別トレンド</a></li>
+                        <li><a href="/travel-guide/flights">航空会社比較</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>旅行ガイド</h3>
+                    <ul>
+                        <li><a href="/travel-guide">旅行プランナー</a></li>
+                        <li><a href="/travel-guide">宿泊施設</a></li>
+                        <li><a href="/travel-guide">現地交通</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>サポート</h3>
+                    <ul>
+                        <li><a href="https://line.me/ti/p/@2007331165" target="_blank">LINE Bot相談</a></li>
+                        <li><a href="/contact">お問い合わせ</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 Jiji知識ベース - 沖縄ダイビング旅行サポートシステム</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 航空券検索システム
+        class FlightSearchSystem {
+            constructor() {
+                this.isLoading = false;
+                this.currentView = 'list';
+                this.searchResults = null;
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.setDefaultDates();
+            }
+
+            setupEventListeners() {
+                // 検索ボタン
+                document.getElementById('search-btn').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.performSearch();
+                });
+
+                // ビュー切り替え
+                document.querySelectorAll('.toggle-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const view = e.target.closest('.toggle-btn').dataset.view;
+                        this.switchView(view);
+                    });
+                });
+
+                // 出発地・目的地変更時のトレンド更新
+                ['departure', 'destination'].forEach(id => {
+                    document.getElementById(id).addEventListener('change', () => {
+                        this.updateTrends();
+                    });
+                });
+            }
+
+            setDefaultDates() {
+                const today = new Date();
+                const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+                const twoWeeks = new Date(today.getTime() + 14 * 24 * 60 * 60 * 1000);
+
+                document.getElementById('departureDate').value = nextWeek.toISOString().split('T')[0];
+                document.getElementById('returnDate').value = twoWeeks.toISOString().split('T')[0];
+            }
+
+            async performSearch() {
+                if (this.isLoading) return;
+
+                const formData = this.getFormData();
+                if (!this.validateForm(formData)) return;
+
+                try {
+                    this.setLoading(true);
+                    console.log('🔍 航空券検索開始:', formData);
+
+                    const searchResponse = await this.callFlightAPI('search', formData);
+                    const comparisonResponse = await this.callFlightAPI('compare', formData);
+
+                    this.searchResults = {
+                        flights: searchResponse.data.flights || [],
+                        comparison: comparisonResponse.data.comparison || [],
+                        summary: searchResponse.data.summary || {}
+                    };
+
+                    this.displayResults();
+                    this.updateTrends();
+
+                } catch (error) {
+                    console.error('❌ 検索エラー:', error);
+                    this.showError('検索中にエラーが発生しました。しばらく後にもう一度お試しください。');
+                } finally {
+                    this.setLoading(false);
+                }
+            }
+
+            getFormData() {
+                return {
+                    departure: document.getElementById('departure').value,
+                    destination: document.getElementById('destination').value,
+                    departureDate: document.getElementById('departureDate').value,
+                    returnDate: document.getElementById('returnDate').value || null,
+                    passengers: document.getElementById('passengers').value,
+                    class: document.getElementById('class').value
+                };
+            }
+
+            validateForm(data) {
+                if (!data.departure || !data.destination || !data.departureDate) {
+                    this.showError('出発地、目的地、出発日は必須項目です。');
+                    return false;
+                }
+
+                const departureDate = new Date(data.departureDate);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                if (departureDate < today) {
+                    this.showError('出発日は今日以降の日付を選択してください。');
+                    return false;
+                }
+
+                if (data.returnDate) {
+                    const returnDate = new Date(data.returnDate);
+                    if (returnDate <= departureDate) {
+                        this.showError('復路日は出発日より後の日付を選択してください。');
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
+            async callFlightAPI(endpoint, params) {
+                try {
+                    // APIエンドポイントマッピング
+                    const endpointMap = {
+                        search: 'search',
+                        compare: 'okinawa/' + this.mapDestination(params.destination)
+                    };
+                    
+                    const apiEndpoint = endpointMap[endpoint] || endpoint;
+                    
+                    // パラメータ準備
+                    const queryParams = new URLSearchParams();
+                    
+                    if (endpoint === 'search') {
+                        // 基本検索API用パラメータ
+                        const originCode = this.mapAirportCode(params.departure);
+                        const destinationCode = this.mapAirportCode(params.destination);
+                        
+                        queryParams.append('origin', originCode);
+                        queryParams.append('destination', destinationCode);
+                        queryParams.append('departure', params.departureDate);
+                        if (params.returnDate) {
+                            queryParams.append('return', params.returnDate);
+                        }
+                        queryParams.append('adults', params.passengers);
+                        
+                    } else if (endpoint === 'compare') {
+                        // 沖縄エリア特化API用パラメータ
+                        const originCode = this.mapAirportCode(params.departure);
+                        
+                        queryParams.append('origin', originCode);
+                        queryParams.append('departure', params.departureDate);
+                        if (params.returnDate) {
+                            queryParams.append('return', params.returnDate);
+                        }
+                        queryParams.append('adults', params.passengers);
+                    }
+
+                    console.log(`📡 API呼び出し: /api/flights/${apiEndpoint}?${queryParams.toString()}`);
+                    
+                    const response = await fetch(`/api/flights/${apiEndpoint}?${queryParams.toString()}`);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP Error: ${response.status}`);
+                    }
+
+                    const result = await response.json();
+                    
+                    if (!result.success) {
+                        throw new Error(result.message || 'API Error');
+                    }
+
+                    return result;
+                    
+                } catch (error) {
+                    console.error(`❌ API呼び出しエラー (${endpoint}):`, error);
+                    
+                    // フォールバック: サンプルデータを返す
+                    return this.getFallbackData(endpoint, params);
+                }
+            }
+            
+            mapAirportCode(location) {
+                const mapping = {
+                    'tokyo': 'HND',
+                    'osaka': 'KIX', 
+                    'nagoya': 'NGO',
+                    'fukuoka': 'FUK',
+                    'okinawa': 'OKA',
+                    'ishigaki': 'ISG',
+                    'miyako': 'MMY'
+                };
+                return mapping[location] || location.toUpperCase();
+            }
+            
+            mapDestination(destination) {
+                const mapping = {
+                    'okinawa': 'naha',
+                    'ishigaki': 'ishigaki',
+                    'miyako': 'miyako'
+                };
+                return mapping[destination] || destination;
+            }
+            
+            getFallbackData(endpoint, params) {
+                console.log('🔄 フォールバックデータを使用');
+                
+                if (endpoint === 'search') {
+                    return {
+                        success: true,
+                        data: {
+                            flights: this.generateSampleFlights(params),
+                            summary: {
+                                totalFlights: 12,
+                                cheapest: 28500,
+                                average: 42300
+                            }
+                        }
+                    };
+                } else if (endpoint === 'compare') {
+                    return {
+                        success: true,
+                        data: {
+                            comparison: this.generateSampleComparison(params),
+                            diving_info: this.getDivingInfo(params.destination)
+                        }
+                    };
+                }
+                
+                return { success: false, message: 'フォールバックデータなし' };
+            }
+            
+            generateSampleFlights(params) {
+                const airlines = ['JAL', 'ANA', 'ジェットスター', 'ピーチ', 'スカイマーク'];
+                const flights = [];
+                
+                for (let i = 0; i < 8; i++) {
+                    const airline = airlines[i % airlines.length];
+                    const basePrice = this.getBasePrice(airline, params.destination);
+                    const departureTime = this.getRandomTime(6, 20);
+                    const arrivalTime = this.addHours(departureTime, this.getFlightDuration(params.destination));
+                    
+                    flights.push({
+                        flightId: `FL${1000 + i}`,
+                        airline: airline,
+                        flightNumber: `${airline.substring(0, 2).toUpperCase()}${101 + i}`,
+                        route: {
+                            departureAirport: {
+                                code: this.mapAirportCode(params.departure),
+                                name: this.getAirportName(params.departure)
+                            },
+                            destinationAirport: {
+                                code: this.mapAirportCode(params.destination),
+                                name: this.getAirportName(params.destination)
+                            }
+                        },
+                        schedule: {
+                            departureTime: departureTime,
+                            arrivalTime: arrivalTime,
+                            duration: this.getFlightDuration(params.destination)
+                        },
+                        pricing: {
+                            economy: basePrice + Math.floor(Math.random() * 10000)
+                        },
+                        availability: {
+                            economy: Math.floor(Math.random() * 20) + 1
+                        },
+                        amenities: this.getAmenities(airline)
+                    });
+                }
+                
+                return flights.sort((a, b) => a.pricing.economy - b.pricing.economy);
+            }
+            
+            generateSampleComparison(params) {
+                const airlines = ['JAL', 'ANA', 'ジェットスター', 'ピーチ', 'スカイマーク'];
+                return airlines.map(airline => ({
+                    airline: airline,
+                    cheapest: this.getBasePrice(airline, params.destination),
+                    average: this.getBasePrice(airline, params.destination) + 15000
+                }));
+            }
+            
+            getBasePrice(airline, destination) {
+                const basePrices = {
+                    'JAL': { okinawa: 45000, ishigaki: 55000, miyako: 60000 },
+                    'ANA': { okinawa: 44000, ishigaki: 54000, miyako: 59000 },
+                    'ジェットスター': { okinawa: 25000, ishigaki: 35000, miyako: 40000 },
+                    'ピーチ': { okinawa: 23000, ishigaki: 33000, miyako: 38000 },
+                    'スカイマーク': { okinawa: 30000, ishigaki: 0, miyako: 0 }
+                };
+                
+                return basePrices[airline]?.[destination] || 40000;
+            }
+            
+            getFlightDuration(destination) {
+                const durations = {
+                    okinawa: 150,    // 2時間30分
+                    ishigaki: 180,   // 3時間
+                    miyako: 170      // 2時間50分
+                };
+                return durations[destination] || 150;
+            }
+            
+            getRandomTime(startHour, endHour) {
+                const hour = Math.floor(Math.random() * (endHour - startHour)) + startHour;
+                const minute = Math.floor(Math.random() * 4) * 15; // 15分刻み
+                return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+            }
+            
+            addHours(time, minutes) {
+                const [hour, min] = time.split(':').map(Number);
+                const totalMinutes = hour * 60 + min + minutes;
+                const newHour = Math.floor(totalMinutes / 60) % 24;
+                const newMin = totalMinutes % 60;
+                return `${newHour.toString().padStart(2, '0')}:${newMin.toString().padStart(2, '0')}`;
+            }
+            
+            getAirportName(location) {
+                const names = {
+                    tokyo: '羽田空港',
+                    osaka: '関西国際空港',
+                    nagoya: '中部国際空港',
+                    fukuoka: '福岡空港',
+                    okinawa: '那覇空港',
+                    ishigaki: '新石垣空港',
+                    miyako: '宮古空港'
+                };
+                return names[location] || location;
+            }
+            
+            getAmenities(airline) {
+                const allAmenities = {
+                    'JAL': ['機内WiFi', '座席指定無料', '受託手荷物20kg'],
+                    'ANA': ['機内WiFi', '座席指定無料', '受託手荷物20kg'],
+                    'ジェットスター': ['座席指定有料', '受託手荷物有料'],
+                    'ピーチ': ['座席指定有料', '受託手荷物有料'],
+                    'スカイマーク': ['座席指定無料', '受託手荷物20kg']
+                };
+                return allAmenities[airline] || ['基本サービス'];
+            }
+            
+            getDivingInfo(destination) {
+                const info = {
+                    okinawa: {
+                        name: '沖縄本島',
+                        sites: ['慶良間諸島', 'チービシ', 'ナガンヌ島'],
+                        season: '通年',
+                        level: '初心者〜上級者'
+                    },
+                    ishigaki: {
+                        name: '石垣島',
+                        sites: ['川平石崎', 'マンタシティ', '大崎ハナゴイリーフ'],
+                        season: '3-10月がベスト',
+                        level: '中級者〜上級者'
+                    },
+                    miyako: {
+                        name: '宮古島',
+                        sites: ['魔王の宮殿', '通り池', '伊良部大橋下'],
+                        season: '3-11月',
+                        level: '中級者〜上級者'
+                    }
+                };
+                return info[destination] || null;
+            }
+
+            displayResults() {
+                const container = document.getElementById('results-container');
+                const info = document.getElementById('results-info');
+                
+                if (!this.searchResults || !this.searchResults.flights.length) {
+                    this.showError('該当する航空券が見つかりませんでした。');
+                    return;
+                }
+
+                const totalFlights = this.searchResults.flights.length;
+                info.textContent = `検索結果: ${totalFlights}件`;
+                
+                container.style.display = 'block';
+                
+                if (this.currentView === 'list') {
+                    this.displayFlightsList();
+                } else {
+                    this.displayComparison();
+                }
+            }
+
+            displayFlightsList() {
+                const container = document.getElementById('flights-list');
+                container.innerHTML = '';
+
+                this.searchResults.flights.forEach(flight => {
+                    const flightCard = this.createFlightCard(flight);
+                    container.appendChild(flightCard);
+                });
+
+                document.getElementById('flights-list').style.display = 'block';
+                document.getElementById('comparison-section').style.display = 'none';
+            }
+
+            createFlightCard(flight) {
+                const card = document.createElement('div');
+                card.className = 'flight-card';
+
+                const amenitiesHtml = flight.amenities.map(amenity => 
+                    `<span class="amenity-tag">${amenity}</span>`
+                ).join('');
+
+                const durationHours = Math.floor(flight.schedule.duration / 60);
+                const durationMinutes = flight.schedule.duration % 60;
+                const durationText = `${durationHours}時間${durationMinutes}分`;
+
+                card.innerHTML = `
+                    <div class="flight-header">
+                        <div class="airline-info">
+                            <div class="airline-logo">${flight.airline.substring(0, 3)}</div>
+                            <div>
+                                <div class="airline-name">${flight.airline}</div>
+                                <div class="flight-number">${flight.flightNumber}</div>
+                            </div>
+                        </div>
+                        <div class="price-info">
+                            <div class="price-main">¥${flight.pricing.economy.toLocaleString()}</div>
+                            <div class="price-per-person">1名あたり</div>
+                        </div>
+                    </div>
+                    
+                    <div class="flight-details">
+                        <div class="departure-info">
+                            <div class="time">${flight.schedule.departureTime}</div>
+                            <div class="airport">${flight.route.departureAirport.name}</div>
+                        </div>
+                        
+                        <div class="duration-info">
+                            <div class="duration">${durationText}</div>
+                            <div class="flight-line"></div>
+                        </div>
+                        
+                        <div class="arrival-info">
+                            <div class="time">${flight.schedule.arrivalTime}</div>
+                            <div class="airport">${flight.route.destinationAirport.name}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="flight-amenities">
+                        ${amenitiesHtml}
+                    </div>
+                    
+                    <div class="flight-actions">
+                        <div class="availability-info">
+                            残り${flight.availability.economy}席
+                        </div>
+                        <button class="btn-select" onclick="selectFlight('${flight.flightId}')">
+                            この便を選択
+                        </button>
+                    </div>
+                `;
+
+                return card;
+            }
+
+            displayComparison() {
+                const container = document.getElementById('comparison-grid');
+                container.innerHTML = '';
+
+                this.searchResults.comparison.forEach(airline => {
+                    const comparisonCard = document.createElement('div');
+                    comparisonCard.className = 'comparison-card';
+                    
+                    comparisonCard.innerHTML = `
+                        <div class="comparison-airline">${airline.airline}</div>
+                        <div class="comparison-price">¥${airline.cheapest.toLocaleString()}</div>
+                        <div style="color: #6b7280; font-size: 0.9rem; margin-top: 5px;">
+                            平均: ¥${airline.average.toLocaleString()}
+                        </div>
+                    `;
+                    
+                    container.appendChild(comparisonCard);
+                });
+
+                document.getElementById('flights-list').style.display = 'none';
+                document.getElementById('comparison-section').style.display = 'block';
+            }
+
+            switchView(view) {
+                this.currentView = view;
+                
+                // ボタンの状態更新
+                document.querySelectorAll('.toggle-btn').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.view === view);
+                });
+
+                // 表示切り替え
+                if (this.searchResults) {
+                    if (view === 'list') {
+                        this.displayFlightsList();
+                    } else {
+                        this.displayComparison();
+                    }
+                }
+            }
+
+            async updateTrends() {
+                const departure = document.getElementById('departure').value;
+                const destination = document.getElementById('destination').value;
+
+                if (!departure || !destination) return;
+
+                try {
+                    const response = await fetch(`/api/flights/trends?departure=${departure}&destination=${destination}`);
+                    
+                    if (!response.ok) return;
+
+                    const result = await response.json();
+                    
+                    if (result.success && result.data.trends) {
+                        this.displayTrends(result.data.trends);
+                    }
+
+                } catch (error) {
+                    console.error('トレンド取得エラー:', error);
+                }
+            }
+
+            displayTrends(trends) {
+                const container = document.getElementById('trends-grid');
+                container.innerHTML = '';
+
+                trends.forEach(trend => {
+                    const trendCard = document.createElement('div');
+                    trendCard.className = 'trend-month';
+                    
+                    trendCard.innerHTML = `
+                        <div class="month-name">${trend.month}</div>
+                        <div class="month-price">¥${trend.averagePrice.toLocaleString()}</div>
+                        <div class="month-recommendation">${trend.recommendation}</div>
+                    `;
+                    
+                    container.appendChild(trendCard);
+                });
+
+                document.getElementById('trends-section').style.display = 'block';
+            }
+
+            setLoading(loading) {
+                this.isLoading = loading;
+                const btn = document.getElementById('search-btn');
+                
+                if (loading) {
+                    btn.disabled = true;
+                    btn.innerHTML = '<div class="loading-spinner"></div> 検索中...';
+                } else {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-search"></i> 航空券を検索';
+                }
+            }
+
+            showError(message) {
+                const container = document.getElementById('results-container');
+                container.innerHTML = `
+                    <div class="error-message">
+                        <strong>エラー:</strong> ${message}
+                    </div>
+                `;
+                container.style.display = 'block';
+            }
+        }
+
+        // 便選択機能
+        function selectFlight(flightId) {
+            alert(`便ID: ${flightId} が選択されました。\n実際のシステムでは予約手続きに進みます。`);
+        }
+
+        // システム初期化
+        document.addEventListener('DOMContentLoaded', () => {
+            new FlightSearchSystem();
+        });
+    </script>
+</body>
+</html>

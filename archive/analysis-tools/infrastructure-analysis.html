@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dive Buddy's インフラ・パフォーマンス分析</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Hiragino Sans', 'Yu Gothic', sans-serif;
+            background: #f8fafb;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #77C9D4 0%, #A2DED0 100%);
+            color: white;
+            padding: 40px 20px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(119, 201, 212, 0.3);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .analysis-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .analysis-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            border-left: 4px solid #77C9D4;
+        }
+
+        .section-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-icon {
+            font-size: 1.8rem;
+            color: #77C9D4;
+        }
+
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .metric-card {
+            background: #f8fafb;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid #e5e7eb;
+        }
+
+        .metric-number {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #77C9D4;
+            margin-bottom: 5px;
+        }
+
+        .metric-label {
+            font-size: 0.9rem;
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin: 5px 5px 5px 0;
+        }
+
+        .status-good { background: #dcfce7; color: #166534; }
+        .status-warning { background: #fef3c7; color: #92400e; }
+        .status-critical { background: #fef2f2; color: #dc2626; }
+        .status-info { background: #dbeafe; color: #1e40af; }
+
+        .dependency-list {
+            list-style: none;
+            margin: 15px 0;
+        }
+
+        .dependency-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .dependency-name {
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .dependency-version {
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.85rem;
+            color: #6b7280;
+            background: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .recommendation-box {
+            background: #e0f2fe;
+            border: 2px solid #77C9D4;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .recommendation-title {
+            font-weight: 700;
+            color: #0c4a6e;
+            margin-bottom: 10px;
+        }
+
+        .recommendation-list {
+            list-style: none;
+        }
+
+        .recommendation-list li {
+            margin: 8px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .recommendation-list li::before {
+            content: '💡';
+            position: absolute;
+            left: 0;
+        }
+
+        .performance-chart {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid #e5e7eb;
+        }
+
+        .chart-title {
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #374151;
+        }
+
+        .chart-bar {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+        }
+
+        .chart-label {
+            width: 120px;
+            font-size: 0.9rem;
+            color: #6b7280;
+        }
+
+        .chart-progress {
+            flex: 1;
+            height: 20px;
+            background: #f3f4f6;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 0 10px;
+        }
+
+        .chart-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+
+        .fill-good { background: linear-gradient(90deg, #10b981, #059669); }
+        .fill-warning { background: linear-gradient(90deg, #f59e0b, #d97706); }
+        .fill-critical { background: linear-gradient(90deg, #ef4444, #dc2626); }
+
+        .chart-value {
+            width: 60px;
+            text-align: right;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .architecture-diagram {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 30px 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        .diagram-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 30px;
+            color: #1f2937;
+        }
+
+        .diagram-flow {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+
+        .diagram-node {
+            background: linear-gradient(135deg, #77C9D4 0%, #A2DED0 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            text-align: center;
+            min-width: 120px;
+            position: relative;
+        }
+
+        .diagram-arrow {
+            font-size: 1.5rem;
+            color: #77C9D4;
+            margin: 0 10px;
+        }
+
+        .cost-analysis {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 30px 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        .cost-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+        .cost-table th,
+        .cost-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .cost-table th {
+            background: #f8fafb;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .cost-total {
+            background: #f0f9ff;
+            font-weight: 700;
+        }
+
+        @media (max-width: 768px) {
+            .analysis-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .diagram-flow {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚡ Dive Buddy's インフラ・パフォーマンス分析</h1>
+            <p>システム負荷・メモリ・CPU・スケーラビリティの包括的評価</p>
+        </div>
+
+        <!-- 現在のシステム構成 -->
+        <div class="analysis-grid">
+            <div class="analysis-section">
+                <div class="section-title">
+                    <span class="section-icon">🏗️</span>
+                    現在のシステム構成
+                </div>
+                <div class="metric-grid">
+                    <div class="metric-card">
+                        <div class="metric-number">47</div>
+                        <div class="metric-label">HTMLページ</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-number">79</div>
+                        <div class="metric-label">ショップDB</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-number">1</div>
+                        <div class="metric-label">LINE Bot</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-number">6</div>
+                        <div class="metric-label">YouTubeクリエイター</div>
+                    </div>
+                </div>
+                
+                <div class="status-indicator status-info">🌐 Railway Production</div>
+                <div class="status-indicator status-info">🗄️ Supabase PostgreSQL</div>
+                <div class="status-indicator status-info">🤖 OpenAI GPT-5</div>
+                <div class="status-indicator status-info">📺 YouTube API v3</div>
+            </div>
+
+            <div class="analysis-section">
+                <div class="section-title">
+                    <span class="section-icon">📊</span>
+                    予想リソース使用量
+                </div>
+                <div class="metric-grid">
+                    <div class="metric-card">
+                        <div class="metric-number">512MB</div>
+                        <div class="metric-label">最小メモリ</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-number">1-2GB</div>
+                        <div class="metric-label">推奨メモリ</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-number">1vCPU</div>
+                        <div class="metric-label">最小CPU</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-number">2vCPU</div>
+                        <div class="metric-label">推奨CPU</div>
+                    </div>
+                </div>
+
+                <div class="status-indicator status-good">✅ 軽量な静的サイト</div>
+                <div class="status-indicator status-good">✅ 効率的なNode.js</div>
+                <div class="status-indicator status-warning">⚠️ メモリ内セッション</div>
+            </div>
+        </div>
+
+        <!-- 依存関係分析 -->
+        <div class="analysis-section">
+            <div class="section-title">
+                <span class="section-icon">📦</span>
+                主要依存関係・パッケージサイズ分析
+            </div>
+            
+            <ul class="dependency-list">
+                <li class="dependency-item">
+                    <span class="dependency-name">Express.js</span>
+                    <span class="dependency-version">^4.21.2 (~580KB)</span>
+                </li>
+                <li class="dependency-item">
+                    <span class="dependency-name">@line/bot-sdk</span>
+                    <span class="dependency-version">^10.0.0 (~2.1MB)</span>
+                </li>
+                <li class="dependency-item">
+                    <span class="dependency-name">@supabase/supabase-js</span>
+                    <span class="dependency-version">^2.51.0 (~890KB)</span>
+                </li>
+                <li class="dependency-item">
+                    <span class="dependency-name">openai</span>
+                    <span class="dependency-version">^4.104.0 (~1.2MB)</span>
+                </li>
+                <li class="dependency-item">
+                    <span class="dependency-name">axios</span>
+                    <span class="dependency-version">^1.11.0 (~470KB)</span>
+                </li>
+                <li class="dependency-item">
+                    <span class="dependency-name">redis</span>
+                    <span class="dependency-version">^4.6.13 (~330KB)</span>
+                </li>
+                <li class="dependency-item">
+                    <span class="dependency-name">winston</span>
+                    <span class="dependency-version">^3.11.0 (~510KB)</span>
+                </li>
+            </ul>
+
+            <div class="status-indicator status-good">✅ 総パッケージサイズ: ~6.1MB</div>
+            <div class="status-indicator status-good">✅ 軽量・最適化済み依存関係</div>
+        </div>
+
+        <!-- パフォーマンス予測チャート -->
+        <div class="performance-chart">
+            <div class="chart-title">📈 負荷レベル別パフォーマンス予測</div>
+            
+            <div class="chart-bar">
+                <div class="chart-label">メモリ使用量</div>
+                <div class="chart-progress">
+                    <div class="chart-fill fill-good" style="width: 35%"></div>
+                </div>
+                <div class="chart-value">35%</div>
+            </div>
+            
+            <div class="chart-bar">
+                <div class="chart-label">CPU使用量</div>
+                <div class="chart-progress">
+                    <div class="chart-fill fill-good" style="width: 25%"></div>
+                </div>
+                <div class="chart-value">25%</div>
+            </div>
+            
+            <div class="chart-bar">
+                <div class="chart-label">ディスクI/O</div>
+                <div class="chart-progress">
+                    <div class="chart-fill fill-good" style="width: 15%"></div>
+                </div>
+                <div class="chart-value">15%</div>
+            </div>
+            
+            <div class="chart-bar">
+                <div class="chart-label">ネットワーク</div>
+                <div class="chart-progress">
+                    <div class="chart-fill fill-warning" style="width: 45%"></div>
+                </div>
+                <div class="chart-value">45%</div>
+            </div>
+        </div>
+
+        <!-- システム構成図 -->
+        <div class="architecture-diagram">
+            <div class="diagram-title">🏗️ システム構成・データフロー</div>
+            
+            <!-- フロントエンド層 -->
+            <div class="diagram-flow">
+                <div class="diagram-node">📱 LINE App</div>
+                <div class="diagram-arrow">→</div>
+                <div class="diagram-node">🌐 静的サイト<br>(47ページ)</div>
+            </div>
+            
+            <div class="diagram-flow">
+                <div class="diagram-arrow">↓</div>
+            </div>
+            
+            <!-- アプリケーション層 -->
+            <div class="diagram-flow">
+                <div class="diagram-node">🤖 LINE Bot<br>「Jiji」</div>
+                <div class="diagram-arrow">↔</div>
+                <div class="diagram-node">⚡ Node.js Server<br>Express + Middleware</div>
+                <div class="diagram-arrow">↔</div>
+                <div class="diagram-node">🧠 OpenAI API<br>GPT-5</div>
+            </div>
+            
+            <div class="diagram-flow">
+                <div class="diagram-arrow">↓</div>
+                <div class="diagram-arrow" style="color: #ef4444; font-weight: bold;">↙</div>
+                <div class="diagram-arrow">↓</div>
+            </div>
+            
+            <!-- データ層 -->
+            <div class="diagram-flow">
+                <div class="diagram-node">🗄️ Supabase<br>PostgreSQL</div>
+                <div class="diagram-arrow">↔</div>
+                <div class="diagram-node">📊 ショップDB<br>(79店舗)</div>
+                <div class="diagram-arrow">↔</div>
+                <div class="diagram-node">📺 YouTube API<br>(6クリエイター)</div>
+            </div>
+            
+            <!-- GPT-5からDBへの直接アクセス（赤矢印で強調） -->
+            <div style="text-align: center; margin: 20px 0; padding: 15px; background: #fef2f2; border: 2px solid #ef4444; border-radius: 10px;">
+                <div style="color: #dc2626; font-weight: 700; margin-bottom: 10px;">⚠️ 重要な修正点</div>
+                <div style="color: #7f1d1d; font-size: 0.9rem;">
+                    GPT-5は<strong>Web知識ベース統合</strong>により、Supabaseデータベースから<br>
+                    ショップ情報・ユーザー履歴・口コミデータを直接参照して回答生成
+                </div>
+            </div>
+        </div>
+
+        <!-- スケーラビリティ分析 -->
+        <div class="analysis-grid">
+            <div class="analysis-section">
+                <div class="section-title">
+                    <span class="section-icon">📈</span>
+                    スケーラビリティ分析
+                </div>
+                
+                <h4>👥 同時接続ユーザー予測</h4>
+                <div class="metric-grid">
+                    <div class="metric-card">
+                        <div class="metric-number">50-100</div>
+                        <div class="metric-label">軽負荷時</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-number">500-1000</div>
+                        <div class="metric-label">中負荷時</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-number">2000+</div>
+                        <div class="metric-label">高負荷時</div>
+                    </div>
+                </div>
+
+                <h4 style="margin-top: 20px;">⚡ ボトルネック要因</h4>
+                <div class="status-indicator status-warning">⚠️ メモリ内セッション管理</div>
+                <div class="status-indicator status-warning">⚠️ OpenAI API率制限</div>
+                <div class="status-indicator status-info">ℹ️ YouTube API クォータ</div>
+            </div>
+
+            <div class="analysis-section">
+                <div class="section-title">
+                    <span class="section-icon">🎯</span>
+                    問題点・改善提案
+                </div>
+                
+                <h4>🔴 緊急度: 高</h4>
+                <div class="status-indicator status-critical">❌ メモリ内セッション</div>
+                <p style="margin: 10px 0; font-size: 0.9rem; color: #6b7280;">
+                    現在のセッション管理はサーバー再起動でデータ消失リスク
+                </p>
+
+                <h4 style="margin-top: 20px;">🟡 緊急度: 中</h4>
+                <div class="status-indicator status-warning">⚠️ API率制限対策</div>
+                <p style="margin: 10px 0; font-size: 0.9rem; color: #6b7280;">
+                    OpenAI・YouTube APIの利用制限対策が必要
+                </p>
+
+                <h4 style="margin-top: 20px;">🟢 緊急度: 低</h4>
+                <div class="status-indicator status-info">ℹ️ CDN導入</div>
+                <p style="margin: 10px 0; font-size: 0.9rem; color: #6b7280;">
+                    静的アセットの高速化（将来的な最適化）
+                </p>
+            </div>
+        </div>
+
+        <!-- コスト分析 -->
+        <div class="cost-analysis">
+            <div class="section-title">
+                <span class="section-icon">💰</span>
+                月間運営コスト予測
+            </div>
+            
+            <table class="cost-table">
+                <thead>
+                    <tr>
+                        <th>サービス</th>
+                        <th>プラン</th>
+                        <th>使用量</th>
+                        <th>月額コスト</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>🚂 Railway</td>
+                        <td>Hobby</td>
+                        <td>1GB RAM, 1vCPU</td>
+                        <td>$5</td>
+                    </tr>
+                    <tr>
+                        <td>🗄️ Supabase</td>
+                        <td>Free → Pro</td>
+                        <td>500MB DB</td>
+                        <td>$0 → $25</td>
+                    </tr>
+                    <tr>
+                        <td>🤖 OpenAI</td>
+                        <td>従量課金</td>
+                        <td>1M tokens/月</td>
+                        <td>$20-30</td>
+                    </tr>
+                    <tr>
+                        <td>📺 YouTube API</td>
+                        <td>無料枠</td>
+                        <td>10K calls/日</td>
+                        <td>$0</td>
+                    </tr>
+                    <tr>
+                        <td>📱 LINE API</td>
+                        <td>無料枠</td>
+                        <td>1K messages/月</td>
+                        <td>$0</td>
+                    </tr>
+                    <tr class="cost-total">
+                        <td colspan="3"><strong>合計月額コスト</strong></td>
+                        <td><strong>$25-60</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 推奨インフラ構成 -->
+        <div class="recommendation-box">
+            <div class="recommendation-title">🎯 推奨インフラ構成・改善策</div>
+            
+            <h4>🚀 Phase 1: 即座の改善（必須）</h4>
+            <ul class="recommendation-list">
+                <li><strong>Redisセッション管理導入</strong>: メモリ内から永続化ストレージへ</li>
+                <li><strong>Railway Pro プラン</strong>: 2GB RAM, 2vCPU に増強</li>
+                <li><strong>エラーハンドリング強化</strong>: API制限・障害時の適切な処理</li>
+            </ul>
+            
+            <h4 style="margin-top: 20px;">⚡ Phase 2: パフォーマンス最適化</h4>
+            <ul class="recommendation-list">
+                <li><strong>API レスポンスキャッシュ</strong>: YouTube・OpenAI結果の一時保存</li>
+                <li><strong>データベース最適化</strong>: インデックス設定、クエリ改善</li>
+                <li><strong>ロードバランサー導入</strong>: 高負荷時の処理分散</li>
+            </ul>
+            
+            <h4 style="margin-top: 20px;">🌟 Phase 3: 本格スケール対応</h4>
+            <ul class="recommendation-list">
+                <li><strong>CDN導入</strong>: CloudFlare等で静的ファイル高速化</li>
+                <li><strong>マイクロサービス化</strong>: LINE Bot・Web・APIの分離</li>
+                <li><strong>監視・アラート</strong>: Datadog, New Relic等の導入</li>
+            </ul>
+        </div>
+
+        <!-- 結論 -->
+        <div class="analysis-section" style="border-left: 4px solid #10b981;">
+            <div class="section-title">
+                <span class="section-icon">✅</span>
+                分析結果・総合判定
+            </div>
+            
+            <div class="status-indicator status-good">✅ 現状は軽量・効率的</div>
+            <div class="status-indicator status-good">✅ 初期運営コスト抑制済み</div>
+            <div class="status-indicator status-warning">⚠️ セッション管理要改善</div>
+            <div class="status-indicator status-info">ℹ️ スケール準備必要</div>
+            
+            <p style="margin-top: 20px; line-height: 1.7;">
+                <strong>結論</strong>: Dive Buddy'sは現在のインフラ構成で<strong>問題なく稼働可能</strong>です。
+                47ページの静的サイト + 軽量Node.jsアプリケーションのため、メモリ・CPU負荷は軽微。
+                月額$25-60の低コストで運営できますが、<strong>メモリ内セッション管理の改善</strong>と
+                <strong>API制限対策</strong>は早急に実装すべき課題です。
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // パフォーマンスチャートのアニメーション
+        document.addEventListener('DOMContentLoaded', function() {
+            const chartFills = document.querySelectorAll('.chart-fill');
+            chartFills.forEach((fill, index) => {
+                const width = fill.style.width;
+                fill.style.width = '0%';
+                setTimeout(() => {
+                    fill.style.width = width;
+                }, 200 * (index + 1));
+            });
+            
+            console.log('Dive Buddy\'s インフラ分析初期化完了');
+        });
+    </script>
+</body>
+</html>

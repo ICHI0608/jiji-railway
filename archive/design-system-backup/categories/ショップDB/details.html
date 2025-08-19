@@ -1,0 +1,1326 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ショップ詳細 | Dive Buddy's</title>
+    <meta name="description" content="ダイビングショップの詳細情報。口コミ・評価・料金・サービス内容・写真ギャラリーで安心選択をサポート。">
+    
+    <style>
+        /* リセット & ベースフォント */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Hiragino Sans', 'ヒラギノ角ゴシック', 'Yu Gothic', 'Meiryo', sans-serif;
+            line-height: 1.6;
+            background: linear-gradient(135deg, #4A90A4 0%, #87CEEB 50%, #DDA0DD 100%);
+            min-height: 100vh;
+        }
+
+        /* カラー変数 */
+        :root {
+            --ocean-blue: #4A90A4;
+            --coral-pink: #FF6B9D;
+            --mint-green: #4ECDC4;
+            --soft-white: #FFF8F5;
+            --deep-navy: #2C3E50;
+            --sunset-peach: #FFAB91;
+            --premium-gold: #FFD700;
+            --standard-blue: #4169E1;
+            --basic-gray: #696969;
+        }
+
+        /* ヘッダー */
+        .header {
+            background: linear-gradient(135deg, rgba(255, 248, 245, 0.95) 0%, rgba(255, 182, 193, 0.9) 100%);
+            padding: 15px 0;
+            box-shadow: 0 4px 20px rgba(255, 107, 157, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .logo {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            font-size: 24px;
+            color: var(--coral-pink);
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .back-button, .search-button {
+            background: var(--ocean-blue);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 14px;
+            transition: transform 0.3s ease;
+        }
+
+        .search-button {
+            background: var(--mint-green);
+        }
+
+        .back-button:hover, .search-button:hover {
+            transform: translateY(-2px);
+        }
+
+        /* メインコンテナ */
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* ローディング */
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            margin-bottom: 30px;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--ocean-blue);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* ショップヘッダー */
+        .shop-header {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 248, 245, 0.9) 100%);
+            border-radius: 25px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .shop-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 107, 157, 0.05), transparent);
+            transform: rotate(45deg);
+            pointer-events: none;
+        }
+
+        .shop-header-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .shop-header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .shop-title-section h1 {
+            font-size: 32px;
+            font-weight: bold;
+            color: var(--deep-navy);
+            margin-bottom: 10px;
+        }
+
+        .shop-area-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .area-badge {
+            background: linear-gradient(135deg, var(--ocean-blue), var(--mint-green));
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .grade-badge {
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+            text-align: center;
+        }
+
+        .grade-badge.premium {
+            background: linear-gradient(135deg, var(--premium-gold), #FFA500);
+        }
+
+        .grade-badge.standard {
+            background: linear-gradient(135deg, var(--standard-blue), #6495ED);
+        }
+
+        .grade-badge.basic {
+            background: linear-gradient(135deg, var(--basic-gray), #A9A9A9);
+        }
+
+        .shop-summary {
+            font-size: 16px;
+            color: var(--deep-navy);
+            line-height: 1.8;
+            margin-bottom: 20px;
+        }
+
+        .quick-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .quick-info-item {
+            background: rgba(255, 255, 255, 0.7);
+            padding: 15px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .quick-info-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .quick-info-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .quick-info-value {
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--deep-navy);
+        }
+
+        /* コンテンツグリッド */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        /* 詳細情報セクション */
+        .details-section, .sidebar-section {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 248, 245, 0.9) 100%);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--deep-navy);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 24px;
+            background: linear-gradient(135deg, var(--coral-pink), var(--sunset-peach));
+            border-radius: 2px;
+        }
+
+        /* サービス情報 */
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .service-category {
+            background: rgba(255, 255, 255, 0.8);
+            padding: 20px;
+            border-radius: 15px;
+            border-left: 4px solid var(--coral-pink);
+        }
+
+        .service-category h4 {
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--deep-navy);
+            margin-bottom: 12px;
+        }
+
+        .service-list {
+            list-style: none;
+        }
+
+        .service-list li {
+            padding: 5px 0;
+            font-size: 14px;
+            color: #666;
+            position: relative;
+            padding-left: 20px;
+        }
+
+        .service-list li::before {
+            content: '✓';
+            color: var(--mint-green);
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+
+        .service-list li.unavailable {
+            opacity: 0.5;
+        }
+
+        .service-list li.unavailable::before {
+            content: '✗';
+            color: #ccc;
+        }
+
+        /* 料金表 */
+        .pricing-table {
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .pricing-header {
+            background: linear-gradient(135deg, var(--coral-pink), var(--sunset-peach));
+            color: white;
+            padding: 15px 20px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .pricing-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .pricing-item:last-child {
+            border-bottom: none;
+        }
+
+        .pricing-name {
+            font-weight: 500;
+            color: var(--deep-navy);
+        }
+
+        .pricing-value {
+            font-weight: bold;
+            color: var(--coral-pink);
+            font-size: 16px;
+        }
+
+        /* 口コミ・評価セクション */
+        .reviews-section {
+            margin-top: 30px;
+        }
+
+        .reviews-summary {
+            background: linear-gradient(135deg, var(--mint-green), var(--ocean-blue));
+            color: white;
+            padding: 25px;
+            border-radius: 20px;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .overall-rating {
+            font-size: 48px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .rating-text {
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+
+        .rating-breakdown {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .rating-item {
+            text-align: center;
+        }
+
+        .rating-label {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .rating-score {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .reviews-list {
+            display: grid;
+            gap: 20px;
+        }
+
+        .review-card {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .review-rating {
+            display: flex;
+            gap: 2px;
+        }
+
+        .star {
+            color: #FFD700;
+            font-size: 16px;
+        }
+
+        .star.empty {
+            color: #ddd;
+        }
+
+        .review-date {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .review-text {
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--deep-navy);
+            margin-bottom: 10px;
+        }
+
+        .review-helpful {
+            font-size: 12px;
+            color: #666;
+            text-align: right;
+        }
+
+        /* 写真ギャラリー */
+        .photo-gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .photo-item {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .photo-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .photo-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            cursor: pointer;
+        }
+
+        .photo-info {
+            padding: 15px;
+        }
+
+        .photo-caption {
+            font-size: 14px;
+            font-weight: bold;
+            color: var(--deep-navy);
+            margin-bottom: 5px;
+        }
+
+        .photo-category {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--mint-green), var(--ocean-blue));
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .photo-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+        }
+
+        .photo-modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            max-width: 90%;
+            max-height: 90%;
+        }
+
+        .photo-modal-image {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+        }
+
+        .photo-modal-close {
+            position: absolute;
+            top: 15px;
+            right: 35px;
+            color: white;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .photo-modal-close:hover {
+            color: var(--coral-pink);
+        }
+
+        .no-photos-message {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 15px;
+            border: 2px dashed #ddd;
+        }
+
+        /* サイドバー */
+        .contact-card {
+            background: linear-gradient(135deg, var(--coral-pink), var(--sunset-peach));
+            color: white;
+            padding: 25px;
+            border-radius: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .contact-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .contact-item {
+            margin: 12px 0;
+            font-size: 14px;
+        }
+
+        .contact-button {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+            padding: 12px 25px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-weight: bold;
+            display: inline-block;
+            margin: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .contact-button:hover {
+            background: white;
+            color: var(--coral-pink);
+        }
+
+        .location-card {
+            text-align: center;
+        }
+
+        .map-placeholder {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #E8F4FD, #C1E8FF);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--ocean-blue);
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            border: 2px dashed var(--ocean-blue);
+        }
+
+        .address-text {
+            font-size: 14px;
+            color: var(--deep-navy);
+            line-height: 1.6;
+        }
+
+        /* エラー表示 */
+        .error-message {
+            text-align: center;
+            padding: 60px 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            margin: 20px 0;
+        }
+
+        .error-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            color: #E74C3C;
+        }
+
+        .error-message h3 {
+            font-size: 24px;
+            color: var(--deep-navy);
+            margin-bottom: 15px;
+        }
+
+        .error-message p {
+            color: #666;
+            margin-bottom: 25px;
+        }
+
+        /* フェードインアニメーション */
+        .fade-in {
+            animation: fadeIn 0.6s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* レスポンシブ */
+        @media (max-width: 768px) {
+            .main-container {
+                padding: 20px 10px;
+            }
+
+            .shop-header-top {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .content-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .quick-info-grid {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                gap: 15px;
+            }
+
+            .services-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .rating-breakdown {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 10px;
+            }
+
+            .nav-buttons {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .contact-button {
+                display: block;
+                margin: 10px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ヘッダー -->
+    <header class="header">
+        <div class="header-container">
+            <a href="/" class="logo">Dive Buddy's</a>
+            <div class="nav-buttons">
+                <a href="/shops-database/shops.html" class="search-button">🔍 ショップ検索</a>
+                <a href="/" class="back-button">🏠 ホーム</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- メインコンテンツ -->
+    <main class="main-container">
+        <!-- ローディング表示 -->
+        <div id="loadingIndicator" class="loading">
+            <div class="loading-spinner"></div>
+            <p style="margin-top: 15px; color: var(--ocean-blue);">ショップ詳細を取得中...</p>
+        </div>
+
+        <!-- ショップ詳細コンテンツ -->
+        <div id="shopDetailsContainer" style="display: none;">
+            <!-- ショップヘッダー -->
+            <section class="shop-header">
+                <div class="shop-header-content">
+                    <div class="shop-header-top">
+                        <div class="shop-title-section">
+                            <h1 id="shopName">ショップ名</h1>
+                            <div class="shop-area-info">
+                                <div class="area-badge" id="shopArea">エリア</div>
+                                <div class="grade-badge" id="shopGrade">グレード</div>
+                            </div>
+                            <div class="shop-summary" id="shopSummary">
+                                ショップの詳細説明がここに表示されます。
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="quick-info-grid" id="quickInfoGrid">
+                        <!-- JavaScript で動的生成 -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- メインコンテンツグリッド -->
+            <div class="content-grid">
+                <!-- 左カラム: 詳細情報 -->
+                <div class="main-content">
+                    <!-- サービス情報 -->
+                    <section class="details-section">
+                        <h2 class="section-title">🏊‍♀️ サービス内容</h2>
+                        <div class="services-grid" id="servicesGrid">
+                            <!-- JavaScript で動的生成 -->
+                        </div>
+                    </section>
+
+                    <!-- 料金情報 -->
+                    <section class="details-section">
+                        <h2 class="section-title">💰 料金表</h2>
+                        <div class="pricing-table" id="pricingTable">
+                            <!-- JavaScript で動的生成 -->
+                        </div>
+                    </section>
+
+                    <!-- 写真ギャラリー -->
+                    <section class="details-section">
+                        <h2 class="section-title">📸 写真ギャラリー</h2>
+                        <div id="photoGallery">
+                            <!-- JavaScript で動的生成 -->
+                        </div>
+                    </section>
+
+                    <!-- 口コミ・評価 -->
+                    <section class="details-section reviews-section">
+                        <h2 class="section-title">⭐ 口コミ・評価</h2>
+                        <div id="reviewsContainer">
+                            <!-- JavaScript で動的生成 -->
+                        </div>
+                    </section>
+                </div>
+
+                <!-- 右カラム: サイドバー -->
+                <div class="sidebar">
+                    <!-- 問い合わせ情報 -->
+                    <section class="sidebar-section contact-card">
+                        <h3 class="contact-title">📞 お問い合わせ</h3>
+                        <div id="contactInfo">
+                            <!-- JavaScript で動的生成 -->
+                        </div>
+                    </section>
+
+                    <!-- 地図・位置情報 -->
+                    <section class="sidebar-section location-card">
+                        <h3 class="section-title">📍 アクセス</h3>
+                        <div class="map-placeholder">
+                            🗺️ 地図表示予定<br>
+                            <small>(Google Maps連携予定)</small>
+                        </div>
+                        <div class="address-text" id="addressInfo">
+                            住所情報がここに表示されます
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+
+        <!-- エラー表示 -->
+        <div id="errorContainer" style="display: none;">
+            <!-- JavaScript で動的生成 -->
+        </div>
+    </main>
+
+    <!-- 写真拡大モーダル -->
+    <div id="photoModal" class="photo-modal">
+        <span class="photo-modal-close">&times;</span>
+        <div class="photo-modal-content">
+            <img id="modalImage" class="photo-modal-image" src="" alt="">
+        </div>
+    </div>
+
+    <script>
+        // グローバル変数
+        let shopData = null;
+        let shopId = null;
+
+        // ページ読み込み時の初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            // URL パラメータからショップIDを取得
+            const urlParams = new URLSearchParams(window.location.search);
+            shopId = urlParams.get('id');
+            
+            if (!shopId) {
+                showError('ショップIDが指定されていません。', '検索ページからアクセスしてください。');
+                return;
+            }
+            
+            // モーダル関連のイベントリスナー設定
+            initializeModalEvents();
+            
+            loadShopDetails(shopId);
+        });
+
+        // ショップ詳細データ読み込み
+        async function loadShopDetails(id) {
+            try {
+                showLoading(true);
+                
+                console.log(`🏪 ショップ詳細取得中: ${id}`);
+                
+                const response = await fetch(`/api/shops/${id}`);
+                
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        throw new Error('指定されたショップが見つかりません。');
+                    }
+                    throw new Error(`HTTP Error: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    shopData = result.data;
+                    console.log(`✅ ショップ詳細取得成功: ${shopData.shop_name}`);
+                    renderShopDetails(shopData);
+                } else {
+                    throw new Error(result.message || 'ショップ詳細の取得に失敗しました。');
+                }
+                
+            } catch (error) {
+                console.error('❌ ショップ詳細取得エラー:', error);
+                showError('ショップ詳細の取得に失敗しました。', error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // ショップ詳細表示
+        function renderShopDetails(shop) {
+            // ページタイトル更新
+            document.title = `${shop.shop_name} - ショップ詳細 | Dive Buddy's`;
+            
+            // ヘッダー情報
+            document.getElementById('shopName').textContent = shop.shop_name;
+            document.getElementById('shopArea').textContent = shop.area;
+            
+            // グレードバッジ
+            const gradeElement = document.getElementById('shopGrade');
+            const gradeInfo = getGradeInfo(shop.jiji_grade);
+            gradeElement.textContent = gradeInfo.text;
+            gradeElement.className = `grade-badge ${shop.jiji_grade}`;
+            
+            // サマリー
+            document.getElementById('shopSummary').textContent = 
+                shop.trial_dive_options || '沖縄の美しい海でのダイビング体験をご提供いたします。';
+            
+            // クイック情報
+            renderQuickInfo(shop);
+            
+            // サービス情報
+            renderServices(shop);
+            
+            // 料金情報
+            renderPricing(shop);
+            
+            // 写真ギャラリー
+            renderPhotoGallery(shop);
+            
+            // 口コミ・評価
+            renderReviews(shop);
+            
+            // 問い合わせ情報
+            renderContactInfo(shop);
+            
+            // 住所情報
+            renderAddressInfo(shop);
+            
+            // 表示
+            document.getElementById('shopDetailsContainer').style.display = 'block';
+            document.getElementById('shopDetailsContainer').classList.add('fade-in');
+        }
+
+        // クイック情報表示
+        function renderQuickInfo(shop) {
+            const container = document.getElementById('quickInfoGrid');
+            
+            const quickInfoItems = [
+                {
+                    icon: '⏰',
+                    label: '営業時間',
+                    value: shop.operating_hours || '要確認'
+                },
+                {
+                    icon: '👥',
+                    label: '最大グループサイズ',
+                    value: shop.max_group_size ? `${shop.max_group_size}名` : '要確認'
+                },
+                {
+                    icon: '🏊‍♀️',
+                    label: '体験ダイビング',
+                    value: shop.trial_dive_price_beach ? `¥${shop.trial_dive_price_beach.toLocaleString()}〜` : '要確認'
+                },
+                {
+                    icon: '🤿',
+                    label: 'ファンダイビング',
+                    value: shop.fun_dive_available ? 
+                        (shop.fun_dive_price_2tanks ? `¥${shop.fun_dive_price_2tanks.toLocaleString()}` : '対応あり') : 
+                        '対応なし'
+                }
+            ];
+            
+            container.innerHTML = quickInfoItems.map(item => `
+                <div class="quick-info-item">
+                    <div class="quick-info-icon">${item.icon}</div>
+                    <div class="quick-info-label">${item.label}</div>
+                    <div class="quick-info-value">${item.value}</div>
+                </div>
+            `).join('');
+        }
+
+        // サービス情報表示
+        function renderServices(shop) {
+            const container = document.getElementById('servicesGrid');
+            
+            const serviceCategories = [
+                {
+                    title: '対応ダイビング',
+                    services: [
+                        { name: '体験ダイビング', available: true },
+                        { name: 'ファンダイビング', available: shop.fun_dive_available },
+                        { name: 'ライセンス講習', available: shop.license_course_available }
+                    ]
+                },
+                {
+                    title: 'サポート体制',
+                    services: [
+                        { name: '初心者対応', available: shop.beginner_friendly },
+                        { name: '一人参加OK', available: shop.solo_participant_ok },
+                        { name: '女性インストラクター', available: shop.female_instructor_available },
+                        { name: '英語サポート', available: shop.english_support_available }
+                    ]
+                },
+                {
+                    title: '追加サービス',
+                    services: [
+                        { name: 'プライベートガイド', available: shop.private_guide_available },
+                        { name: '送迎サービス', available: shop.pickup_service_available },
+                        { name: '写真撮影', available: shop.photo_service_available },
+                        { name: '動画撮影', available: shop.video_service_available }
+                    ]
+                }
+            ];
+            
+            container.innerHTML = serviceCategories.map(category => `
+                <div class="service-category">
+                    <h4>${category.title}</h4>
+                    <ul class="service-list">
+                        ${category.services.map(service => `
+                            <li class="${service.available ? '' : 'unavailable'}">
+                                ${service.name}
+                            </li>
+                        `).join('')}
+                    </ul>
+                </div>
+            `).join('');
+        }
+
+        // 料金情報表示
+        function renderPricing(shop) {
+            const container = document.getElementById('pricingTable');
+            
+            const pricingItems = [
+                {
+                    name: '体験ダイビング（ビーチ）',
+                    value: shop.trial_dive_price_beach ? `¥${shop.trial_dive_price_beach.toLocaleString()}` : '要確認'
+                },
+                {
+                    name: '体験ダイビング（ボート）',
+                    value: shop.trial_dive_price_boat ? `¥${shop.trial_dive_price_boat.toLocaleString()}` : '要確認'
+                },
+                {
+                    name: 'ファンダイビング（2本）',
+                    value: shop.fun_dive_available ? 
+                        (shop.fun_dive_price_2tanks ? `¥${shop.fun_dive_price_2tanks.toLocaleString()}` : '要確認') : 
+                        '対応なし'
+                }
+            ];
+            
+            container.innerHTML = `
+                <div class="pricing-header">料金一覧</div>
+                ${pricingItems.map(item => `
+                    <div class="pricing-item">
+                        <span class="pricing-name">${item.name}</span>
+                        <span class="pricing-value">${item.value}</span>
+                    </div>
+                `).join('')}
+            `;
+        }
+
+        // 写真ギャラリー表示
+        function renderPhotoGallery(shop) {
+            const container = document.getElementById('photoGallery');
+            
+            if (shop.photos && shop.photos.length > 0) {
+                container.innerHTML = `
+                    <div class="photo-gallery-grid">
+                        ${shop.photos.map((photo, index) => `
+                            <div class="photo-item">
+                                <img src="${photo.url}" 
+                                     alt="${photo.caption}" 
+                                     class="photo-image"
+                                     onclick="openPhotoModal('${photo.url}', '${photo.caption}')"
+                                     loading="lazy">
+                                <div class="photo-info">
+                                    <div class="photo-caption">${photo.caption}</div>
+                                    <div class="photo-category">${photo.category}</div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            } else {
+                container.innerHTML = `
+                    <div class="no-photos-message">
+                        <p>📸 写真はまだありません</p>
+                        <p style="font-size: 14px; margin-top: 10px; color: #999;">
+                            ショップの魅力的な写真を準備中です
+                        </p>
+                    </div>
+                `;
+            }
+        }
+
+        // 口コミ・評価表示
+        async function renderReviews(shop) {
+            const container = document.getElementById('reviewsContainer');
+            
+            try {
+                // 新しい口コミAPIから統計情報を取得
+                const statsResponse = await fetch(`/api/reviews/stats/${shopId}`);
+                const statsData = await statsResponse.json();
+                
+                let reviewStats = {
+                    total_reviews: 0,
+                    average_rating: 0,
+                    rating_distribution: [0, 0, 0, 0, 0]
+                };
+                
+                if (statsData.success) {
+                    reviewStats = statsData.stats;
+                }
+                
+                // 口コミ投稿ボタンと統計表示
+                let reviewsHTML = `
+                    <div class="reviews-summary">
+                        <div class="overall-rating">${reviewStats.average_rating.toFixed(1)}</div>
+                        <div class="rating-text">総合評価 (${reviewStats.total_reviews}件の口コミ)</div>
+                        <div style="margin-top: 20px;">
+                            <a href="/reviews/submit?shop_id=${shopId}" class="contact-button" style="background: var(--coral-pink); border-color: var(--coral-pink);">
+                                ✏️ 口コミを投稿する
+                            </a>
+                        </div>
+                    </div>
+                `;
+                
+                // 新しい口コミAPIから口コミ一覧を取得
+                const reviewsResponse = await fetch(`/api/reviews/shop/${shopId}?limit=5&sort=latest`);
+                const reviewsData = await reviewsResponse.json();
+                
+                if (reviewsData.success && reviewsData.reviews.length > 0) {
+                    reviewsHTML += `
+                        <div class="reviews-list">
+                            ${reviewsData.reviews.map(review => `
+                                <div class="review-card">
+                                    <div class="review-header">
+                                        <div class="review-rating">
+                                            ${generateStars(review.rating)}
+                                        </div>
+                                        <div class="review-date">${formatDate(review.created_at)}</div>
+                                    </div>
+                                    ${review.title ? `<div style="font-weight: bold; margin-bottom: 10px; color: var(--deep-navy);">${review.title}</div>` : ''}
+                                    <div class="review-text">${review.content}</div>
+                                    <div style="margin-top: 10px; font-size: 12px; color: #666;">
+                                        <span>👤 ${review.author}</span>
+                                        <span style="margin-left: 15px;">🏊‍♀️ ${review.dive_type}</span>
+                                        <span style="margin-left: 15px;">📈 ${review.dive_level}</span>
+                                        ${review.experience_date ? `<span style="margin-left: 15px;">📅 体験日: ${formatDate(review.experience_date)}</span>` : ''}
+                                    </div>
+                                    ${review.helpful_count > 0 ? `
+                                        <div class="review-helpful">
+                                            👍 ${review.helpful_count}人が参考になったと回答
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                    
+                    // 口コミがもっとある場合の表示
+                    if (reviewStats.total_reviews > 5) {
+                        reviewsHTML += `
+                            <div style="text-align: center; margin-top: 20px;">
+                                <a href="/reviews/shop/${shopId}" class="contact-button" style="background: var(--mint-green); border-color: var(--mint-green);">
+                                    📄 すべての口コミを見る (${reviewStats.total_reviews}件)
+                                </a>
+                            </div>
+                        `;
+                    }
+                } else {
+                    reviewsHTML += `
+                        <div style="text-align: center; padding: 40px; color: #666;">
+                            <p>まだ口コミがありません。<br>
+                            あなたの体験談をお聞かせください！</p>
+                            <div style="margin-top: 20px;">
+                                <a href="/reviews/submit?shop_id=${shopId}" class="contact-button" style="background: var(--coral-pink); border-color: var(--coral-pink);">
+                                    ✏️ 最初の口コミを投稿する
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                container.innerHTML = reviewsHTML;
+                
+            } catch (error) {
+                console.error('口コミデータ取得エラー:', error);
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #666;">
+                        <p>口コミデータの読み込みに失敗しました。</p>
+                        <div style="margin-top: 20px;">
+                            <a href="/reviews/submit?shop_id=${shopId}" class="contact-button" style="background: var(--coral-pink); border-color: var(--coral-pink);">
+                                ✏️ 口コミを投稿する
+                            </a>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // 問い合わせ情報表示
+        function renderContactInfo(shop) {
+            const container = document.getElementById('contactInfo');
+            
+            container.innerHTML = `
+                <div class="contact-item">📞 ${shop.phone_line || '電話番号要確認'}</div>
+                ${shop.website ? `<div class="contact-item">🌐 公式サイトあり</div>` : ''}
+                <div style="margin-top: 20px;">
+                    ${shop.phone_line ? `
+                        <a href="tel:${shop.phone_line}" class="contact-button">
+                            📞 電話で問い合わせ
+                        </a>
+                    ` : ''}
+                    ${shop.website ? `
+                        <a href="${shop.website}" target="_blank" class="contact-button">
+                            🌐 公式サイトを見る
+                        </a>
+                    ` : ''}
+                </div>
+                <div style="margin-top: 15px; font-size: 12px; opacity: 0.9;">
+                    ※ Dive Buddy's は紹介のみ行います。<br>
+                    予約・詳細はショップに直接お問い合わせください。
+                </div>
+            `;
+        }
+
+        // 住所情報表示
+        function renderAddressInfo(shop) {
+            const container = document.getElementById('addressInfo');
+            
+            container.innerHTML = `
+                <strong>${shop.area}</strong><br>
+                詳細住所は直接ショップにお問い合わせください。<br>
+                <small style="color: #666; margin-top: 10px; display: block;">
+                    ※ 地図機能は今後実装予定です
+                </small>
+            `;
+        }
+
+        // ユーティリティ関数
+        function getGradeInfo(grade) {
+            const grades = {
+                'premium': { text: '🌟 プレミアム', class: 'premium' },
+                'standard': { text: '⭐ スタンダード', class: 'standard' },
+                'basic': { text: '⚪ ベーシック', class: 'basic' }
+            };
+            return grades[grade] || grades['basic'];
+        }
+
+        function generateStars(rating) {
+            const fullStars = Math.floor(rating);
+            const hasHalfStar = rating % 1 >= 0.5;
+            const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+            
+            let stars = '';
+            for (let i = 0; i < fullStars; i++) stars += '<span class="star">★</span>';
+            if (hasHalfStar) stars += '<span class="star">☆</span>';
+            for (let i = 0; i < emptyStars; i++) stars += '<span class="star empty">☆</span>';
+            
+            return stars;
+        }
+
+        function formatDate(dateString) {
+            try {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('ja-JP', {
+                    year: 'numeric',
+                    month: 'numeric',
+                    day: 'numeric'
+                });
+            } catch (error) {
+                return dateString;
+            }
+        }
+
+        // 写真モーダル制御
+        function openPhotoModal(imageUrl, caption) {
+            const modal = document.getElementById('photoModal');
+            const modalImage = document.getElementById('modalImage');
+            
+            modalImage.src = imageUrl;
+            modalImage.alt = caption;
+            modal.style.display = 'block';
+            
+            // Body のスクロールを無効化
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closePhotoModal() {
+            const modal = document.getElementById('photoModal');
+            modal.style.display = 'none';
+            
+            // Body のスクロールを有効化
+            document.body.style.overflow = 'auto';
+        }
+
+        // モーダル関連のイベントリスナー設定
+        function initializeModalEvents() {
+            // モーダルの閉じるボタン
+            const closeBtn = document.querySelector('.photo-modal-close');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', closePhotoModal);
+            }
+            
+            // モーダル背景クリックで閉じる
+            const modal = document.getElementById('photoModal');
+            if (modal) {
+                modal.addEventListener('click', function(event) {
+                    if (event.target === modal) {
+                        closePhotoModal();
+                    }
+                });
+            }
+            
+            // ESCキーで閉じる
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape') {
+                    closePhotoModal();
+                }
+            });
+        }
+
+        function showLoading(show) {
+            const loading = document.getElementById('loadingIndicator');
+            loading.style.display = show ? 'block' : 'none';
+        }
+
+        function showError(title, message) {
+            const container = document.getElementById('errorContainer');
+            
+            container.innerHTML = `
+                <div class="error-message">
+                    <div class="error-icon">❌</div>
+                    <h3>${title}</h3>
+                    <p>${message}</p>
+                    <a href="/shops-database/shops.html" class="contact-button" style="background: var(--coral-pink); border-color: var(--coral-pink);">
+                        🔍 ショップ検索に戻る
+                    </a>
+                </div>
+            `;
+            
+            container.style.display = 'block';
+            document.getElementById('loadingIndicator').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

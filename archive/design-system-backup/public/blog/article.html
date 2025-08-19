@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="articleTitle">記事詳細 | Dive Buddy's</title>
+    <meta name="description" id="articleDescription" content="沖縄ダイビング情報をお届けするブログ記事">
+    
+    <link rel="stylesheet" href="/app/v28-styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        .article-page {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+        }
+
+        .article-header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            color: white;
+            padding: 2rem 0;
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .breadcrumb a {
+            color: white;
+            text-decoration: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .breadcrumb a:hover {
+            opacity: 1;
+        }
+
+        .article-meta-header {
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .article-category-badge {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+
+        .article-title-main {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            line-height: 1.3;
+        }
+
+        .article-excerpt-main {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .article-meta-info {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .article-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        .article-content-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            margin-bottom: 2rem;
+        }
+
+        .article-featured-image {
+            width: 100%;
+            height: 400px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+
+        .article-featured-image::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, rgba(102, 126, 234, 0.3), transparent);
+        }
+
+        .article-content {
+            padding: 2rem;
+        }
+
+        .article-content h1,
+        .article-content h2,
+        .article-content h3,
+        .article-content h4 {
+            color: #333;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            line-height: 1.4;
+        }
+
+        .article-content h1 {
+            font-size: 2rem;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 0.5rem;
+        }
+
+        .article-content h2 {
+            font-size: 1.6rem;
+            color: #667eea;
+        }
+
+        .article-content h3 {
+            font-size: 1.3rem;
+            color: #555;
+        }
+
+        .article-content p {
+            line-height: 1.8;
+            margin-bottom: 1.5rem;
+            color: #444;
+        }
+
+        .article-content ul,
+        .article-content ol {
+            margin-bottom: 1.5rem;
+            padding-left: 2rem;
+        }
+
+        .article-content li {
+            line-height: 1.8;
+            margin-bottom: 0.5rem;
+        }
+
+        .article-content strong {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .article-content blockquote {
+            border-left: 4px solid #667eea;
+            margin: 2rem 0;
+            padding: 1rem 1.5rem;
+            background: #f8f9fa;
+            border-radius: 0 8px 8px 0;
+            font-style: italic;
+        }
+
+        .article-tags-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .tags-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        .article-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+        }
+
+        .tag {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .tag:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .article-actions {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .actions-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .action-button {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 25px;
+            font-weight: 500;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-back {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-share {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-related {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .action-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+
+        .related-articles {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .related-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: #333;
+            text-align: center;
+        }
+
+        .related-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .related-card {
+            border: 2px solid #f1f1f1;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .related-card:hover {
+            border-color: #667eea;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.1);
+        }
+
+        .related-image {
+            width: 100%;
+            height: 120px;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .related-content {
+            padding: 1rem;
+        }
+
+        .related-title-text {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            line-height: 1.4;
+        }
+
+        .related-title-text a {
+            color: #333;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .related-title-text a:hover {
+            color: #667eea;
+        }
+
+        .related-excerpt {
+            font-size: 0.9rem;
+            color: #666;
+            line-height: 1.5;
+            margin-bottom: 1rem;
+        }
+
+        .related-category {
+            position: absolute;
+            top: 0.5rem;
+            left: 0.5rem;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 0.3rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #667eea;
+        }
+
+        .high-relevance {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: linear-gradient(135deg, #ff6b6b, #feca57);
+            color: white;
+            padding: 0.3rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .related-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            color: #888;
+            margin-bottom: 0.8rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .related-author, .related-date, .related-views {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .related-views {
+            color: #667eea;
+            font-weight: 500;
+        }
+
+        .related-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+        }
+
+        .related-tag {
+            background: #f1f3f4;
+            color: #5f6368;
+            padding: 0.2rem 0.5rem;
+            border-radius: 8px;
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+
+        .loading-container {
+            text-align: center;
+            padding: 3rem;
+            color: white;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-top: 5px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        .error-container {
+            text-align: center;
+            padding: 3rem;
+            color: white;
+        }
+
+        .error-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.7;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .article-title-main {
+                font-size: 2rem;
+            }
+
+            .article-meta-info {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .article-featured-image {
+                height: 250px;
+            }
+
+            .article-content {
+                padding: 1.5rem;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .related-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="article-page">
+        <!-- ヘッダー -->
+        <header class="main-header">
+            <nav class="main-nav">
+                <a href="/" class="main-logo">
+                    <h1>🌺 Dive Buddy's</h1>
+                    <span>ダイビングブログ</span>
+                </a>
+                
+                <ul class="main-nav-menu">
+                    <li><a href="/">ホーム</a></li>
+                    <li><a href="/about">サービス</a></li>
+                    <li><a href="/member">会員システム</a></li>
+                    <li><a href="/shops-database">ショップDB</a></li>
+                    <li><a href="/blog" class="active">ブログ</a></li>
+                    <li><a href="/travel-guide">旅行ガイド</a></li>
+                    <li><a href="/weather-ocean">海況・天気</a></li>
+                    <li><a href="/partners">ショップ向け</a></li>
+                    <li><a href="/contact">お問い合わせ</a></li>
+                </ul>
+                
+                <div class="main-nav-buttons">
+                    <a href="/member" class="btn btn-secondary">
+                        <i class="fas fa-user-plus"></i> 会員登録
+                    </a>
+                    <a href="https://line.me/ti/p/@2007331165" class="btn btn-primary btn-line-connect" target="_blank">
+                        <i class="fab fa-line"></i> Jijiに相談
+                    </a>
+                </div>
+            </nav>
+        </header>
+
+        <!-- 読み込み中 -->
+        <div id="loadingContainer" class="loading-container">
+            <div class="loading-spinner"></div>
+            <h2>記事を読み込み中...</h2>
+        </div>
+
+        <!-- エラー表示 -->
+        <div id="errorContainer" class="error-container" style="display: none;">
+            <div class="error-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h2>記事が見つかりませんでした</h2>
+            <p>指定された記事は存在しないか、削除された可能性があります。</p>
+            <a href="/blog" class="action-button btn-back" style="margin-top: 2rem;">
+                <i class="fas fa-arrow-left"></i> ブログ一覧に戻る
+            </a>
+        </div>
+
+        <!-- 記事コンテンツ -->
+        <div id="articleContainer" style="display: none;">
+            <section class="article-header">
+                <div class="container">
+                    <nav class="breadcrumb">
+                        <a href="/">ホーム</a>
+                        <i class="fas fa-chevron-right"></i>
+                        <a href="/blog">ブログ</a>
+                        <i class="fas fa-chevron-right"></i>
+                        <span id="breadcrumbCategory">記事</span>
+                        <i class="fas fa-chevron-right"></i>
+                        <span>現在の記事</span>
+                    </nav>
+                    
+                    <div class="article-meta-header">
+                        <div class="article-category-badge" id="categoryBadge">カテゴリ</div>
+                        <h1 class="article-title-main" id="titleMain">記事タイトル</h1>
+                        <p class="article-excerpt-main" id="excerptMain">記事の概要説明</p>
+                        <div class="article-meta-info">
+                            <div class="meta-item">
+                                <i class="fas fa-user"></i>
+                                <span id="authorMain">著者</span>
+                            </div>
+                            <div class="meta-item">
+                                <i class="fas fa-calendar"></i>
+                                <span id="dateMain">公開日</span>
+                            </div>
+                            <div class="meta-item">
+                                <i class="fas fa-eye"></i>
+                                <span id="viewsMain">閲覧数</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="article-container">
+                <div class="article-content-card">
+                    <div id="featuredImage" class="article-featured-image"></div>
+                    <div class="article-content" id="articleContent">
+                        <!-- 記事本文がここに挿入される -->
+                    </div>
+                </div>
+
+                <!-- タグセクション -->
+                <div id="tagsSection" class="article-tags-section" style="display: none;">
+                    <h3 class="tags-title">
+                        <i class="fas fa-tags"></i> 関連タグ
+                    </h3>
+                    <div class="article-tags" id="articleTags">
+                        <!-- タグがここに挿入される -->
+                    </div>
+                </div>
+
+                <!-- アクションボタン -->
+                <div class="article-actions">
+                    <h3 class="actions-title">記事を楽しんでいただけましたか？</h3>
+                    <div class="action-buttons">
+                        <a href="/blog" class="action-button btn-back">
+                            <i class="fas fa-arrow-left"></i> 記事一覧に戻る
+                        </a>
+                        <button class="action-button btn-share" onclick="shareArticle()">
+                            <i class="fas fa-share-alt"></i> 記事をシェア
+                        </button>
+                        <a href="/member" class="action-button btn-related">
+                            <i class="fas fa-user-plus"></i> 会員登録して最新記事をチェック
+                        </a>
+                    </div>
+                </div>
+
+                <!-- 関連記事 -->
+                <div id="relatedSection" class="related-articles" style="display: none;">
+                    <h2 class="related-title">
+                        <i class="fas fa-newspaper"></i> 関連記事
+                    </h2>
+                    <div class="related-grid" id="relatedGrid">
+                        <!-- 関連記事がここに挿入される -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class ArticleViewer {
+            constructor() {
+                this.articleId = this.getArticleIdFromUrl();
+                this.article = null;
+                this.categories = [];
+                this.init();
+            }
+
+            getArticleIdFromUrl() {
+                // URLからarticle IDを取得 (/blog/article_001 など)
+                const pathParts = window.location.pathname.split('/');
+                return pathParts[pathParts.length - 1] || pathParts[pathParts.length - 2];
+            }
+
+            async init() {
+                if (!this.articleId) {
+                    this.showError();
+                    return;
+                }
+
+                await this.loadCategories();
+                await this.loadArticle();
+            }
+
+            async loadCategories() {
+                try {
+                    const response = await fetch('/api/blog/categories');
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        this.categories = data.categories;
+                    }
+                } catch (error) {
+                    console.error('カテゴリ読み込みエラー:', error);
+                }
+            }
+
+            async loadArticle() {
+                try {
+                    const response = await fetch(`/api/blog/articles/${this.articleId}`);
+                    const data = await response.json();
+                    
+                    if (data.success && data.article) {
+                        this.article = data.article;
+                        this.renderArticle();
+                        await this.loadRelatedArticles();
+                    } else {
+                        this.showError();
+                    }
+                } catch (error) {
+                    console.error('記事読み込みエラー:', error);
+                    this.showError();
+                }
+            }
+
+            renderArticle() {
+                const article = this.article;
+                
+                // ページタイトルとメタデータ更新
+                document.getElementById('articleTitle').textContent = `${article.title} | Dive Buddy's`;
+                document.getElementById('articleDescription').setAttribute('content', article.excerpt);
+                
+                // SEO最適化メタタグ動的生成
+                this.updateSEOMetaTags(article);
+                
+                // ヘッダー情報
+                const categoryName = this.getCategoryName(article.category);
+                document.getElementById('breadcrumbCategory').textContent = categoryName;
+                document.getElementById('categoryBadge').textContent = categoryName;
+                document.getElementById('titleMain').textContent = article.title;
+                document.getElementById('excerptMain').textContent = article.excerpt;
+                document.getElementById('authorMain').textContent = article.author;
+                document.getElementById('dateMain').textContent = this.formatDate(article.published_at || article.created_at);
+                document.getElementById('viewsMain').textContent = article.views ? `${article.views.toLocaleString()}回` : '---';
+
+                // 特徴画像
+                const featuredImage = document.getElementById('featuredImage');
+                const imageUrl = article.featured_image || 'https://images.unsplash.com/photo-1583212292454-1fe6229603b7?w=800&q=80';
+                featuredImage.style.backgroundImage = `url('${imageUrl}')`;
+
+                // 記事本文
+                document.getElementById('articleContent').innerHTML = this.processContent(article.content);
+
+                // タグ
+                if (article.tags && article.tags.length > 0) {
+                    this.renderTags(article.tags);
+                }
+
+                // 表示
+                document.getElementById('loadingContainer').style.display = 'none';
+                document.getElementById('articleContainer').style.display = 'block';
+            }
+
+            processContent(content) {
+                if (!content) return '<p>記事内容を読み込めませんでした。</p>';
+                
+                // Markdownの簡易変換（実際のプロダクトではマークダウンパーサーを使用）
+                let processedContent = content
+                    .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+                    .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+                    .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                    .replace(/\n\n/g, '</p><p>')
+                    .replace(/\n/g, '<br>');
+                
+                // 段落で囲む
+                if (!processedContent.startsWith('<h1>') && !processedContent.startsWith('<h2>')) {
+                    processedContent = '<p>' + processedContent + '</p>';
+                }
+                
+                return processedContent;
+            }
+
+            renderTags(tags) {
+                const tagsHtml = tags.map(tag => 
+                    `<a href="/blog?tag=${encodeURIComponent(tag)}" class="tag">${tag}</a>`
+                ).join('');
+                
+                document.getElementById('articleTags').innerHTML = tagsHtml;
+                document.getElementById('tagsSection').style.display = 'block';
+            }
+
+            async loadRelatedArticles() {
+                try {
+                    // 新しい関連記事APIを使用
+                    const response = await fetch(`/api/blog/articles/${this.articleId}/related?limit=6`);
+                    const data = await response.json();
+                    
+                    if (data.success && data.related_articles.length > 0) {
+                        this.renderRelatedArticles(data.related_articles);
+                    } else {
+                        // フォールバック: 同カテゴリ記事
+                        const fallbackResponse = await fetch(`/api/blog/search?category=${this.article.category}&limit=3&status=published`);
+                        const fallbackData = await fallbackResponse.json();
+                        
+                        if (fallbackData.success && fallbackData.articles.length > 0) {
+                            const relatedArticles = fallbackData.articles.filter(a => a.id !== this.articleId).slice(0, 3);
+                            if (relatedArticles.length > 0) {
+                                this.renderRelatedArticles(relatedArticles);
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.error('関連記事読み込みエラー:', error);
+                }
+            }
+
+            renderRelatedArticles(articles) {
+                const html = articles.map(article => {
+                    const imageUrl = article.featured_image || 'https://images.unsplash.com/photo-1583212292454-1fe6229603b7?w=300&q=80';
+                    const categoryName = this.getCategoryName(article.category);
+                    const formattedDate = this.formatDate(article.published_at || article.created_at);
+                    const relatedScore = article.relatedScore || 0;
+                    
+                    return `
+                        <div class="related-card">
+                            <div class="related-image" style="background-image: url('${imageUrl}')">
+                                <div class="related-category">${categoryName}</div>
+                                ${relatedScore > 50 ? '<div class="high-relevance">高関連</div>' : ''}
+                            </div>
+                            <div class="related-content">
+                                <h4 class="related-title-text">
+                                    <a href="/blog/${article.id}">${article.title}</a>
+                                </h4>
+                                <p class="related-excerpt">${article.excerpt}</p>
+                                <div class="related-meta">
+                                    <span class="related-author">${article.author}</span>
+                                    <span class="related-date">${formattedDate}</span>
+                                    ${article.views ? `<span class="related-views">${article.views.toLocaleString()}回</span>` : ''}
+                                </div>
+                                ${article.tags && article.tags.length > 0 ? 
+                                    `<div class="related-tags">
+                                        ${article.tags.slice(0, 3).map(tag => `<span class="related-tag">${tag}</span>`).join('')}
+                                    </div>` : ''
+                                }
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+                document.getElementById('relatedGrid').innerHTML = html;
+                document.getElementById('relatedSection').style.display = 'block';
+            }
+
+            getCategoryName(categoryId) {
+                const category = this.categories.find(c => c.id === categoryId);
+                return category ? category.name : 'その他';
+            }
+
+            formatDate(dateString) {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('ja-JP', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+            }
+
+            updateSEOMetaTags(article) {
+                // Open Graph メタタグ
+                this.createOrUpdateMetaTag('property', 'og:title', article.title);
+                this.createOrUpdateMetaTag('property', 'og:description', article.excerpt);
+                this.createOrUpdateMetaTag('property', 'og:image', article.featured_image || 'https://images.unsplash.com/photo-1583212292454-1fe6229603b7?w=1200&q=80');
+                this.createOrUpdateMetaTag('property', 'og:url', window.location.href);
+                this.createOrUpdateMetaTag('property', 'og:type', 'article');
+                this.createOrUpdateMetaTag('property', 'og:site_name', 'Dive Buddy\'s');
+                
+                // Twitter Card メタタグ
+                this.createOrUpdateMetaTag('name', 'twitter:card', 'summary_large_image');
+                this.createOrUpdateMetaTag('name', 'twitter:title', article.title);
+                this.createOrUpdateMetaTag('name', 'twitter:description', article.excerpt);
+                this.createOrUpdateMetaTag('name', 'twitter:image', article.featured_image || 'https://images.unsplash.com/photo-1583212292454-1fe6229603b7?w=1200&q=80');
+                
+                // 記事固有のメタタグ
+                this.createOrUpdateMetaTag('property', 'article:author', article.author);
+                this.createOrUpdateMetaTag('property', 'article:published_time', article.published_at || article.created_at);
+                if (article.tags && article.tags.length > 0) {
+                    article.tags.forEach(tag => {
+                        this.createOrUpdateMetaTag('property', 'article:tag', tag);
+                    });
+                }
+                
+                // 構造化データ (JSON-LD)
+                this.updateStructuredData(article);
+                
+                // Canonical URL
+                this.createOrUpdateLinkTag('canonical', window.location.href);
+                
+                // キーワードメタタグ
+                if (article.tags && article.tags.length > 0) {
+                    this.createOrUpdateMetaTag('name', 'keywords', article.tags.join(', '));
+                }
+            }
+            
+            createOrUpdateMetaTag(attribute, name, content) {
+                let metaTag = document.querySelector(`meta[${attribute}="${name}"]`);
+                if (!metaTag) {
+                    metaTag = document.createElement('meta');
+                    metaTag.setAttribute(attribute, name);
+                    document.head.appendChild(metaTag);
+                }
+                metaTag.setAttribute('content', content);
+            }
+            
+            createOrUpdateLinkTag(rel, href) {
+                let linkTag = document.querySelector(`link[rel="${rel}"]`);
+                if (!linkTag) {
+                    linkTag = document.createElement('link');
+                    linkTag.setAttribute('rel', rel);
+                    document.head.appendChild(linkTag);
+                }
+                linkTag.setAttribute('href', href);
+            }
+            
+            updateStructuredData(article) {
+                // 既存の構造化データを削除
+                const existingScript = document.querySelector('script[type="application/ld+json"]');
+                if (existingScript) {
+                    existingScript.remove();
+                }
+                
+                // 新しい構造化データを作成
+                const structuredData = {
+                    "@context": "https://schema.org",
+                    "@type": "Article",
+                    "headline": article.title,
+                    "description": article.excerpt,
+                    "image": article.featured_image || 'https://images.unsplash.com/photo-1583212292454-1fe6229603b7?w=1200&q=80',
+                    "url": window.location.href,
+                    "datePublished": article.published_at || article.created_at,
+                    "dateModified": article.updated_at || article.created_at,
+                    "author": {
+                        "@type": "Person",
+                        "name": article.author
+                    },
+                    "publisher": {
+                        "@type": "Organization",
+                        "name": "Dive Buddy's",
+                        "logo": {
+                            "@type": "ImageObject",
+                            "url": "https://dive-buddys.com/logo.png",
+                            "width": 600,
+                            "height": 200
+                        }
+                    },
+                    "mainEntityOfPage": {
+                        "@type": "WebPage",
+                        "@id": window.location.href
+                    }
+                };
+                
+                if (article.tags && article.tags.length > 0) {
+                    structuredData.keywords = article.tags.join(', ');
+                }
+                
+                const script = document.createElement('script');
+                script.type = 'application/ld+json';
+                script.textContent = JSON.stringify(structuredData);
+                document.head.appendChild(script);
+            }
+
+            showError() {
+                document.getElementById('loadingContainer').style.display = 'none';
+                document.getElementById('errorContainer').style.display = 'block';
+            }
+        }
+
+        // 記事シェア機能
+        function shareArticle() {
+            const article = window.articleViewer?.article;
+            if (!article) return;
+
+            const shareData = {
+                title: article.title,
+                text: article.excerpt,
+                url: window.location.href
+            };
+
+            if (navigator.share) {
+                navigator.share(shareData).catch(console.error);
+            } else {
+                // フォールバック: URLをクリップボードにコピー
+                navigator.clipboard.writeText(window.location.href).then(() => {
+                    alert('記事のURLをクリップボードにコピーしました！');
+                }).catch(() => {
+                    alert('記事URL: ' + window.location.href);
+                });
+            }
+        }
+
+        // 初期化
+        window.articleViewer = null;
+        document.addEventListener('DOMContentLoaded', () => {
+            window.articleViewer = new ArticleViewer();
+        });
+    </script>
+</body>
+</html>

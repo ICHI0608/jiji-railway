@@ -1,0 +1,146 @@
+/**
+ * Dive Buddy's デザイントークン
+ * UIコンポーネント統一管理システム
+ * 
+ * 使用方法: すべてのHTMLファイルでこのファイルを最初にインポート
+ * <link rel="stylesheet" href="/css/design-tokens.css">
+ */
+
+/* ===== カラーパレット ===== */
+:root {
+    /* ブランドカラー - 沖縄の海をイメージ */
+    --color-primary: #667eea;           /* メインブルー（海色） */
+    --color-primary-dark: #764ba2;      /* ダークブルー（深海色） */
+    --color-secondary: #00c300;         /* LINEグリーン */
+    --color-secondary-dark: #009900;    /* ダークグリーン */
+    --color-accent: #ff6b6b;           /* コーラル（サンゴ色） */
+    --color-accent-light: #ffd93d;     /* サンイエロー */
+    
+    /* グレースケール */
+    --color-white: #ffffff;
+    --color-gray-50: #f9fafb;
+    --color-gray-100: #f3f4f6;
+    --color-gray-200: #e5e7eb;
+    --color-gray-300: #d1d5db;
+    --color-gray-400: #9ca3af;
+    --color-gray-500: #6b7280;
+    --color-gray-600: #4b5563;
+    --color-gray-700: #374151;
+    --color-gray-800: #1f2937;
+    --color-gray-900: #111827;
+    --color-black: #000000;
+    
+    /* 状態カラー */
+    --color-success: #10b981;
+    --color-warning: #f59e0b;
+    --color-error: #ef4444;
+    --color-info: #3b82f6;
+}
+
+/* ===== タイポグラフィ ===== */
+:root {
+    /* フォントファミリー */
+    --font-family-primary: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-family-accent: 'Inter', 'Noto Sans JP', sans-serif;
+    --font-family-script: 'Gentlemens Script', cursive;
+    
+    /* フォントサイズ */
+    --font-size-xs: 0.75rem;     /* 12px */
+    --font-size-sm: 0.875rem;    /* 14px */
+    --font-size-base: 1rem;      /* 16px */
+    --font-size-lg: 1.125rem;    /* 18px */
+    --font-size-xl: 1.25rem;     /* 20px */
+    --font-size-2xl: 1.5rem;     /* 24px */
+    --font-size-3xl: 1.875rem;   /* 30px */
+    --font-size-4xl: 2.25rem;    /* 36px */
+    --font-size-5xl: 3rem;       /* 48px */
+    
+    /* フォントウェイト */
+    --font-weight-light: 300;
+    --font-weight-normal: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+    --font-weight-extrabold: 800;
+    
+    /* 行間 */
+    --line-height-tight: 1.25;
+    --line-height-normal: 1.5;
+    --line-height-relaxed: 1.75;
+}
+
+/* ===== スペーシング ===== */
+:root {
+    /* 8pxベースのスペーシングシステム */
+    --spacing-0: 0;
+    --spacing-1: 0.25rem;    /* 4px */
+    --spacing-2: 0.5rem;     /* 8px */
+    --spacing-3: 0.75rem;    /* 12px */
+    --spacing-4: 1rem;       /* 16px */
+    --spacing-5: 1.25rem;    /* 20px */
+    --spacing-6: 1.5rem;     /* 24px */
+    --spacing-8: 2rem;       /* 32px */
+    --spacing-10: 2.5rem;    /* 40px */
+    --spacing-12: 3rem;      /* 48px */
+    --spacing-16: 4rem;      /* 64px */
+    --spacing-20: 5rem;      /* 80px */
+    --spacing-24: 6rem;      /* 96px */
+}
+
+/* ===== ボーダー ===== */
+:root {
+    /* ボーダーラジアス */
+    --border-radius-none: 0;
+    --border-radius-sm: 0.125rem;    /* 2px */
+    --border-radius-base: 0.25rem;   /* 4px */
+    --border-radius-md: 0.375rem;    /* 6px */
+    --border-radius-lg: 0.5rem;      /* 8px */
+    --border-radius-xl: 0.75rem;     /* 12px */
+    --border-radius-2xl: 1rem;       /* 16px */
+    --border-radius-full: 9999px;
+    
+    /* ボーダー幅 */
+    --border-width-0: 0;
+    --border-width-1: 1px;
+    --border-width-2: 2px;
+    --border-width-4: 4px;
+}
+
+/* ===== シャドウ ===== */
+:root {
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-base: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+}
+
+/* ===== トランジション ===== */
+:root {
+    --transition-fast: 150ms ease;
+    --transition-base: 200ms ease;
+    --transition-slow: 300ms ease;
+    --transition-bounce: 200ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* ===== ブレークポイント ===== */
+:root {
+    --breakpoint-sm: 640px;   /* スマートフォン */
+    --breakpoint-md: 768px;   /* タブレット */
+    --breakpoint-lg: 1024px;  /* ノートPC */
+    --breakpoint-xl: 1280px;  /* デスクトップ */
+    --breakpoint-2xl: 1536px; /* 大型ディスプレイ */
+}
+
+/* ===== Z-index管理 ===== */
+:root {
+    --z-index-dropdown: 1000;
+    --z-index-sticky: 1020;
+    --z-index-fixed: 1030;
+    --z-index-modal-backdrop: 1040;
+    --z-index-modal: 1050;
+    --z-index-popover: 1060;
+    --z-index-tooltip: 1070;
+}

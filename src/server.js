@@ -373,7 +373,7 @@ ${conversationHistory || '初回の会話です'}
 - 親しみやすい口調を維持`;
 
     const response = await openai.chat.completions.create({
-      model: "gpt-4",
+      model: "gpt-5",
       messages: [
         {
           role: "system",
@@ -384,8 +384,7 @@ ${conversationHistory || '初回の会話です'}
           content: message
         }
       ],
-      max_tokens: 500,
-      temperature: 0.7
+      max_completion_tokens: 500
     });
 
     return response.choices[0].message.content;
@@ -444,6 +443,52 @@ app.post('/webhook', middleware(config), (req, res) => {
     });
 });
 
+// ===== YouTube API監視エンドポイント =====
+
+// API使用量監視エンドポイント
+app.get('/api/youtube-quota', async (req, res) => {
+    try {
+        const YouTubeApi = require('./youtube-api');
+        const youtubeApi = new YouTubeApi();
+        
+        const stats = youtubeApi.getQuotaStats();
+        
+        res.json({
+            success: true,
+            quota: stats,
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error('YouTube API監視エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: 'API監視情報の取得に失敗しました'
+        });
+    }
+});
+
+// API使用量リセット（管理者用）
+app.post('/api/youtube-quota/reset', async (req, res) => {
+    try {
+        const YouTubeApi = require('./youtube-api');
+        const youtubeApi = new YouTubeApi();
+        
+        youtubeApi.resetDailyQuota();
+        
+        res.json({
+            success: true,
+            message: 'YouTube API使用量をリセットしました',
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error('YouTube APIリセットエラー:', error);
+        res.status(500).json({
+            success: false,
+            error: 'API使用量リセットに失敗しました'
+        });
+    }
+});
+
 // ========== サーバー起動 ==========
 app.listen(PORT, () => {
   console.log(`🌊 Jiji LINE Bot Server起動`);
@@ -475,4 +520,77 @@ process.on('SIGTERM', () => {
 process.on('SIGINT', () => {
   console.log('SIGINTシグナル受信 - グレースフルシャットダウン開始');
   process.exit(0);
+});
+
+// ===== ダイビングクリエイター API =====
+
+// クリエイター一覧取得 API
+app.get('/api/diving-creators', async (req, res) => {
+    try {
+        const creatorsData = require('../data/diving-creators.json');
+        res.json({
+            success: true,
+            creators: creatorsData.creators,
+            categories: creatorsData.categories,
+            lastUpdated: creatorsData.lastUpdated
+        });
+    } catch (error) {
+        console.error('クリエイターデータ取得エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: 'クリエイター情報の取得に失敗しました'
+        });
+    }
+});
+
+// クリエイター動画取得 API
+app.get('/api/creator-videos', async (req, res) => {
+    try {
+        const { creatorId, type = 'latest' } = req.query;
+
+        if (!creatorId) {
+            return res.status(400).json({
+                success: false,
+                error: 'クリエイターIDが必要です'
+            });
+        }
+
+        // クリエイター情報取得
+        const creatorsData = require('../data/diving-creators.json');
+        const creator = creatorsData.creators.find(c => c.id === creatorId);
+
+        if (!creator) {
+            return res.status(404).json({
+                success: false,
+                error: 'クリエイターが見つかりません'
+            });
+        }
+
+        // YouTube API使用（実装済みのYouTubeApiクラス使用）
+        const YouTubeApi = require('./youtube-api');
+        const youtubeApi = new YouTubeApi();
+
+        let videos = [];
+
+        if (type === 'latest') {
+            videos = await youtubeApi.getLatestVideos(creator.channelId, 5);
+        } else if (type === 'popular') {
+            videos = await youtubeApi.getPopularVideos(creator.channelId, 3);
+        }
+
+        res.json({
+            success: true,
+            creatorId: creatorId,
+            creatorName: creator.name,
+            type: type,
+            videos: videos
+        });
+
+    } catch (error) {
+        console.error('動画データ取得エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: '動画情報の取得に失敗しました'
+        });
+    }
 });

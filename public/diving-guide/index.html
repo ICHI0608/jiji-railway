@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>沖縄ダイビングガイド | Dive Buddy's</title>
+    <meta name="description" content="沖縄の石垣島・宮古島・沖縄本島のダイビングスポット完全ガイド。あなたにぴったりのダイビングエリアを見つけて、最高の海中体験を。">
+    <meta name="keywords" content="沖縄ダイビング,石垣島,宮古島,沖縄本島,ダイビングガイド,ダイビングスポット">
+    
+    <!-- 統一デザインシステム -->
+    <link rel="stylesheet" href="/css/design-system.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        /* ページ固有スタイル */
+        .hero-section {
+            background: linear-gradient(135deg, var(--color-accent-1) 0%, var(--color-accent-2) 100%);
+            color: white;
+            padding: 120px 0 80px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('/images/diving-hero-bg.jpg') center/cover;
+            opacity: 0.3;
+            z-index: 0;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-title {
+            font-family: var(--font-heading-en);
+            font-size: var(--text-5xl);
+            font-weight: 700;
+            margin-bottom: var(--space-4);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .hero-subtitle {
+            font-size: var(--text-xl);
+            margin-bottom: var(--space-8);
+            opacity: 0.9;
+        }
+
+        .cta-button {
+            background: white;
+            color: var(--color-accent-1);
+            padding: var(--space-4) var(--space-8);
+            border-radius: var(--radius-lg);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: var(--text-lg);
+            transition: all 0.3s ease;
+            display: inline-block;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .regions-section {
+            padding: var(--space-20) 0;
+            background: var(--color-base-bg);
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: var(--text-4xl);
+            font-weight: 700;
+            color: var(--color-text-main);
+            margin-bottom: var(--space-16);
+        }
+
+        .regions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: var(--space-8);
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 var(--space-4);
+        }
+
+        .region-card {
+            background: white;
+            border-radius: var(--radius-xl);
+            overflow: hidden;
+            box-shadow: 0 4px 20px var(--color-shadow);
+            transition: all 0.3s ease;
+            border: 1px solid var(--color-border-light);
+        }
+
+        .region-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 40px var(--color-shadow-hover);
+        }
+
+        .region-image {
+            height: 200px;
+            background: var(--color-bg-light);
+            border-bottom: 1px solid var(--color-border-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--text-sm);
+            color: var(--color-text-sub);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .region-content {
+            padding: var(--space-6);
+        }
+
+        .region-title {
+            font-size: var(--text-2xl);
+            font-weight: 700;
+            color: var(--color-text-main);
+            margin-bottom: var(--space-3);
+        }
+
+        .region-description {
+            color: var(--color-text-sub);
+            line-height: 1.6;
+            margin-bottom: var(--space-6);
+        }
+
+        .region-link {
+            background: var(--color-accent-1);
+            color: white;
+            padding: var(--space-3) var(--space-6);
+            border-radius: var(--radius-md);
+            text-decoration: none;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+            display: inline-block;
+        }
+
+        .region-link:hover {
+            background: var(--color-accent-1-dark);
+        }
+
+        .seasons-section {
+            padding: var(--space-20) 0;
+            background: var(--color-bg-light);
+        }
+
+        .seasons-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: var(--space-6);
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 var(--space-4);
+        }
+
+        .season-card {
+            background: white;
+            padding: var(--space-6);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 2px 10px var(--color-shadow);
+            text-align: center;
+        }
+
+        .season-icon {
+            font-size: var(--text-4xl);
+            margin-bottom: var(--space-4);
+        }
+
+        .season-title {
+            font-size: var(--text-xl);
+            font-weight: 600;
+            color: var(--color-text-main);
+            margin-bottom: var(--space-3);
+        }
+
+        .season-info {
+            color: var(--color-text-sub);
+            font-size: var(--text-sm);
+            line-height: 1.5;
+        }
+
+        .services-section {
+            padding: var(--space-20) 0;
+            background: var(--color-base-bg);
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--space-6);
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 var(--space-4);
+        }
+
+        .service-card {
+            background: white;
+            padding: var(--space-8);
+            border-radius: var(--radius-lg);
+            text-align: center;
+            box-shadow: 0 4px 15px var(--color-shadow);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .service-card:hover {
+            border-color: var(--color-accent-1);
+            transform: translateY(-5px);
+        }
+
+        .service-icon {
+            font-size: var(--text-4xl);
+            color: var(--color-accent-1);
+            margin-bottom: var(--space-4);
+        }
+
+        .service-title {
+            font-size: var(--text-xl);
+            font-weight: 600;
+            color: var(--color-text-main);
+            margin-bottom: var(--space-3);
+        }
+
+        .service-description {
+            color: var(--color-text-sub);
+            margin-bottom: var(--space-6);
+            line-height: 1.5;
+        }
+
+        .service-link {
+            background: var(--color-accent-2);
+            color: var(--color-text-main);
+            padding: var(--space-3) var(--space-6);
+            border-radius: var(--radius-md);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .service-link:hover {
+            background: var(--color-accent-2-dark);
+            transform: translateY(-2px);
+        }
+
+        /* 季節別アイコンカラー */
+        .spring { color: #10B981; }
+        .summer { color: #F59E0B; }
+        .autumn { color: #EF4444; }
+        .winter { color: #3B82F6; }
+
+        /* レスポンシブ */
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: var(--text-4xl);
+            }
+            
+            .regions-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .seasons-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: var(--space-4);
+            }
+            
+            .services-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ナビゲーション -->
+    <nav class="main-nav">
+        <div class="nav-container">
+            <a href="/" class="logo">Dive Buddy's</a>
+            <ul class="nav-links">
+                <li><a href="/shops-database">ショップ検索</a></li>
+                <li><a href="/weather-ocean">海況情報</a></li>
+                <li><a href="/diving-guide" class="active">沖縄ガイド</a></li>
+                <li><a href="/travel-guide">旅行ガイド</a></li>
+                <li><a href="/blog">ダイビング情報</a></li>
+                <li><a href="/member">会員登録</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- パンくずナビ -->
+    <div class="breadcrumb">
+        <div class="container">
+            <a href="/">ホーム</a> &gt; <span>沖縄ダイビングガイド</span>
+        </div>
+    </div>
+
+    <!-- ヒーローセクション -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title">沖縄ダイビングガイド</h1>
+                <p class="hero-subtitle">あなたにぴったりのダイビングスポットを見つけよう</p>
+                <a href="#regions" class="cta-button">エリアを選ぶ</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- 地域選択セクション -->
+    <section id="regions" class="regions-section">
+        <div class="container">
+            <h2 class="section-title">ダイビングエリアを選ぶ</h2>
+            <div class="regions-grid">
+                <!-- 石垣島 -->
+                <div class="region-card">
+                    <div class="region-image">
+                        【石垣島ダイビング写真挿入箇所】<br>
+                        マンタとの遭遇シーン
+                    </div>
+                    <div class="region-content">
+                        <h3 class="region-title">石垣島</h3>
+                        <p class="region-description">マンタとの遭遇率No.1！世界屈指の透明度を誇る石垣島の海で、川平石崎マンタスクランブルをはじめとする感動的なダイビング体験を。</p>
+                        <a href="/diving-guide/ishigaki" class="region-link">詳しく見る</a>
+                    </div>
+                </div>
+
+                <!-- 宮古島 -->
+                <div class="region-card">
+                    <div class="region-image">
+                        【宮古島ダイビング写真挿入箇所】<br>
+                        地形ダイビング・洞窟シーン
+                    </div>
+                    <div class="region-content">
+                        <h3 class="region-title">宮古島</h3>
+                        <p class="region-description">神秘的な地形ダイビングの聖地。八重干瀬の壮大なリーフから魔王の宮殿の幻想的な洞窟まで、独特な海中景観が楽しめます。</p>
+                        <a href="/diving-guide/miyako" class="region-link">詳しく見る</a>
+                    </div>
+                </div>
+
+                <!-- 沖縄本島 -->
+                <div class="region-card">
+                    <div class="region-image">
+                        【沖縄本島ダイビング写真挿入箇所】<br>
+                        青の洞窟・慶良間諸島の海
+                    </div>
+                    <div class="region-content">
+                        <h3 class="region-title">沖縄本島</h3>
+                        <p class="region-description">初心者から上級者まで楽しめる多彩なポイント。青の洞窟から慶良間諸島まで、アクセス良好で充実したダイビング体験を提供します。</p>
+                        <a href="/diving-guide/okinawa" class="region-link">詳しく見る</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 季節別ダイビング情報 -->
+    <section class="seasons-section">
+        <div class="container">
+            <h2 class="section-title">季節別ダイビング情報</h2>
+            <div class="seasons-grid">
+                <!-- 春 -->
+                <div class="season-card">
+                    <div class="season-icon spring">
+                        <i class="fas fa-seedling"></i>
+                    </div>
+                    <h3 class="season-title">春（3-5月）</h3>
+                    <div class="season-info">
+                        水温：20-24℃<br>
+                        透明度：良好<br>
+                        混雑：少なめ<br>
+                        おすすめ：穴場シーズン
+                    </div>
+                </div>
+
+                <!-- 夏 -->
+                <div class="season-card">
+                    <div class="season-icon summer">
+                        <i class="fas fa-sun"></i>
+                    </div>
+                    <h3 class="season-title">夏（6-8月）</h3>
+                    <div class="season-info">
+                        水温：26-29℃<br>
+                        透明度：最高<br>
+                        混雑：最盛期<br>
+                        注意：台風シーズン
+                    </div>
+                </div>
+
+                <!-- 秋 -->
+                <div class="season-card">
+                    <div class="season-icon autumn">
+                        <i class="fas fa-leaf"></i>
+                    </div>
+                    <h3 class="season-title">秋（9-11月）</h3>
+                    <div class="season-info">
+                        水温：24-26℃<br>
+                        透明度：良好<br>
+                        混雑：適度<br>
+                        おすすめ：ベストシーズン
+                    </div>
+                </div>
+
+                <!-- 冬 -->
+                <div class="season-card">
+                    <div class="season-icon winter">
+                        <i class="fas fa-snowflake"></i>
+                    </div>
+                    <h3 class="season-title">冬（12-2月）</h3>
+                    <div class="season-info">
+                        水温：21-23℃<br>
+                        透明度：抜群<br>
+                        混雑：少なめ<br>
+                        特徴：ザトウクジラ遭遇
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 関連サービス -->
+    <section class="services-section">
+        <div class="container">
+            <h2 class="section-title">関連サービス</h2>
+            <div class="services-grid">
+                <!-- ショップ検索 -->
+                <div class="service-card">
+                    <div class="service-icon">
+                        <i class="fas fa-store"></i>
+                    </div>
+                    <h3 class="service-title">ダイビングショップ検索</h3>
+                    <p class="service-description">沖縄全域79店舗の中から、あなたにぴったりのダイビングショップを見つけて直接予約できます。</p>
+                    <a href="/shops-database" class="service-link">ショップを探す</a>
+                </div>
+
+                <!-- 海況情報 -->
+                <div class="service-card">
+                    <div class="service-icon">
+                        <i class="fas fa-water"></i>
+                    </div>
+                    <h3 class="service-title">海況・天気情報</h3>
+                    <p class="service-description">リアルタイムの海況・天気データで、最適なダイビング日程をプランニングできます。</p>
+                    <a href="/weather-ocean" class="service-link">海況をチェック</a>
+                </div>
+
+                <!-- 旅行手配 -->
+                <div class="service-card">
+                    <div class="service-icon">
+                        <i class="fas fa-plane"></i>
+                    </div>
+                    <h3 class="service-title">旅行プランニング</h3>
+                    <p class="service-description">航空券・宿泊・レンタカーまで、ダイビング旅行に必要な手配を一括サポートします。</p>
+                    <a href="/travel-guide" class="service-link">旅行を手配</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- フッター -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Dive Buddy's</h3>
+                    <p>沖縄ダイビングの総合プラットフォーム。石垣島・宮古島・沖縄本島の厳選ショップ情報、リアルタイム海況、旅行プランニングサービスを提供しています。</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>沖縄ガイド</h3>
+                    <ul class="footer-links">
+                        <li><a href="/diving-guide/ishigaki">石垣島ダイビング</a></li>
+                        <li><a href="/diving-guide/miyako">宮古島ダイビング</a></li>
+                        <li><a href="/diving-guide/okinawa">沖縄本島ダイビング</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>サービス</h3>
+                    <ul class="footer-links">
+                        <li><a href="/shops-database">ダイビングショップ検索</a></li>
+                        <li><a href="/weather-ocean">海況・天気情報</a></li>
+                        <li><a href="/travel-guide">旅行プランニング</a></li>
+                        <li><a href="/member">会員サービス</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>サポート</h3>
+                    <ul class="footer-links">
+                        <li><a href="/about">サービス概要</a></li>
+                        <li><a href="/contact">お問い合わせ</a></li>
+                        <li><a href="/partners">ショップ向けサービス</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2024 Dive Buddy's. All rights reserved. | 沖縄ダイビング総合プラットフォーム</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // スムーススクロール
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // カードホバー効果の強化
+        document.querySelectorAll('.region-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-12px)';
+            });
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(-8px)';
+            });
+        });
+    </script>
+</body>
+</html>

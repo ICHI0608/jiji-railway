@@ -1,0 +1,253 @@
+<!-- 
+Google Analytics & Search Console 設定ガイド
+============================================
+
+このファイルはGoogle Analytics 4 (GA4)とGoogle Search Consoleの設定コードテンプレートです。
+実際の運用時は、正式なTrackingIDを設定してindex.htmlの<head>内に追加してください。
+
+設定手順:
+1. Google Analytics (https://analytics.google.com/) でプロパティを作成
+2. 測定IDを取得（G-XXXXXXXXXX形式）
+3. 以下のコードの GA_MEASUREMENT_ID を実際のIDに置き換え
+4. 各ページの<head>タグ内に挿入
+
+Google Search Console設定:
+1. Google Search Console (https://search.google.com/search-console/) にサイトを追加
+2. 所有権確認のため、以下の<meta>タグをindex.htmlに追加
+3. サイトマップ https://dive-buddys.com/sitemap.xml を送信
+-->
+
+<!-- Google Analytics 4 (GA4) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  // GA4設定 - プライバシー重視
+  gtag('config', 'GA_MEASUREMENT_ID', {
+    // IPアノニマ化（GDPR対応）
+    anonymize_ip: true,
+    // クッキーの有効期限を短縮（プライバシー保護）
+    cookie_expires: 30 * 24 * 60 * 60, // 30日
+    // 広告機能を無効化
+    allow_ad_personalization_signals: false,
+    // 地域別レポートを有効化
+    country: 'JP',
+    // カスタムディメンション設定
+    custom_map: {
+      'custom_parameter_1': 'dive_experience_level',
+      'custom_parameter_2': 'preferred_location',
+      'custom_parameter_3': 'user_type'
+    }
+  });
+
+  // カスタムイベント設定
+  
+  // ショップ検索イベント
+  function trackShopSearch(searchQuery, location, filters) {
+    gtag('event', 'shop_search', {
+      event_category: 'engagement',
+      event_label: searchQuery,
+      search_term: searchQuery,
+      location: location,
+      filters_used: filters ? filters.join(',') : 'none'
+    });
+  }
+
+  // ショップ詳細閲覧イベント
+  function trackShopView(shopId, shopName, location) {
+    gtag('event', 'shop_view', {
+      event_category: 'engagement', 
+      event_label: shopName,
+      shop_id: shopId,
+      shop_location: location
+    });
+  }
+
+  // 口コミ投稿イベント
+  function trackReviewSubmit(shopId, rating) {
+    gtag('event', 'review_submit', {
+      event_category: 'engagement',
+      event_label: shopId,
+      value: rating,
+      shop_id: shopId
+    });
+  }
+
+  // LINE Bot遷移イベント
+  function trackLineBotTransition(source) {
+    gtag('event', 'line_bot_transition', {
+      event_category: 'conversion',
+      event_label: source,
+      source_page: source
+    });
+  }
+
+  // 会員登録イベント
+  function trackMemberRegistration(method) {
+    gtag('event', 'sign_up', {
+      method: method // 'web' or 'line'
+    });
+  }
+
+  // 旅行プラン作成イベント
+  function trackTravelPlanCreate(destination, duration) {
+    gtag('event', 'travel_plan_create', {
+      event_category: 'engagement',
+      destination: destination,
+      duration: duration
+    });
+  }
+
+  // 天気・海況確認イベント
+  function trackWeatherCheck(location) {
+    gtag('event', 'weather_check', {
+      event_category: 'engagement',
+      location: location
+    });
+  }
+
+  // ブログ記事閲覧イベント
+  function trackBlogView(articleId, articleTitle, category) {
+    gtag('event', 'blog_view', {
+      event_category: 'content',
+      event_label: articleTitle,
+      article_id: articleId,
+      content_category: category
+    });
+  }
+
+  // ポイント獲得イベント
+  function trackPointsEarned(points, action) {
+    gtag('event', 'points_earned', {
+      event_category: 'engagement',
+      value: points,
+      action: action // 'review', 'registration', 'referral'
+    });
+  }
+
+  // エラーイベント
+  function trackError(errorType, errorMessage, page) {
+    gtag('event', 'exception', {
+      description: errorMessage,
+      fatal: false,
+      error_type: errorType,
+      page: page
+    });
+  }
+
+  // パフォーマンス測定
+  function trackPageLoadTime() {
+    window.addEventListener('load', function() {
+      setTimeout(function() {
+        const perfData = performance.getEntriesByType('navigation')[0];
+        if (perfData) {
+          gtag('event', 'timing_complete', {
+            name: 'page_load_time',
+            value: Math.round(perfData.loadEventEnd - perfData.fetchStart)
+          });
+        }
+      }, 0);
+    });
+  }
+  
+  // ページロード時間測定を実行
+  trackPageLoadTime();
+</script>
+
+<!-- Google Search Console 所有権確認 -->
+<!-- 実際の運用時は、Search Consoleから取得した正確なcontent値に置き換えてください -->
+<meta name="google-site-verification" content="GOOGLE_SEARCH_CONSOLE_VERIFICATION_CODE" />
+
+<!-- Microsoft Bing Webmaster Tools（オプション） -->
+<meta name="msvalidate.01" content="BING_WEBMASTER_VERIFICATION_CODE" />
+
+<!-- 追加のSEO最適化タグ -->
+<meta name="author" content="Dive Buddy's">
+<meta name="publisher" content="Dive Buddy's">
+<meta name="copyright" content="© 2025 Dive Buddy's. All rights reserved.">
+
+<!-- Open Graph 最適化 -->
+<meta property="og:site_name" content="Dive Buddy's">
+<meta property="og:locale" content="ja_JP">
+<meta property="og:type" content="website">
+
+<!-- Twitter Card 最適化 -->
+<meta name="twitter:site" content="@diveBuddysOki">
+<meta name="twitter:creator" content="@diveBuddysOki">
+
+<!-- 地域SEO最適化 -->
+<meta name="geo.region" content="JP-47">
+<meta name="geo.placename" content="沖縄県">
+<meta name="geo.position" content="26.2124;127.6792">
+<meta name="ICBM" content="26.2124, 127.6792">
+
+<!-- モバイル最適化 -->
+<meta name="format-detection" content="telephone=yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Dive Buddy's">
+
+<!-- PWA対応 -->
+<link rel="manifest" href="/manifest.json">
+<meta name="mobile-web-capable" content="yes">
+
+<script>
+// 実装時の使用例
+document.addEventListener('DOMContentLoaded', function() {
+  
+  // ショップ検索フォーム送信時
+  document.querySelector('#shop-search-form')?.addEventListener('submit', function(e) {
+    const query = document.querySelector('#search-query').value;
+    const location = document.querySelector('#location-filter').value;
+    const selectedFilters = Array.from(document.querySelectorAll('input[name="filters"]:checked'))
+      .map(cb => cb.value);
+    
+    trackShopSearch(query, location, selectedFilters);
+  });
+
+  // LINE Bot CTA クリック時
+  document.querySelectorAll('.line-bot-cta').forEach(button => {
+    button.addEventListener('click', function() {
+      const source = this.getAttribute('data-source') || window.location.pathname;
+      trackLineBotTransition(source);
+    });
+  });
+
+  // 外部リンククリック追跡
+  document.querySelectorAll('a[href^="http"]').forEach(link => {
+    link.addEventListener('click', function() {
+      gtag('event', 'click', {
+        event_category: 'outbound',
+        event_label: this.href,
+        transport_type: 'beacon'
+      });
+    });
+  });
+
+  // スクロール深度追跡
+  let maxScroll = 0;
+  let scrollMilestones = [25, 50, 75, 100];
+  let trackedMilestones = [];
+
+  window.addEventListener('scroll', function() {
+    const scrollPercent = Math.round((window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100);
+    
+    if (scrollPercent > maxScroll) {
+      maxScroll = scrollPercent;
+      
+      scrollMilestones.forEach(milestone => {
+        if (scrollPercent >= milestone && !trackedMilestones.includes(milestone)) {
+          trackedMilestones.push(milestone);
+          gtag('event', 'scroll', {
+            event_category: 'engagement',
+            event_label: milestone + '%',
+            value: milestone
+          });
+        }
+      });
+    }
+  });
+});
+</script>

@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ショップ管理画面ログイン | Dive Buddy's</title>
+    <meta name="description" content="Dive Buddy's ショップ向け管理画面にログインして、口コミ管理や情報更新を行えます。">
+    
+    <!-- 統一デザインシステム -->
+    <link rel="stylesheet" href="/css/design-system.css">
+    <link rel="stylesheet" href="/app/v28-styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        .login-page {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem 1rem;
+        }
+
+        .login-container {
+            background: white;
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 450px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .login-logo {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .login-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+
+        .login-subtitle {
+            color: #6b7280;
+            font-size: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 1rem 1.2rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-family: 'Noto Sans JP', sans-serif;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .input-icon {
+            position: relative;
+        }
+
+        .input-icon i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+            font-size: 1.1rem;
+        }
+
+        .input-icon .form-input {
+            padding-left: 3rem;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: color 0.3s ease;
+        }
+
+        .password-toggle:hover {
+            color: #667eea;
+        }
+
+        .form-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .remember-me input {
+            width: 18px;
+            height: 18px;
+        }
+
+        .forgot-link {
+            color: #667eea;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.3s ease;
+        }
+
+        .forgot-link:hover {
+            color: #5a6fd8;
+        }
+
+        .login-button {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 1.5rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 1.5rem;
+        }
+
+        .login-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .login-button:disabled {
+            background: #d1d5db;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .demo-info {
+            background: #f0fdf4;
+            border: 2px solid #22c55e;
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+        }
+
+        .demo-info h4 {
+            color: #166534;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .demo-info p {
+            color: #15803d;
+            margin: 0;
+        }
+
+        .success-message,
+        .error-message {
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .success-message {
+            background: #dcfce7;
+            color: #166534;
+            border: 2px solid #22c55e;
+        }
+
+        .error-message {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 2px solid #ef4444;
+        }
+
+        .loading-spinner {
+            display: none;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .divider {
+            text-align: center;
+            margin: 2rem 0;
+            position: relative;
+        }
+
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #e5e7eb;
+        }
+
+        .divider span {
+            background: white;
+            padding: 0 1rem;
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        .support-links {
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        .support-links a {
+            color: #667eea;
+            text-decoration: none;
+            margin: 0 0.5rem;
+        }
+
+        .support-links a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .login-container {
+                margin: 1rem;
+                padding: 2rem;
+            }
+
+            .form-options {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-page">
+        <div class="login-container">
+            <!-- ログインヘッダー -->
+            <div class="login-header">
+                <div class="login-logo">🏪</div>
+                <h1 class="login-title">ショップ管理画面</h1>
+                <p class="login-subtitle">Dive Buddy's パートナーショップ向け</p>
+            </div>
+
+            <!-- メッセージエリア -->
+            <div id="messageArea"></div>
+
+            <!-- デモ情報 -->
+            <div class="demo-info">
+                <h4><i class="fas fa-info-circle"></i> デモアカウント</h4>
+                <p>ショップID: <strong>1</strong> / パスワード: <strong>shop123</strong></p>
+            </div>
+
+            <!-- ログインフォーム -->
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="shopId" class="form-label">ショップID</label>
+                    <div class="input-icon">
+                        <i class="fas fa-store"></i>
+                        <input type="text" id="shopId" name="shop_id" class="form-input" 
+                               placeholder="ショップIDを入力" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="password" class="form-label">パスワード</label>
+                    <div class="input-icon">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="password" name="password" class="form-input" 
+                               placeholder="パスワードを入力" required>
+                        <i class="fas fa-eye password-toggle" onclick="togglePassword()"></i>
+                    </div>
+                </div>
+
+                <div class="form-options">
+                    <div class="remember-me">
+                        <input type="checkbox" id="rememberMe">
+                        <label for="rememberMe">ログイン状態を保持</label>
+                    </div>
+                    <a href="#" class="forgot-link">パスワードを忘れた方</a>
+                </div>
+
+                <button type="submit" class="login-button">
+                    <span class="login-text">ログイン</span>
+                    <div class="loading-spinner">
+                        <div class="spinner"></div>
+                        <span>ログイン中...</span>
+                    </div>
+                </button>
+            </form>
+
+            <!-- 区切り線 -->
+            <div class="divider">
+                <span>または</span>
+            </div>
+
+            <!-- サポートリンク -->
+            <div class="support-links">
+                <a href="/contact">お問い合わせ</a>
+                <a href="/partners">パートナー登録</a>
+                <a href="/">メインサイト</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class ShopLoginManager {
+            constructor() {
+                this.isLoading = false;
+                this.init();
+            }
+
+            init() {
+                this.setupForm();
+                this.checkExistingSession();
+            }
+
+            setupForm() {
+                const form = document.getElementById('loginForm');
+                form.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.handleLogin();
+                });
+            }
+
+            checkExistingSession() {
+                const sessionToken = localStorage.getItem('shop_session_token');
+                const shopInfo = localStorage.getItem('shop_info');
+                
+                if (sessionToken && shopInfo) {
+                    // 既存セッションがある場合、ダッシュボードにリダイレクト
+                    const shop = JSON.parse(shopInfo);
+                    window.location.href = `/shop/dashboard?shop_id=${shop.id}`;
+                }
+            }
+
+            async handleLogin() {
+                if (this.isLoading) return;
+
+                const form = document.getElementById('loginForm');
+                const formData = new FormData(form);
+                
+                const loginData = {
+                    shop_id: formData.get('shop_id'),
+                    password: formData.get('password')
+                };
+
+                // バリデーション
+                if (!loginData.shop_id || !loginData.password) {
+                    this.showError('ショップIDとパスワードを入力してください。');
+                    return;
+                }
+
+                this.setLoading(true);
+
+                try {
+                    const response = await fetch('/api/shop/auth/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(loginData)
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        // セッション情報を保存
+                        localStorage.setItem('shop_session_token', result.session_token);
+                        localStorage.setItem('shop_info', JSON.stringify(result.shop_info));
+                        
+                        this.showSuccess('ログインしました。ダッシュボードに移動します...');
+                        
+                        // ダッシュボードにリダイレクト
+                        setTimeout(() => {
+                            window.location.href = `/shop/dashboard?shop_id=${result.shop_info.id}`;
+                        }, 1500);
+                    } else {
+                        this.showError(result.message || 'ログインに失敗しました。');
+                    }
+                } catch (error) {
+                    console.error('ログインエラー:', error);
+                    this.showError('ログイン処理中にエラーが発生しました。');
+                } finally {
+                    this.setLoading(false);
+                }
+            }
+
+            setLoading(loading) {
+                this.isLoading = loading;
+                const button = document.querySelector('.login-button');
+                const loginText = document.querySelector('.login-text');
+                const loadingSpinner = document.querySelector('.loading-spinner');
+
+                if (loading) {
+                    button.disabled = true;
+                    loginText.style.display = 'none';
+                    loadingSpinner.style.display = 'flex';
+                } else {
+                    button.disabled = false;
+                    loginText.style.display = 'inline';
+                    loadingSpinner.style.display = 'none';
+                }
+            }
+
+            showSuccess(message) {
+                const messageArea = document.getElementById('messageArea');
+                messageArea.innerHTML = `
+                    <div class="success-message">
+                        <i class="fas fa-check-circle"></i> ${message}
+                    </div>
+                `;
+            }
+
+            showError(message) {
+                const messageArea = document.getElementById('messageArea');
+                messageArea.innerHTML = `
+                    <div class="error-message">
+                        <i class="fas fa-exclamation-triangle"></i> ${message}
+                    </div>
+                `;
+            }
+        }
+
+        // パスワード表示切り替え
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const toggleIcon = document.querySelector('.password-toggle');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleIcon.classList.remove('fa-eye');
+                toggleIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                toggleIcon.classList.remove('fa-eye-slash');
+                toggleIcon.classList.add('fa-eye');
+            }
+        }
+
+        // 初期化
+        document.addEventListener('DOMContentLoaded', () => {
+            new ShopLoginManager();
+        });
+    </script>
+</body>
+</html>

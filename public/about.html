@@ -3,21 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>サービス詳細 - Dive Buddy's あなた専属のダイビングバディ</title>
-    <meta name="description" content="Dive Buddy'sの使命・ビジョン、初心者ダイバーサポート、Jijiの技術的成果について詳しくご紹介。世界初の感情分析×ダイビングマッチング統合プラットフォームの全貌をご覧ください。">
+    <title>サービス概要 | Dive Buddy's - 沖縄ダイビング総合プラットフォーム</title>
+    <meta name="description" content="Dive Buddy'sは沖縄ダイビングの総合プラットフォーム。79店舗のショップ検索、リアルタイム海況情報、旅行プランニング、AI相談まで。新導線v2.0で更なる充実のサービスを提供。">
     
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
+    <!-- 統一デザインシステム -->
+    <link rel="stylesheet" href="/css/design-system.css">
     <!-- Styles -->
     <link rel="stylesheet" href="/css/common.css">
     
     <style>
         /* About Page Specific Styles */
         .hero-about {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 120px 0 80px;
+            background: linear-gradient(135deg, var(--color-accent-1) 0%, var(--color-accent-2) 100%);
+            padding: var(--section-gap) 0 var(--space-16);
             color: white;
             text-align: center;
         }
@@ -366,10 +368,10 @@
     <!-- ヒーローセクション -->
     <section class="hero-about">
         <div class="container">
-            <h1>Jijiについて</h1>
+            <h1>Dive Buddy's</h1>
             <p>
-                世界初の感情分析×事業価値統合プラットフォーム<br>
-                「初心者ダイバーの『できない』を『できる』に変える魔法の存在」として
+                沖縄ダイビングの総合プラットフォーム<br>
+                新導線v2.0で、あなたの理想のダイビング体験を実現
             </p>
         </div>
     </section>
@@ -377,41 +379,77 @@
     <!-- 使命・ビジョンセクション -->
     <section class="section">
         <div class="container">
-            <h2 class="section-title">🌟 Jijiの使命・ビジョン</h2>
+            <h2 class="section-title">🌟 新導線v2.0 - 主要サービス</h2>
             
             <div class="team-philosophy">
-                <h3>使命（Mission）</h3>
+                <h3>7つの統合サービスで最高のダイビング体験を</h3>
                 <p>
-                    初心者ダイバーの『できない』を『できる』に変える魔法の存在として、<br>
-                    ダイビングへの参入障壁を完全に解消し、誰もが安心して美しい海の世界を体験できる未来を創造する。
+                    石垣島・宮古島・沖縄本島の79店舗から最適なショップを見つけて、<br>
+                    リアルタイム海況情報・旅行手配・AI相談まで、すべてを一括サポート。
                 </p>
             </div>
             
             <div class="value-grid">
                 <div class="value-card animate-on-scroll">
-                    <div class="value-icon">❤️</div>
-                    <h3 class="value-title">相談相手として</h3>
+                    <div class="value-icon">🏪</div>
+                    <h3 class="value-title">ショップ検索</h3>
                     <p class="value-description">
-                        24時間いつでも相談できる親身なパートナーとして、
-                        初心者の不安や疑問に真摯に向き合い、継続的な関係を築きます。
+                        79店舗×38項目の詳細データベースから、
+                        評価・価格・安全認証レベルで最適なショップを検索・予約できます。
                     </p>
                 </div>
                 
                 <div class="value-card animate-on-scroll">
-                    <div class="value-icon">🏨</div>
-                    <h3 class="value-title">コンシェルジュとして</h3>
+                    <div class="value-icon">🌊</div>
+                    <h3 class="value-title">海況・天気情報</h3>
                     <p class="value-description">
-                        79店舗×34項目の詳細データベースから、
-                        あなたの感情と状況に最適なダイビングショップを厳選してご提案します。
+                        リアルタイム気象データで3日間の海況を表示。
+                        ダイビング適性判定で最適な日程プランニングが可能です。
                     </p>
                 </div>
                 
                 <div class="value-card animate-on-scroll">
-                    <div class="value-icon">🧠</div>
-                    <h3 class="value-title">理解者として</h3>
+                    <div class="value-icon">🗺️</div>
+                    <h3 class="value-title">沖縄ガイド（🆕新機能）</h3>
                     <p class="value-description">
-                        6カテゴリ感情分析により、あなたの本当の気持ちを理解し、
-                        過去の失敗や不安に共感して安心を提供します。
+                        石垣島・宮古島・沖縄本島の地域別ダイビングポイント完全ガイド。
+                        季節別情報とおすすめスポットを詳しく紹介します。
+                    </p>
+                </div>
+                
+                <div class="value-card animate-on-scroll">
+                    <div class="value-icon">✈️</div>
+                    <h3 class="value-title">旅行プランニング</h3>
+                    <p class="value-description">
+                        航空券・宿泊・レンタカー・島間移動まで一括手配。
+                        ダイビング旅行に必要なすべてをワンストップでサポートします。
+                    </p>
+                </div>
+                
+                <div class="value-card animate-on-scroll">
+                    <div class="value-icon">📚</div>
+                    <h3 class="value-title">ダイビング情報</h3>
+                    <p class="value-description">
+                        最新スポット情報、海洋生物情報、ダイビングテクニック等、
+                        充実したコンテンツでダイビング知識を深められます。
+                    </p>
+                </div>
+                
+                <div class="value-card animate-on-scroll">
+                    <div class="value-icon">👥</div>
+                    <h3 class="value-title">会員サービス</h3>
+                    <p class="value-description">
+                        ダイビング履歴管理、ポイント特典、限定情報配信など、
+                        会員だけの特別なサービスでダイビングライフを充実させます。
+                    </p>
+                </div>
+                
+                <div class="value-card animate-on-scroll">
+                    <div class="value-icon">🤖</div>
+                    <h3 class="value-title">AI相談（Jiji）</h3>
+                    <p class="value-description">
+                        「どうしよう...」という不安を「楽しみ！」に変える、
+                        AIアシスタントJijiがあなたの希望に合わせて最適なプランを提案します。
                     </p>
                 </div>
             </div>
@@ -421,55 +459,55 @@
     <!-- 開発成果・技術革新 -->
     <section class="innovation-section">
         <div class="container">
-            <h2 class="section-title">🏆 革新的開発成果</h2>
+            <h2 class="section-title">🏆 新導線v2.0の特徴</h2>
             <p class="section-subtitle">
-                Phase 5完了により実現した前例のない技術×事業価値統合
+                ユーザー価値最大化とシステム効率化を両立した戦略的プラットフォーム
             </p>
             
             <div class="metrics-grid">
                 <div class="metric-card">
-                    <span class="metric-number">95%</span>
-                    <div class="metric-label">開発時間短縮</div>
+                    <span class="metric-number">79</span>
+                    <div class="metric-label">登録ショップ数</div>
                 </div>
                 <div class="metric-card">
-                    <span class="metric-number">3日</span>
-                    <div class="metric-label">全Phase完了期間</div>
+                    <span class="metric-number">52</span>
+                    <div class="metric-label">総ページ数</div>
                 </div>
                 <div class="metric-card">
-                    <span class="metric-number">99.5%</span>
-                    <div class="metric-label">システム稼働率</div>
+                    <span class="metric-number">7</span>
+                    <div class="metric-label">統合サービス数</div>
                 </div>
                 <div class="metric-card">
-                    <span class="metric-number">$0</span>
-                    <div class="metric-label">インフラ運用費</div>
+                    <span class="metric-number">3</span>
+                    <div class="metric-label">対応エリア数</div>
                 </div>
             </div>
             
             <div class="innovation-cards">
                 <div class="innovation-card animate-on-scroll">
-                    <div class="innovation-icon">🚀</div>
-                    <h3 class="innovation-title">Claude Code & Claude Chat 連携開発</h3>
+                    <div class="innovation-icon">🎯</div>
+                    <h3 class="innovation-title">ユーザージャーニー重視設計</h3>
                     <p class="innovation-description">
-                        AI支援開発により従来3週間の開発を3日で完了。
-                        革新的開発手法の成功モデルを確立し、95%の時間短縮を実現しました。
+                        情報収集→検討比較→行動→継続利用の4段階フローで、
+                        ユーザーが迷うことなく最適なダイビング体験にたどり着けます。
                     </p>
                 </div>
                 
                 <div class="innovation-card animate-on-scroll">
-                    <div class="innovation-icon">🌟</div>
-                    <h3 class="innovation-title">世界初の技術統合</h3>
+                    <div class="innovation-icon">⚡</div>
+                    <h3 class="innovation-title">段階的実装アプローチ</h3>
                     <p class="innovation-description">
-                        6カテゴリ感情分析×79店舗マッチング×収益化システムを
-                        世界で初めて統合した革新的プラットフォームを実現しました。
+                        高優先4ページ→中優先8ページ→低優先40ページの段階実装で、
+                        早期リリース・継続改善サイクルを実現しています。
                     </p>
                 </div>
                 
                 <div class="innovation-card animate-on-scroll">
-                    <div class="innovation-icon">💎</div>
-                    <h3 class="innovation-title">完全事業価値実現</h3>
+                    <div class="innovation-icon">🌊</div>
+                    <h3 class="innovation-title">沖縄ダイビング特化</h3>
                     <p class="innovation-description">
-                        技術プラットフォームから収益化・成長システムまで完全実装。
-                        持続可能な事業モデルと社会価値創造を両立しました。
+                        石垣島・宮古島・沖縄本島の地域別専門性を高め、
+                        SEO効果向上と専門プラットフォームとしての価値を最大化しました。
                     </p>
                 </div>
             </div>

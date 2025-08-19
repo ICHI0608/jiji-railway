@@ -1,0 +1,23 @@
+{
+  "tokens": [
+    {
+      "token": "tt_example1234567890",
+      "user_id": "U1234567890abcdef1234567890abcdef",
+      "user_type": "line",
+      "target_action": "view_shop_details",
+      "created_at": "2025-07-29T10:00:00Z",
+      "expires_at": "2025-07-29T10:05:00Z",
+      "status": "used",
+      "used_at": "2025-07-29T10:02:30Z"
+    },
+    {
+      "token": "tt_example9876543210",
+      "user_id": "U2345678901bcdef12345678901bcdef1", 
+      "user_type": "line",
+      "target_action": "submit_review",
+      "created_at": "2025-07-29T11:30:00Z",
+      "expires_at": "2025-07-29T11:35:00Z",
+      "status": "expired"
+    }
+  ]
+}

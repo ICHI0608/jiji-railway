@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ショップ情報編集 | Dive Buddy's</title>
+    <meta name="description" content="Dive Buddy's ショップ情報の編集・更新を行えます。">
+    
+    <!-- 統一デザインシステム -->
+    <link rel="stylesheet" href="/css/design-system.css">
+    <link rel="stylesheet" href="/app/v28-styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        .edit-page {
+            background: #f8f9ff;
+            min-height: 100vh;
+            padding-top: 20px;
+        }
+
+        .edit-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-info h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .header-info p {
+            opacity: 0.9;
+            font-size: 1rem;
+        }
+
+        .back-button {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            background: rgba(255,255,255,0.3);
+            border-color: rgba(255,255,255,0.5);
+        }
+
+        .edit-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 1rem 2rem;
+        }
+
+        .form-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .form-section {
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-input,
+        .form-textarea,
+        .form-select {
+            width: 100%;
+            padding: 1rem 1.2rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-family: 'Noto Sans JP', sans-serif;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .form-input:focus,
+        .form-textarea:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.8rem;
+            background: #f8f9ff;
+            border-radius: 8px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .checkbox-item:hover {
+            border-color: #667eea;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+        }
+
+        .checkbox-item label {
+            font-weight: 500;
+            cursor: pointer;
+            margin: 0;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 2px solid #e5e7eb;
+        }
+
+        .save-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .save-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .save-button:disabled {
+            background: #d1d5db;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .cancel-button {
+            background: #6b7280;
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .cancel-button:hover {
+            background: #4b5563;
+        }
+
+        .loading-spinner {
+            display: none;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .success-message,
+        .error-message {
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            font-weight: 600;
+        }
+
+        .success-message {
+            background: #dcfce7;
+            color: #166534;
+            border: 2px solid #22c55e;
+        }
+
+        .error-message {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 2px solid #ef4444;
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+
+            .checkbox-group {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ヘッダー -->
+    <div class="edit-header">
+        <div class="header-content">
+            <div class="header-info">
+                <h1><i class="fas fa-edit"></i> ショップ情報編集</h1>
+                <p>ショップの基本情報やサービス内容を更新できます</p>
+            </div>
+            <a href="/shop/dashboard.html" class="back-button">
+                <i class="fas fa-arrow-left"></i> ダッシュボードに戻る
+            </a>
+        </div>
+    </div>
+
+    <!-- メインコンテンツ -->
+    <div class="edit-page">
+        <div class="edit-container">
+            <!-- メッセージエリア -->
+            <div id="messageArea"></div>
+
+            <!-- 編集フォーム -->
+            <form id="editForm" class="form-card">
+                <!-- 基本情報セクション -->
+                <div class="form-section">
+                    <h2 class="section-title">
+                        <i class="fas fa-info-circle"></i> 基本情報
+                    </h2>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="shopName" class="form-label">ショップ名 *</label>
+                            <input type="text" id="shopName" name="name" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="phoneNumber" class="form-label">電話番号</label>
+                            <input type="tel" id="phoneNumber" name="phone" class="form-input">
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="address" class="form-label">住所</label>
+                            <input type="text" id="address" name="address" class="form-input">
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="description" class="form-label">ショップ説明</label>
+                            <textarea id="description" name="description" class="form-textarea" 
+                                      placeholder="ショップの特徴やサービスについて詳しく説明してください"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- サービス情報セクション -->
+                <div class="form-section">
+                    <h2 class="section-title">
+                        <i class="fas fa-swimmer"></i> サービス情報
+                    </h2>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="minPrice" class="form-label">最低価格 (円)</label>
+                            <input type="number" id="minPrice" name="min_price" class="form-input" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="maxPrice" class="form-label">最高価格 (円)</label>
+                            <input type="number" id="maxPrice" name="max_price" class="form-input" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="businessHours" class="form-label">営業時間</label>
+                            <input type="text" id="businessHours" name="business_hours" class="form-input"
+                                   placeholder="例：8:00-18:00">
+                        </div>
+                        <div class="form-group">
+                            <label for="closedDays" class="form-label">定休日</label>
+                            <input type="text" id="closedDays" name="closed_days" class="form-input"
+                                   placeholder="例：不定休">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 対応サービス -->
+                <div class="form-section">
+                    <h2 class="section-title">
+                        <i class="fas fa-check-square"></i> 対応サービス
+                    </h2>
+                    <div class="checkbox-group" id="servicesCheckboxes">
+                        <!-- サービスチェックボックスは動的に生成 -->
+                    </div>
+                </div>
+
+                <!-- こだわり条件 -->
+                <div class="form-section">
+                    <h2 class="section-title">
+                        <i class="fas fa-star"></i> こだわり条件
+                    </h2>
+                    <div class="checkbox-group" id="featuresCheckboxes">
+                        <!-- こだわり条件チェックボックスは動的に生成 -->
+                    </div>
+                </div>
+
+                <!-- 保存ボタン -->
+                <div class="form-actions">
+                    <button type="button" class="cancel-button" onclick="window.history.back()">
+                        <i class="fas fa-times"></i> キャンセル
+                    </button>
+                    <button type="submit" class="save-button">
+                        <span class="save-text">
+                            <i class="fas fa-save"></i> 保存
+                        </span>
+                        <div class="loading-spinner">
+                            <div class="spinner"></div>
+                            <span>保存中...</span>
+                        </div>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        class ShopProfileEditor {
+            constructor() {
+                this.currentShopId = null;
+                this.shopInfo = null;
+                this.isLoading = false;
+                this.services = [
+                    'ファンダイビング',
+                    '体験ダイビング', 
+                    'ライセンス講習',
+                    'アドバンス講習',
+                    'レスキュー講習',
+                    'スペシャルティ',
+                    'ナイトダイビング',
+                    'ドリフトダイビング',
+                    'レンタル器材',
+                    '送迎サービス'
+                ];
+                this.features = [
+                    '少人数制',
+                    '初心者歓迎',
+                    '英語対応可',
+                    '写真撮影サービス',
+                    'ログブック発行',
+                    '器材レンタル込',
+                    '送迎付き',
+                    '温水シャワー',
+                    '更衣室完備',
+                    'PADI認定店',
+                    'NAUI認定店',
+                    'マンタポイント',
+                    'ウミガメポイント',
+                    '沈船ダイビング',
+                    '洞窟ダイビング'
+                ];
+                this.init();
+            }
+
+            init() {
+                this.checkAuthentication();
+                this.setupForm();
+                this.generateCheckboxes();
+                this.loadShopProfile();
+            }
+
+            checkAuthentication() {
+                const sessionToken = localStorage.getItem('shop_session_token');
+                const shopInfo = localStorage.getItem('shop_info');
+                
+                if (!sessionToken || !shopInfo) {
+                    window.location.href = '/shop/login.html';
+                    return;
+                }
+
+                this.shopInfo = JSON.parse(shopInfo);
+                this.currentShopId = this.shopInfo.id;
+            }
+
+            setupForm() {
+                const form = document.getElementById('editForm');
+                form.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.handleSave();
+                });
+            }
+
+            generateCheckboxes() {
+                // サービスチェックボックス生成
+                const servicesContainer = document.getElementById('servicesCheckboxes');
+                servicesContainer.innerHTML = this.services.map(service => `
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="service_${service}" name="services" value="${service}">
+                        <label for="service_${service}">${service}</label>
+                    </div>
+                `).join('');
+
+                // こだわり条件チェックボックス生成
+                const featuresContainer = document.getElementById('featuresCheckboxes');
+                featuresContainer.innerHTML = this.features.map(feature => `
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="feature_${feature}" name="features" value="${feature}">
+                        <label for="feature_${feature}">${feature}</label>
+                    </div>
+                `).join('');
+            }
+
+            async loadShopProfile() {
+                try {
+                    const response = await fetch(`/api/shop/profile/${this.currentShopId}`);
+                    const data = await response.json();
+
+                    if (data.success) {
+                        this.populateForm(data.shop);
+                    } else {
+                        this.showError('ショップ情報の読み込みに失敗しました。');
+                    }
+                } catch (error) {
+                    console.error('ショップ情報読み込みエラー:', error);
+                    this.showError('ショップ情報の読み込み中にエラーが発生しました。');
+                }
+            }
+
+            populateForm(shopData) {
+                // 基本情報
+                document.getElementById('shopName').value = shopData.name || '';
+                document.getElementById('phoneNumber').value = shopData.phone || '';
+                document.getElementById('address').value = shopData.address || '';
+                document.getElementById('description').value = shopData.description || '';
+
+                // サービス情報
+                document.getElementById('minPrice').value = shopData.min_price || '';
+                document.getElementById('maxPrice').value = shopData.max_price || '';
+                document.getElementById('businessHours').value = shopData.business_hours || '';
+                document.getElementById('closedDays').value = shopData.closed_days || '';
+
+                // サービスチェックボックス
+                if (shopData.services) {
+                    const services = Array.isArray(shopData.services) ? shopData.services : shopData.services.split(',');
+                    services.forEach(service => {
+                        const checkbox = document.getElementById(`service_${service.trim()}`);
+                        if (checkbox) checkbox.checked = true;
+                    });
+                }
+
+                // こだわり条件チェックボックス
+                if (shopData.features) {
+                    const features = Array.isArray(shopData.features) ? shopData.features : shopData.features.split(',');
+                    features.forEach(feature => {
+                        const checkbox = document.getElementById(`feature_${feature.trim()}`);
+                        if (checkbox) checkbox.checked = true;
+                    });
+                }
+            }
+
+            async handleSave() {
+                if (this.isLoading) return;
+
+                const form = document.getElementById('editForm');
+                const formData = new FormData(form);
+                
+                // チェックボックスの値を配列で取得
+                const services = Array.from(document.querySelectorAll('input[name="services"]:checked'))
+                    .map(cb => cb.value);
+                const features = Array.from(document.querySelectorAll('input[name="features"]:checked'))
+                    .map(cb => cb.value);
+
+                const updateData = {
+                    name: formData.get('name'),
+                    phone: formData.get('phone'),
+                    address: formData.get('address'),
+                    description: formData.get('description'),
+                    min_price: parseInt(formData.get('min_price')) || null,
+                    max_price: parseInt(formData.get('max_price')) || null,
+                    business_hours: formData.get('business_hours'),
+                    closed_days: formData.get('closed_days'),
+                    services: services,
+                    features: features
+                };
+
+                // バリデーション
+                if (!updateData.name.trim()) {
+                    this.showError('ショップ名を入力してください。');
+                    return;
+                }
+
+                this.setLoading(true);
+
+                try {
+                    const response = await fetch(`/api/shop/profile/${this.currentShopId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(updateData)
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        this.showSuccess('ショップ情報を更新しました。');
+                        
+                        // セッション情報を更新
+                        const updatedShopInfo = {...this.shopInfo, ...updateData};
+                        localStorage.setItem('shop_info', JSON.stringify(updatedShopInfo));
+                        
+                        // 3秒後にダッシュボードにリダイレクト
+                        setTimeout(() => {
+                            window.location.href = '/shop/dashboard.html';
+                        }, 2000);
+                    } else {
+                        this.showError(result.message || 'ショップ情報の更新に失敗しました。');
+                    }
+                } catch (error) {
+                    console.error('ショップ情報更新エラー:', error);
+                    this.showError('ショップ情報の更新中にエラーが発生しました。');
+                } finally {
+                    this.setLoading(false);
+                }
+            }
+
+            setLoading(loading) {
+                this.isLoading = loading;
+                const button = document.querySelector('.save-button');
+                const saveText = document.querySelector('.save-text');
+                const loadingSpinner = document.querySelector('.loading-spinner');
+
+                if (loading) {
+                    button.disabled = true;
+                    saveText.style.display = 'none';
+                    loadingSpinner.style.display = 'flex';
+                } else {
+                    button.disabled = false;
+                    saveText.style.display = 'inline-flex';
+                    loadingSpinner.style.display = 'none';
+                }
+            }
+
+            showSuccess(message) {
+                const messageArea = document.getElementById('messageArea');
+                messageArea.innerHTML = `
+                    <div class="success-message">
+                        <i class="fas fa-check-circle"></i> ${message}
+                    </div>
+                `;
+                messageArea.scrollIntoView({ behavior: 'smooth' });
+            }
+
+            showError(message) {
+                const messageArea = document.getElementById('messageArea');
+                messageArea.innerHTML = `
+                    <div class="error-message">
+                        <i class="fas fa-exclamation-triangle"></i> ${message}
+                    </div>
+                `;
+                messageArea.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        // 初期化
+        document.addEventListener('DOMContentLoaded', () => {
+            new ShopProfileEditor();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jiji沖縄ダイビング知識ベース - V2.8 LINE Bot完結型</title>
+    <meta name="description" content="Jiji沖縄ダイビングの知識ベース。ショップ情報、旅行ガイド、初心者向けブログ、海況情報を提供。LINE Botと連携してあなたのダイビング体験をサポートします。">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="/app/v28-styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-fish"></i>
+                    <span>Jiji知識ベース</span>
+                    <span class="version-badge">V2.8</span>
+                </div>
+                <nav class="nav">
+                    <ul class="nav-menu">
+                        <li><a href="#shops">ショップ情報</a></li>
+                        <li><a href="#travel">旅行ガイド</a></li>
+                        <li><a href="#blog">ダイビングブログ</a></li>
+                        <li><a href="#weather">海況・天気</a></li>
+                        <li><a href="#member">会員登録</a></li>
+                    </ul>
+                    <div class="hamburger">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-text">
+                    <h1>🌊 Jiji沖縄ダイビング知識ベース</h1>
+                    <p class="hero-subtitle">V2.8 LINE Bot完結型・口コミ重視マッチング対応</p>
+                    <p class="hero-description">
+                        LINE BotのJijiと連携した総合知識ベース。<br>
+                        ショップ情報、旅行ガイド、初心者ブログ、海況情報を提供。
+                    </p>
+                    <div class="hero-actions">
+                        <a href="https://line.me/R/ti/p/@jiji-diving" class="btn btn-primary">
+                            <i class="fab fa-line"></i> LINE Botでチャット
+                        </a>
+                        <a href="#knowledge-base" class="btn btn-secondary">
+                            <i class="fas fa-book"></i> 知識ベース探索
+                        </a>
+                    </div>
+                </div>
+                <div class="hero-visual">
+                    <div class="jiji-character">
+                        <div class="character-avatar">🤿</div>
+                        <div class="character-bubble">
+                            <p>僕がLINEで<br>何でも相談に乗るよ！</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Knowledge Base Overview -->
+    <section id="knowledge-base" class="knowledge-base">
+        <div class="container">
+            <h2 class="section-title">📚 知識ベースカテゴリ</h2>
+            <p class="section-subtitle">LINE BotのJijiが参照する情報ソース</p>
+            
+            <div class="knowledge-grid">
+                <!-- ショップ情報 -->
+                <div class="knowledge-card" id="shops">
+                    <div class="card-icon">🏪</div>
+                    <h3>ショップ情報</h3>
+                    <p>石垣島44店舗、宮古島35店舗の詳細データベース</p>
+                    <div class="card-features">
+                        <span class="feature-tag">口コミ・評価</span>
+                        <span class="feature-tag">認定バッジ</span>
+                        <span class="feature-tag">プラン比較</span>
+                    </div>
+                    <div class="card-actions">
+                        <a href="/shops-database" class="btn btn-outline">詳細を見る</a>
+                        <span class="reference-count">79店舗登録</span>
+                    </div>
+                </div>
+
+                <!-- 旅行ガイド -->
+                <div class="knowledge-card" id="travel">
+                    <div class="card-icon">✈️</div>
+                    <h3>旅行ガイド</h3>
+                    <p>宿泊、交通、予算プランの総合情報</p>
+                    <div class="card-features">
+                        <span class="feature-tag">予算プラン</span>
+                        <span class="feature-tag">交通手段</span>
+                        <span class="feature-tag">宿泊情報</span>
+                    </div>
+                    <div class="card-actions">
+                        <a href="/travel-guide" class="btn btn-outline">詳細を見る</a>
+                        <span class="reference-count">全エリア対応</span>
+                    </div>
+                </div>
+
+                <!-- ダイビングブログ -->
+                <div class="knowledge-card" id="blog">
+                    <div class="card-icon">📝</div>
+                    <h3>ダイビングブログ</h3>
+                    <p>初心者向け体験談・安全ガイド・器材レビュー</p>
+                    <div class="card-features">
+                        <span class="feature-tag">体験談</span>
+                        <span class="feature-tag">安全ガイド</span>
+                        <span class="feature-tag">器材レビュー</span>
+                    </div>
+                    <div class="card-actions">
+                        <a href="/diving-blog" class="btn btn-outline">詳細を見る</a>
+                        <span class="reference-count">記事多数</span>
+                    </div>
+                </div>
+
+                <!-- 海況・天気 -->
+                <div class="knowledge-card" id="weather">
+                    <div class="card-icon">🌊</div>
+                    <h3>海況・天気情報</h3>
+                    <p>リアルタイム海況・週間予報・ベストタイミング</p>
+                    <div class="card-features">
+                        <span class="feature-tag">リアルタイム</span>
+                        <span class="feature-tag">週間予報</span>
+                        <span class="feature-tag">ベストシーズン</span>
+                    </div>
+                    <div class="card-actions">
+                        <a href="/weather-ocean" class="btn btn-outline">詳細を見る</a>
+                        <span class="reference-count">3時間毎更新</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- LINE Bot Integration -->
+    <section class="line-integration">
+        <div class="container">
+            <div class="integration-content">
+                <div class="integration-text">
+                    <h2>🤖 LINE Bot完結型体験</h2>
+                    <p>知識ベースの情報をLINE Botが自動で参照し、あなたに最適な回答を提供します。</p>
+                    
+                    <div class="flow-steps">
+                        <div class="step">
+                            <div class="step-number">1</div>
+                            <div class="step-content">
+                                <h4>LINEで質問</h4>
+                                <p>「石垣島でおすすめのショップは？」</p>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <div class="step-number">2</div>
+                            <div class="step-content">
+                                <h4>知識ベース参照</h4>
+                                <p>79店舗データベース + 口コミ分析</p>
+                            </div>
+                        </div>
+                        <div class="step">
+                            <div class="step-number">3</div>
+                            <div class="step-content">
+                                <h4>統合回答</h4>
+                                <p>個別化された推薦 + 詳細URL</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <a href="https://line.me/R/ti/p/@jiji-diving" class="btn btn-primary btn-large">
+                        <i class="fab fa-line"></i> 今すぐJijiにチャット
+                    </a>
+                </div>
+                <div class="integration-visual">
+                    <div class="phone-mockup">
+                        <div class="phone-screen">
+                            <div class="chat-example">
+                                <div class="message user">石垣島でマンタが見れるショップは？</div>
+                                <div class="message jiji">
+                                    🌟 川平石崎のS2クラブ石垣がおすすめです！<br><br>
+                                    ✅ マンタ遭遇率95%<br>
+                                    ✅ 口コミ評価4.8/5.0<br>
+                                    ✅ 初心者大歓迎<br><br>
+                                    詳しくはこちら 👇<br>
+                                    <a href="#" class="chat-link">店舗詳細ページ</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Member System -->
+    <section class="member-system" id="member">
+        <div class="container">
+            <h2 class="section-title">👤 会員システム</h2>
+            <p class="section-subtitle">LINE連携でポイント獲得・口コミ投稿</p>
+            
+            <div class="member-features">
+                <div class="feature-card">
+                    <div class="feature-icon">📝</div>
+                    <h3>口コミ投稿</h3>
+                    <p>体験後のレビューで100-200ポイント獲得</p>
+                    <div class="feature-benefits">
+                        <span>写真付き: +50P</span>
+                        <span>詳細レビュー: +50P</span>
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🎁</div>
+                    <h3>ポイント交換</h3>
+                    <p>貯めたポイントで特典と交換</p>
+                    <div class="feature-benefits">
+                        <span>体験ダイビング: 3,000P</span>
+                        <span>水中写真撮影: 1,200P</span>
+                    </div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🤝</div>
+                    <h3>友達紹介</h3>
+                    <p>友達紹介成功で300ポイント</p>
+                    <div class="feature-benefits">
+                        <span>SNSシェア: 20P</span>
+                        <span>フォロー: 30P</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="member-cta">
+                <a href="/member/register" class="btn btn-primary">
+                    <i class="fas fa-user-plus"></i> 会員登録（LINE連携）
+                </a>
+                <a href="/member/mypage" class="btn btn-outline">
+                    <i class="fas fa-user"></i> マイページ
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Statistics -->
+    <section class="statistics">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">79</div>
+                    <div class="stat-label">登録店舗数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">50%</div>
+                    <div class="stat-label">口コミ重視マッチング</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">3秒</div>
+                    <div class="stat-label">平均応答時間</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">95%</div>
+                    <div class="stat-label">問題解決率</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-info">
+                    <h3>🌊 Jiji沖縄ダイビング知識ベース</h3>
+                    <p>V2.8 LINE Bot完結型・口コミ重視マッチング</p>
+                    <p>初心者の「できない」を「できる」に変える魔法の存在</p>
+                </div>
+                <div class="footer-links">
+                    <div class="link-group">
+                        <h4>知識ベース</h4>
+                        <ul>
+                            <li><a href="/shops-database">ショップ情報</a></li>
+                            <li><a href="/travel-guide">旅行ガイド</a></li>
+                            <li><a href="/diving-blog">ダイビングブログ</a></li>
+                            <li><a href="/weather-ocean">海況・天気</a></li>
+                        </ul>
+                    </div>
+                    <div class="link-group">
+                        <h4>会員サービス</h4>
+                        <ul>
+                            <li><a href="/member/register">会員登録</a></li>
+                            <li><a href="/member/review-post">口コミ投稿</a></li>
+                            <li><a href="/member/point-exchange">ポイント交換</a></li>
+                            <li><a href="/member/mypage">マイページ</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Jiji沖縄ダイビング知識ベース V2.8 - All rights reserved</p>
+                <p>最終更新: 2025年7月15日</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="/app/v28-script.js"></script>
+</body>
+</html>

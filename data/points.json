@@ -1,0 +1,121 @@
+{
+  "users": {
+    "user_demo_1": {
+      "current_points": 350,
+      "total_earned": 500,
+      "total_spent": 150
+    },
+    "user_demo_2": {
+      "current_points": 120,
+      "total_earned": 120,
+      "total_spent": 0
+    },
+    "user_demo_3": {
+      "current_points": 750,
+      "total_earned": 950,
+      "total_spent": 200
+    }
+  },
+  "transactions": [
+    {
+      "id": "txn_demo_1",
+      "user_id": "user_demo_1",
+      "transaction_type": "earn",
+      "points": 50,
+      "reason": "口コミ投稿",
+      "activity_type": "review_submission",
+      "reference_id": "review_demo_1",
+      "created_at": "2025-07-21T10:00:00Z"
+    },
+    {
+      "id": "txn_demo_2",
+      "user_id": "user_demo_1",
+      "transaction_type": "earn",
+      "points": 100,
+      "reason": "初回登録ボーナス",
+      "activity_type": "registration_bonus",
+      "reference_id": null,
+      "created_at": "2025-07-20T15:00:00Z"
+    },
+    {
+      "id": "txn_demo_3",
+      "user_id": "user_demo_1",
+      "transaction_type": "earn",
+      "points": 350,
+      "reason": "ダイビング体験完了",
+      "activity_type": "diving_completion",
+      "reference_id": "dive_demo_1",
+      "created_at": "2025-07-22T09:00:00Z"
+    },
+    {
+      "id": "txn_demo_4",
+      "user_id": "user_demo_1",
+      "transaction_type": "spend",
+      "points": 150,
+      "reason": "特典交換: 割引クーポン 5%OFF",
+      "activity_type": "reward_redemption",
+      "reference_id": "reward_2",
+      "created_at": "2025-07-23T14:00:00Z"
+    },
+    {
+      "id": "txn_demo_5",
+      "user_id": "user_demo_2",
+      "transaction_type": "earn",
+      "points": 100,
+      "reason": "初回登録ボーナス",
+      "activity_type": "registration_bonus", 
+      "reference_id": null,
+      "created_at": "2025-07-24T11:00:00Z"
+    },
+    {
+      "id": "txn_demo_6",
+      "user_id": "user_demo_2",
+      "transaction_type": "earn",
+      "points": 20,
+      "reason": "ログイン継続ボーナス（7日）",
+      "activity_type": "login_streak",
+      "reference_id": null,
+      "created_at": "2025-07-25T08:00:00Z"
+    },
+    {
+      "id": "txn_demo_7",
+      "user_id": "user_demo_3",
+      "transaction_type": "earn",
+      "points": 100,
+      "reason": "初回登録ボーナス",
+      "activity_type": "registration_bonus",
+      "reference_id": null,
+      "created_at": "2025-07-18T16:00:00Z"
+    },
+    {
+      "id": "txn_demo_8",
+      "user_id": "user_demo_3",
+      "transaction_type": "earn",
+      "points": 50,
+      "reason": "口コミ投稿",
+      "activity_type": "review_submission",
+      "reference_id": "review_demo_3",
+      "created_at": "2025-07-19T09:15:00Z"
+    },
+    {
+      "id": "txn_demo_9",
+      "user_id": "user_demo_3",
+      "transaction_type": "earn",
+      "points": 800,
+      "reason": "ダイビング体験完了（マンタツアー）",
+      "activity_type": "diving_completion",
+      "reference_id": "dive_demo_2",
+      "created_at": "2025-07-19T17:00:00Z"
+    },
+    {
+      "id": "txn_demo_10",
+      "user_id": "user_demo_3",
+      "transaction_type": "spend",
+      "points": 200,
+      "reason": "特典交換: 割引クーポン 5%OFF",
+      "activity_type": "reward_redemption",
+      "reference_id": "reward_2",
+      "created_at": "2025-07-20T12:00:00Z"
+    }
+  ]
+}

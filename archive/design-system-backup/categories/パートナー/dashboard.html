@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ショップダッシュボード | Dive Buddy's</title>
+    <meta name="description" content="Dive Buddy's ショップ向け管理画面で、口コミ管理や情報更新、統計確認を行えます。">
+    
+    <!-- 統一デザインシステム -->
+    <link rel="stylesheet" href="/css/design-system.css">
+    <link rel="stylesheet" href="/app/v28-styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        .dashboard-page {
+            background: #f8f9ff;
+            min-height: 100vh;
+            padding-top: 20px;
+        }
+
+        .dashboard-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .shop-info h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .shop-info p {
+            opacity: 0.9;
+            font-size: 1rem;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .logout-button {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .logout-button:hover {
+            background: rgba(255,255,255,0.3);
+            border-color: rgba(255,255,255,0.5);
+        }
+
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem 2rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .stat-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #6b7280;
+            font-size: 1rem;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .section-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .reviews-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .review-item {
+            padding: 1.5rem;
+            background: #f8f9ff;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s ease;
+        }
+
+        .review-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 1rem;
+        }
+
+        .review-rating {
+            display: flex;
+            gap: 0.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .review-rating .star {
+            color: #fbbf24;
+        }
+
+        .review-author {
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .review-date {
+            font-size: 0.9rem;
+            color: #6b7280;
+        }
+
+        .review-status {
+            padding: 0.3rem 0.8rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .review-status.pending {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .review-status.approved {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .review-status.rejected {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+
+        .review-content {
+            color: #374151;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .review-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .action-button {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .approve-button {
+            background: #10b981;
+            color: white;
+        }
+
+        .approve-button:hover {
+            background: #059669;
+        }
+
+        .reject-button {
+            background: #ef4444;
+            color: white;
+        }
+
+        .reject-button:hover {
+            background: #dc2626;
+        }
+
+        .reply-button {
+            background: #6b7280;
+            color: white;
+        }
+
+        .reply-button:hover {
+            background: #4b5563;
+        }
+
+        .recent-activity {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: #f8f9ff;
+            border-radius: 12px;
+        }
+
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .activity-icon.review {
+            background: #3b82f6;
+        }
+
+        .activity-icon.inquiry {
+            background: #8b5cf6;
+        }
+
+        .activity-icon.booking {
+            background: #10b981;
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-text {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 0.3rem;
+        }
+
+        .activity-time {
+            font-size: 0.8rem;
+            color: #6b7280;
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .quick-action-card {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .quick-action-card:hover {
+            transform: translateY(-3px);
+            border-color: #667eea;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        .quick-action-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .quick-action-title {
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+
+        .quick-action-desc {
+            font-size: 0.9rem;
+            color: #6b7280;
+        }
+
+        .loading-spinner {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .success-message,
+        .error-message {
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .success-message {
+            background: #dcfce7;
+            color: #166534;
+            border: 2px solid #22c55e;
+        }
+
+        .error-message {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 2px solid #ef4444;
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .quick-actions {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ダッシュボードヘッダー -->
+    <div class="dashboard-header">
+        <div class="header-content">
+            <div class="shop-info">
+                <h1 id="shopName">ショップ管理画面</h1>
+                <p id="shopLocation">読み込み中...</p>
+            </div>
+            <div class="header-actions">
+                <a href="/shop/login.html" class="logout-button" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> ログアウト
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- メインコンテンツ -->
+    <div class="dashboard-page">
+        <div class="dashboard-container">
+            <!-- メッセージエリア -->
+            <div id="messageArea"></div>
+
+            <!-- 統計カード -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">⭐</div>
+                    <div class="stat-number" id="avgRating">---</div>
+                    <div class="stat-label">平均評価</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">💬</div>
+                    <div class="stat-number" id="totalReviews">---</div>
+                    <div class="stat-label">口コミ総数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">👀</div>
+                    <div class="stat-number" id="monthlyViews">---</div>
+                    <div class="stat-label">月間閲覧数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📈</div>
+                    <div class="stat-number" id="pendingReviews">---</div>
+                    <div class="stat-label">承認待ち口コミ</div>
+                </div>
+            </div>
+
+            <!-- クイックアクション -->
+            <div class="quick-actions">
+                <div class="quick-action-card" onclick="openEditProfile()">
+                    <div class="quick-action-icon">✏️</div>
+                    <div class="quick-action-title">情報編集</div>
+                    <div class="quick-action-desc">ショップ情報を更新</div>
+                </div>
+                <div class="quick-action-card" onclick="window.open('/shops-database/details.html?id=' + currentShopId, '_blank')">
+                    <div class="quick-action-icon">👁️</div>
+                    <div class="quick-action-title">公開ページ確認</div>
+                    <div class="quick-action-desc">お客様からの見え方</div>
+                </div>
+                <div class="quick-action-card" onclick="openSubscription()">
+                    <div class="quick-action-icon">💳</div>
+                    <div class="quick-action-title">プラン・課金</div>
+                    <div class="quick-action-desc">サブスクリプション管理</div>
+                </div>
+                <div class="quick-action-card" onclick="window.open('/contact', '_blank')">
+                    <div class="quick-action-icon">📞</div>
+                    <div class="quick-action-title">サポート</div>
+                    <div class="quick-action-desc">お問い合わせ・ヘルプ</div>
+                </div>
+            </div>
+
+            <!-- メインコンテンツグリッド -->
+            <div class="main-grid">
+                <!-- 口コミ管理 -->
+                <div class="section-card">
+                    <h2 class="section-title">
+                        <i class="fas fa-star"></i> 口コミ管理
+                    </h2>
+                    
+                    <div id="reviewsLoading" class="loading-spinner">
+                        <div class="spinner"></div>
+                        <p>口コミを読み込み中...</p>
+                    </div>
+                    
+                    <div id="reviewsList" class="reviews-list">
+                        <!-- 口コミアイテムは動的に生成 -->
+                    </div>
+                </div>
+
+                <!-- 最近のアクティビティ -->
+                <div class="section-card">
+                    <h2 class="section-title">
+                        <i class="fas fa-clock"></i> 最近のアクティビティ
+                    </h2>
+                    
+                    <div id="activityLoading" class="loading-spinner">
+                        <div class="spinner"></div>
+                        <p>アクティビティを読み込み中...</p>
+                    </div>
+                    
+                    <div id="activityList" class="recent-activity">
+                        <!-- アクティビティアイテムは動的に生成 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class ShopDashboard {
+            constructor() {
+                this.currentShopId = null;
+                this.shopInfo = null;
+                this.init();
+            }
+
+            init() {
+                this.checkAuthentication();
+                this.loadShopDashboard();
+            }
+
+            checkAuthentication() {
+                const sessionToken = localStorage.getItem('shop_session_token');
+                const shopInfo = localStorage.getItem('shop_info');
+                
+                if (!sessionToken || !shopInfo) {
+                    // 認証されていない場合、ログインページにリダイレクト
+                    window.location.href = '/shop/login.html';
+                    return;
+                }
+
+                this.shopInfo = JSON.parse(shopInfo);
+                this.currentShopId = this.shopInfo.id;
+                window.currentShopId = this.currentShopId; // グローバルに設定
+
+                // ショップ名を表示
+                document.getElementById('shopName').textContent = this.shopInfo.name;
+                document.getElementById('shopLocation').textContent = this.shopInfo.location || 'ダイビングショップ';
+            }
+
+            async loadShopDashboard() {
+                try {
+                    const response = await fetch(`/api/shop/dashboard/${this.currentShopId}`);
+                    const data = await response.json();
+
+                    if (data.success) {
+                        this.renderStats(data.stats);
+                        this.loadReviews();
+                        this.loadRecentActivity();
+                    } else {
+                        this.showError('ダッシュボードの読み込みに失敗しました。');
+                    }
+                } catch (error) {
+                    console.error('ダッシュボード読み込みエラー:', error);
+                    this.showError('ダッシュボードの読み込み中にエラーが発生しました。');
+                }
+            }
+
+            renderStats(stats) {
+                document.getElementById('avgRating').textContent = stats.avg_rating ? stats.avg_rating.toFixed(1) : '0.0';
+                document.getElementById('totalReviews').textContent = stats.total_reviews || 0;
+                document.getElementById('monthlyViews').textContent = stats.monthly_views ? stats.monthly_views.toLocaleString() : '---';
+                document.getElementById('pendingReviews').textContent = stats.pending_reviews || 0;
+            }
+
+            async loadReviews() {
+                try {
+                    document.getElementById('reviewsLoading').style.display = 'block';
+                    
+                    const response = await fetch(`/api/reviews/shop/${this.currentShopId}?limit=5`);
+                    const data = await response.json();
+
+                    if (data.success) {
+                        this.renderReviews(data.reviews);
+                    } else {
+                        this.showError('口コミの読み込みに失敗しました。');
+                    }
+                } catch (error) {
+                    console.error('口コミ読み込みエラー:', error);
+                    this.showError('口コミの読み込み中にエラーが発生しました。');
+                } finally {
+                    document.getElementById('reviewsLoading').style.display = 'none';
+                }
+            }
+
+            renderReviews(reviews) {
+                const container = document.getElementById('reviewsList');
+                
+                if (reviews.length === 0) {
+                    container.innerHTML = '<p style="text-align: center; color: #6b7280; padding: 2rem;">まだ口コミはありません。</p>';
+                    return;
+                }
+
+                container.innerHTML = reviews.map(review => {
+                    const stars = '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating);
+                    const date = new Date(review.created_at).toLocaleDateString('ja-JP');
+                    
+                    return `
+                        <div class="review-item">
+                            <div class="review-header">
+                                <div>
+                                    <div class="review-rating">
+                                        ${stars.split('').map(star => `<span class="star" style="color: ${star === '★' ? '#fbbf24' : '#d1d5db'}">${star}</span>`).join('')}
+                                    </div>
+                                    <div class="review-author">${review.user_name || 'ゲストユーザー'}</div>
+                                    <div class="review-date">${date}</div>
+                                </div>
+                                <div class="review-status ${review.status}">
+                                    ${this.getStatusText(review.status)}
+                                </div>
+                            </div>
+                            
+                            <div class="review-content">
+                                <strong>${review.title || '無題'}</strong><br>
+                                ${review.content}
+                            </div>
+                            
+                            ${review.status === 'pending' ? `
+                                <div class="review-actions">
+                                    <button class="action-button approve-button" onclick="window.shopDashboard.updateReviewStatus('${review.id}', 'approved')">
+                                        <i class="fas fa-check"></i> 承認
+                                    </button>
+                                    <button class="action-button reject-button" onclick="window.shopDashboard.updateReviewStatus('${review.id}', 'rejected')">
+                                        <i class="fas fa-times"></i> 拒否
+                                    </button>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            getStatusText(status) {
+                const statusMap = {
+                    'pending': '承認待ち',
+                    'approved': '承認済み',
+                    'rejected': '拒否済み'
+                };
+                return statusMap[status] || status;
+            }
+
+            async updateReviewStatus(reviewId, status) {
+                try {
+                    const response = await fetch(`/api/shop/reviews/${reviewId}/status`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            shop_id: this.currentShopId,
+                            status: status
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        this.showSuccess(`口コミを${status === 'approved' ? '承認' : '拒否'}しました。`);
+                        this.loadReviews(); // 口コミリストを再読み込み
+                        this.loadShopDashboard(); // 統計も更新
+                    } else {
+                        this.showError(data.message || '口コミの更新に失敗しました。');
+                    }
+                } catch (error) {
+                    console.error('口コミ更新エラー:', error);
+                    this.showError('口コミの更新中にエラーが発生しました。');
+                }
+            }
+
+            async loadRecentActivity() {
+                try {
+                    document.getElementById('activityLoading').style.display = 'block';
+                    
+                    // デモ用のアクティビティデータ
+                    const demoActivity = [
+                        {
+                            type: 'review',
+                            text: '新しい口コミが投稿されました',
+                            time: '2時間前'
+                        },
+                        {
+                            type: 'inquiry',
+                            text: 'お問い合わせが届いています',
+                            time: '4時間前'
+                        },
+                        {
+                            type: 'booking',
+                            text: 'ページが100回閲覧されました',
+                            time: '6時間前'
+                        }
+                    ];
+                    
+                    this.renderActivity(demoActivity);
+                } catch (error) {
+                    console.error('アクティビティ読み込みエラー:', error);
+                } finally {
+                    document.getElementById('activityLoading').style.display = 'none';
+                }
+            }
+
+            renderActivity(activities) {
+                const container = document.getElementById('activityList');
+                
+                container.innerHTML = activities.map(activity => `
+                    <div class="activity-item">
+                        <div class="activity-icon ${activity.type}">
+                            ${this.getActivityIcon(activity.type)}
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-text">${activity.text}</div>
+                            <div class="activity-time">${activity.time}</div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            getActivityIcon(type) {
+                const icons = {
+                    'review': '💬',
+                    'inquiry': '❓',
+                    'booking': '👀'
+                };
+                return icons[type] || '📝';
+            }
+
+            showSuccess(message) {
+                const messageArea = document.getElementById('messageArea');
+                messageArea.innerHTML = `
+                    <div class="success-message">
+                        <i class="fas fa-check-circle"></i> ${message}
+                    </div>
+                `;
+                setTimeout(() => {
+                    messageArea.innerHTML = '';
+                }, 5000);
+            }
+
+            showError(message) {
+                const messageArea = document.getElementById('messageArea');
+                messageArea.innerHTML = `
+                    <div class="error-message">
+                        <i class="fas fa-exclamation-triangle"></i> ${message}
+                    </div>
+                `;
+                setTimeout(() => {
+                    messageArea.innerHTML = '';
+                }, 5000);
+            }
+        }
+
+        // グローバル関数
+        function logout() {
+            localStorage.removeItem('shop_session_token');
+            localStorage.removeItem('shop_info');
+            window.location.href = '/shop/login.html';
+        }
+
+        function openEditProfile() {
+            window.location.href = '/shop/edit-profile.html';
+        }
+
+        function openSubscription() {
+            window.location.href = '/shop/subscription.html';
+        }
+
+        // 初期化
+        document.addEventListener('DOMContentLoaded', () => {
+            window.shopDashboard = new ShopDashboard();
+        });
+    </script>
+</body>
+</html>

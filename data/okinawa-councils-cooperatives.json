@@ -1,0 +1,229 @@
+{
+  "okinawa_diving_councils": {
+    "lastUpdated": "2025-08-10",
+    "regions": [
+      {
+        "regionId": "miyako",
+        "regionName": "宮古島地区",
+        "primaryCouncil": {
+          "name": "ちゅら海連絡協議会",
+          "nameEn": "Chura-Umi Liaison Council",
+          "established": "2010年代初期",
+          "purpose": "宮古島マリンレジャー業界の安全・環境保護・品質向上",
+          "memberRequirements": [
+            "宮古島でのマリンレジャー営業",
+            "安全講習受講義務",
+            "環境保護ルール遵守",
+            "定期的な情報共有参加"
+          ],
+          "safetyRules": [
+            "海況判断基準の統一",
+            "救急対応プロトコル",
+            "器材点検基準",
+            "ガイド資格要件",
+            "保険加入義務"
+          ],
+          "environmentalRules": [
+            "サンゴ礁保護規則",
+            "アンカリング禁止区域",
+            "生物触接禁止",
+            "廃棄物処理規則"
+          ],
+          "benefits": [
+            "統一安全基準による信頼性",
+            "緊急時連携体制",
+            "共同保険制度",
+            "情報共有ネットワーク",
+            "業界全体の品質向上"
+          ]
+        },
+        "cooperatives": [
+          {
+            "name": "宮古島漁業協同組合",
+            "type": "fishery_cooperative",
+            "role": "海域使用調整・漁業権管理",
+            "relevance": "ダイビング業界との海域使用調整"
+          }
+        ]
+      },
+      {
+        "regionId": "ishigaki",
+        "regionName": "石垣島・八重山地区",
+        "primaryCouncil": {
+          "name": "八重山ダイビング事業者連絡協議会",
+          "nameEn": "Yaeyama Diving Business Council",
+          "established": "2015年頃",
+          "purpose": "石垣島・八重山諸島でのダイビング業界の安全確保・環境保護",
+          "memberRequirements": [
+            "八重山地区でのダイビング事業営業",
+            "PADI・NAUI等指導団体認定",
+            "安全講習年1回以上受講",
+            "海洋環境保護活動参加"
+          ],
+          "safetyRules": [
+            "天候・海況判断基準",
+            "マンタポイント利用規則",
+            "サメダイビング安全基準",
+            "緊急時連絡網",
+            "事故時対応プロトコル"
+          ],
+          "environmentalRules": [
+            "マンタポイント保護規則",
+            "サンゴ礁触接禁止",
+            "写真撮影マナー",
+            "ゴミ持ち帰り義務"
+          ],
+          "specialFeatures": [
+            "マンタダイビング専門規則",
+            "離島間連携体制",
+            "外国人観光客対応基準"
+          ]
+        },
+        "cooperatives": [
+          {
+            "name": "八重山漁業協同組合",
+            "type": "fishery_cooperative",
+            "role": "海域使用権・漁業権管理",
+            "relevance": "ダイビングスポット使用許可・調整"
+          },
+          {
+            "name": "石垣市観光協会",
+            "type": "tourism_association",
+            "role": "観光事業者連携・品質管理",
+            "relevance": "観光ダイビング品質基準・認定"
+          }
+        ]
+      },
+      {
+        "regionId": "okinawa_main",
+        "regionName": "沖縄本島地区",
+        "primaryCouncil": {
+          "name": "沖縄県ダイビング事業者協会",
+          "nameEn": "Okinawa Diving Business Association",
+          "established": "2008年",
+          "purpose": "沖縄本島ダイビング事業の安全確保・業界発展・環境保護",
+          "memberRequirements": [
+            "沖縄県内でのダイビング事業営業",
+            "指導団体認定保持",
+            "事業者保険加入",
+            "年次安全講習受講",
+            "環境保護活動参加"
+          ],
+          "safetyRules": [
+            "気象・海況判断統一基準",
+            "ポイント別安全基準",
+            "初心者ダイバー受入基準",
+            "器材レンタル安全基準",
+            "事故報告・共有義務"
+          ],
+          "environmentalRules": [
+            "青の洞窟利用規則",
+            "サンゴ群生地保護",
+            "海中生物観察マナー",
+            "環境負荷軽減ルール"
+          ],
+          "specialFeatures": [
+            "青の洞窟専門管理",
+            "米軍基地周辺安全協定",
+            "台風期間対応プロトコル"
+          ]
+        },
+        "cooperatives": [
+          {
+            "name": "沖縄県漁業協同組合連合会",
+            "type": "fishery_federation",
+            "role": "県内漁業権統括管理",
+            "relevance": "海域使用許可・漁業権調整"
+          },
+          {
+            "name": "恩納村漁業協同組合",
+            "type": "local_fishery_cooperative",
+            "role": "恩納村海域管理（青の洞窟等）",
+            "relevance": "人気ダイビングスポット管理"
+          },
+          {
+            "name": "沖縄観光コンベンションビューロー",
+            "type": "tourism_bureau",
+            "role": "観光業界品質管理・プロモーション",
+            "relevance": "ダイビング観光品質認定"
+          }
+        ]
+      },
+      {
+        "regionId": "kerama",
+        "regionName": "慶良間諸島地区",
+        "primaryCouncil": {
+          "name": "慶良間ダイビング協会",
+          "nameEn": "Kerama Diving Association",
+          "established": "2014年",
+          "purpose": "慶良間国立公園内でのダイビング事業管理・環境保護",
+          "memberRequirements": [
+            "慶良間諸島でのダイビング営業許可",
+            "国立公園利用許可取得",
+            "環境保護講習受講",
+            "定期的な環境保護活動参加"
+          ],
+          "safetyRules": [
+            "国立公園内利用規則遵守",
+            "ザトウクジラ期間特別規則",
+            "透明度重視安全判断",
+            "離島間緊急連絡体制"
+          ],
+          "environmentalRules": [
+            "国立公園保護規則",
+            "ウミガメ保護規則",
+            "サンゴ礁厳格保護",
+            "アンカリング全面禁止"
+          ],
+          "specialFeatures": [
+            "国立公園認定制度",
+            "ザトウクジラ観察規則",
+            "ウミガメ保護活動"
+          ]
+        },
+        "cooperatives": [
+          {
+            "name": "座間味村漁業協同組合",
+            "type": "local_fishery_cooperative",
+            "role": "慶良間海域漁業権管理",
+            "relevance": "ダイビングポイント使用調整"
+          }
+        ]
+      }
+    ],
+    "certification_levels": {
+      "S_grade": {
+        "name": "S級認定",
+        "requirements": [
+          "該当地区協議会正会員",
+          "指導団体認定保持",
+          "安全講習年2回以上",
+          "環境保護活動積極参加",
+          "事故ゼロ記録3年以上"
+        ]
+      },
+      "A_grade": {
+        "name": "A級認定", 
+        "requirements": [
+          "該当地区協議会会員",
+          "指導団体認定保持",
+          "安全講習年1回以上",
+          "基本的な環境保護活動参加"
+        ]
+      },
+      "B_grade": {
+        "name": "B級認定",
+        "requirements": [
+          "地域漁協組合協力関係",
+          "基本的な安全基準遵守",
+          "観光協会等連携"
+        ]
+      },
+      "unaffiliated": {
+        "name": "未加入",
+        "description": "協議会・組合未加入事業者",
+        "note": "安全面・環境保護面で不確定要素あり"
+      }
+    }
+  }
+}

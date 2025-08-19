@@ -1,0 +1,155 @@
+{
+  "plans": [
+    {
+      "id": "basic",
+      "name": "ベーシックプラン",
+      "description": "個人経営・小規模ショップ向けの基本プラン",
+      "price": 0,
+      "currency": "JPY",
+      "billing_cycle": "monthly",
+      "features": [
+        "ショップ情報掲載",
+        "基本的な口コミ管理",
+        "月間100PVまで",
+        "基本サポート"
+      ],
+      "limits": {
+        "monthly_views": 100,
+        "photos": 5,
+        "reviews_management": true,
+        "priority_support": false,
+        "analytics": false,
+        "custom_branding": false
+      },
+      "popular": false
+    },
+    {
+      "id": "standard",
+      "name": "スタンダードプラン",
+      "description": "成長中のショップ向けの充実プラン",
+      "price": 2980,
+      "currency": "JPY",
+      "billing_cycle": "monthly",
+      "features": [
+        "ベーシックプランの全機能",
+        "詳細な口コミ管理・返信機能",
+        "月間1,000PVまで",
+        "写真ギャラリー（15枚）",
+        "基本アナリティクス",
+        "優先サポート"
+      ],
+      "limits": {
+        "monthly_views": 1000,
+        "photos": 15,
+        "reviews_management": true,
+        "priority_support": true,
+        "analytics": true,
+        "custom_branding": false
+      },
+      "popular": true
+    },
+    {
+      "id": "premium",
+      "name": "プレミアムプラン",
+      "description": "大規模ショップ・チェーン店向けの最上位プラン",
+      "price": 4980,
+      "currency": "JPY",
+      "billing_cycle": "monthly",
+      "features": [
+        "スタンダードプランの全機能",
+        "無制限PV・写真",
+        "カスタムブランディング",
+        "詳細アナリティクス・レポート",
+        "API連携サポート",
+        "専用サポート担当",
+        "広告優先表示"
+      ],
+      "limits": {
+        "monthly_views": -1,
+        "photos": -1,
+        "reviews_management": true,
+        "priority_support": true,
+        "analytics": true,
+        "custom_branding": true
+      },
+      "popular": false
+    }
+  ],
+  "subscriptions": [
+    {
+      "id": "sub_demo_1",
+      "shop_id": 1,
+      "plan_id": "basic",
+      "status": "active",
+      "current_period_start": "2025-07-01T00:00:00Z",
+      "current_period_end": "2025-08-01T00:00:00Z",
+      "created_at": "2025-07-01T00:00:00Z",
+      "updated_at": "2025-07-01T00:00:00Z",
+      "payment_method": null,
+      "usage": {
+        "monthly_views": 45,
+        "photos_used": 3
+      }
+    },
+    {
+      "id": "sub_demo_2",
+      "shop_id": 2,
+      "plan_id": "standard",
+      "status": "active",
+      "current_period_start": "2025-06-15T00:00:00Z",
+      "current_period_end": "2025-07-15T00:00:00Z",
+      "created_at": "2025-06-15T00:00:00Z",
+      "updated_at": "2025-06-15T00:00:00Z",
+      "payment_method": {
+        "type": "credit_card",
+        "last4": "4242",
+        "brand": "visa"
+      },
+      "usage": {
+        "monthly_views": 756,
+        "photos_used": 12
+      }
+    },
+    {
+      "id": "sub_demo_3",
+      "shop_id": 3,
+      "plan_id": "premium",
+      "status": "active",  
+      "current_period_start": "2025-07-10T00:00:00Z",
+      "current_period_end": "2025-08-10T00:00:00Z",
+      "created_at": "2025-07-10T00:00:00Z",
+      "updated_at": "2025-07-10T00:00:00Z",
+      "payment_method": {
+        "type": "credit_card",
+        "last4": "8888",
+        "brand": "mastercard"
+      },
+      "usage": {
+        "monthly_views": 2340,
+        "photos_used": 28
+      }
+    }
+  ],
+  "payment_history": [
+    {
+      "id": "pay_demo_1",
+      "subscription_id": "sub_demo_2",
+      "amount": 2980,
+      "currency": "JPY",
+      "status": "succeeded",
+      "payment_date": "2025-07-15T00:00:00Z",
+      "payment_method": "credit_card",
+      "invoice_url": "#"
+    },
+    {
+      "id": "pay_demo_2",
+      "subscription_id": "sub_demo_3",
+      "amount": 4980,
+      "currency": "JPY",
+      "status": "succeeded",
+      "payment_date": "2025-07-10T00:00:00Z",
+      "payment_method": "credit_card",
+      "invoice_url": "#"
+    }
+  ]
+}

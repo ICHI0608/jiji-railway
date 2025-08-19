@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dive Buddy's ウェブサイト構造図 & ワイヤーフレーム</title>
+    <style>
+        /* A3用紙設定 */
+        @page {
+            size: A3 landscape;
+            margin: 15mm;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', 'Hiragino Sans', 'Meiryo', sans-serif;
+            font-size: 10px;
+            line-height: 1.3;
+            color: #333;
+            background: white;
+        }
+        
+        .document-header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #1e40af;
+        }
+        
+        .document-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1e40af;
+            margin-bottom: 5px;
+        }
+        
+        .document-subtitle {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 20px;
+            height: calc(100vh - 100px);
+        }
+        
+        .sitemap-section {
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #e2e8f0;
+        }
+        
+        .section-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #1e40af;
+            margin-bottom: 15px;
+            text-align: center;
+            border-bottom: 2px solid #1e40af;
+            padding-bottom: 5px;
+        }
+        
+        .sitemap-tree {
+            font-size: 11px;
+        }
+        
+        .sitemap-tree ul {
+            list-style: none;
+            margin-left: 15px;
+        }
+        
+        .sitemap-tree > ul {
+            margin-left: 0;
+        }
+        
+        .sitemap-tree li {
+            margin: 5px 0;
+            position: relative;
+        }
+        
+        .sitemap-tree li:before {
+            content: "├─";
+            position: absolute;
+            left: -15px;
+            color: #666;
+        }
+        
+        .sitemap-tree li:last-child:before {
+            content: "└─";
+        }
+        
+        .page-name {
+            font-weight: bold;
+            color: #1e40af;
+        }
+        
+        .page-status {
+            background: #10b981;
+            color: white;
+            padding: 1px 4px;
+            border-radius: 3px;
+            font-size: 9px;
+            margin-left: 5px;
+        }
+        
+        .page-status.planned {
+            background: #f59e0b;
+        }
+        
+        .wireframes-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        /* 2枚目のページ設定 */
+        .page-break {
+            page-break-before: always;
+            margin-top: 50px;
+        }
+
+        .wireframes-section-page2 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .wireframe-page-small {
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 8px;
+            background: white;
+            height: 220px;
+        }
+
+        .wireframe-page-small .wireframe-title {
+            font-size: 10px;
+        }
+
+        .wireframe-page-small .wf-header {
+            height: 18px;
+            font-size: 7px;
+        }
+
+        .wireframe-page-small .wf-nav {
+            height: 15px;
+            font-size: 6px;
+        }
+
+        .wireframe-page-small .wf-hero {
+            height: 35px;
+            font-size: 6px;
+        }
+
+        .wireframe-page-small .wf-content {
+            font-size: 6px;
+        }
+
+        .wireframe-page-small .page-info {
+            font-size: 6px;
+        }
+        
+        .wireframe-page {
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 10px;
+            background: white;
+            height: 280px;
+        }
+        
+        .wireframe-title {
+            font-size: 12px;
+            font-weight: bold;
+            color: #1e40af;
+            text-align: center;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 3px;
+        }
+        
+        .wireframe-content {
+            height: calc(100% - 30px);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* ワイヤーフレーム共通要素 */
+        .wf-header {
+            height: 25px;
+            background: #1e40af;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 8px;
+            font-size: 8px;
+            margin-bottom: 3px;
+        }
+        
+        .wf-nav {
+            height: 20px;
+            background: #e2e8f0;
+            display: flex;
+            align-items: center;
+            padding: 0 8px;
+            font-size: 7px;
+            margin-bottom: 5px;
+        }
+        
+        .wf-hero {
+            height: 60px;
+            background: linear-gradient(135deg, #0ea5e9, #1e40af);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 8px;
+            text-align: center;
+            margin-bottom: 5px;
+            position: relative;
+        }
+        
+        .wf-hero-title {
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+        
+        .wf-buttons {
+            display: flex;
+            gap: 3px;
+            margin-top: 3px;
+        }
+        
+        .wf-btn {
+            background: #f97316;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 6px;
+        }
+        
+        .wf-btn-line {
+            background: #00c300;
+        }
+        
+        .wf-icon-nav {
+            height: 35px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2px;
+            padding: 2px;
+            margin-bottom: 5px;
+        }
+        
+        .wf-icon-item {
+            background: white;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 6px;
+            text-align: center;
+        }
+        
+        .wf-content {
+            flex: 1;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 5px;
+            font-size: 7px;
+            overflow: hidden;
+        }
+        
+        .wf-content-title {
+            font-weight: bold;
+            margin-bottom: 3px;
+            color: #1e40af;
+        }
+        
+        .wf-cards {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 3px;
+            margin-bottom: 5px;
+        }
+        
+        .wf-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            padding: 3px;
+            border-radius: 2px;
+            height: 25px;
+            font-size: 6px;
+        }
+        
+        .wf-footer {
+            height: 20px;
+            background: #2c3e50;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 6px;
+            margin-top: 3px;
+        }
+        
+        /* 特殊なレイアウト */
+        .wf-beginner-content {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+        
+        .wf-concern-section {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            padding: 3px;
+            border-radius: 2px;
+            height: 30px;
+        }
+        
+        .wf-solution-section {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            padding: 3px;
+            border-radius: 2px;
+            height: 30px;
+        }
+        
+        .wf-steps {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 3px;
+            height: 20px;
+        }
+        
+        .wf-step {
+            width: 15px;
+            height: 15px;
+            background: #0ea5e9;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 6px;
+            font-weight: bold;
+        }
+        
+        .page-info {
+            font-size: 7px;
+            color: #666;
+            margin-top: 3px;
+            text-align: center;
+        }
+        
+        .legend {
+            position: absolute;
+            bottom: 10px;
+            right: 20px;
+            background: rgba(255,255,255,0.9);
+            border: 1px solid #e2e8f0;
+            padding: 8px;
+            border-radius: 5px;
+            font-size: 8px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 3px;
+        }
+        
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+        }
+        
+        @media print {
+            .main-content {
+                height: auto;
+            }
+            
+            body {
+                background: white;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ドキュメントヘッダー -->
+    <div class="document-header">
+        <h1 class="document-title">🌊 Dive Buddy's ウェブサイト構造図 & ワイヤーフレーム</h1>
+        <p class="document-subtitle">沖縄ダイビング初心者向け総合プラットフォーム | サイトマップ・レイアウト設計書</p>
+    </div>
+    
+    <!-- メインコンテンツ -->
+    <div class="main-content">
+        <!-- サイトマップセクション -->
+        <div class="sitemap-section">
+            <h2 class="section-title">📋 サイト階層構造</h2>
+            
+            <div class="sitemap-tree">
+                <ul>
+                    <li>
+                        <span class="page-name">🏠 TOPページ (index_ui_check.html)</span>
+                        <span class="page-status">実装済</span>
+                        <ul>
+                            <li>
+                                <span class="page-name">🔰 初めての方へ (beginner.html)</span>
+                                <span class="page-status">実装済</span>
+                            </li>
+                            <li>
+                                <span class="page-name">🏪 ショップ検索 (shops-database/)</span>
+                                <span class="page-status">実装済</span>
+                                <ul>
+                                    <li>index.html - 検索・一覧</li>
+                                    <li>details.html - ショップ詳細</li>
+                                </ul>
+                            </li>
+                            <li>
+                                <span class="page-name">🌊 海況情報 (weather-ocean/)</span>
+                                <span class="page-status">実装済</span>
+                                <ul>
+                                    <li>index.html - リアルタイム情報</li>
+                                </ul>
+                            </li>
+                            <li>
+                                <span class="page-name">✈️ 旅行ガイド (travel-guide/)</span>
+                                <span class="page-status">実装済</span>
+                                <ul>
+                                    <li>index.html - 総合ガイド</li>
+                                    <li>ishigaki.html - 石垣島</li>
+                                    <li>miyako.html - 宮古島</li>
+                                    <li>accommodation.html - 宿泊</li>
+                                    <li>flights.html - 航空券</li>
+                                    <li>cost-simulator.html - 費用計算</li>
+                                </ul>
+                            </li>
+                            <li>
+                                <span class="page-name">📝 ダイビング情報 (blog/)</span>
+                                <span class="page-status">実装済</span>
+                                <ul>
+                                    <li>index.html - 記事一覧</li>
+                                    <li>article.html - 記事詳細</li>
+                                    <li>search.html - 記事検索</li>
+                                </ul>
+                            </li>
+                            <li>
+                                <span class="page-name">👤 会員システム (member/)</span>
+                                <span class="page-status">実装済</span>
+                                <ul>
+                                    <li>index.html - 会員TOP</li>
+                                    <li>register.html - 会員登録</li>
+                                    <li>login.html - ログイン</li>
+                                    <li>dashboard.html - マイページ</li>
+                                    <li>profile.html - プロフィール</li>
+                                    <li>points.html - ポイント管理</li>
+                                </ul>
+                            </li>
+                            <li>
+                                <span class="page-name">🤝 ショップ向け (partners/)</span>
+                                <span class="page-status">実装済</span>
+                                <ul>
+                                    <li>advertising.html - 掲載案内</li>
+                                    <li>dashboard.html - ショップ管理</li>
+                                </ul>
+                            </li>
+                            <li>
+                                <span class="page-name">📞 お問い合わせ (contact.html)</span>
+                                <span class="page-status">実装済</span>
+                            </li>
+                            <li>
+                                <span class="page-name">📄 利用規約 (legal.html)</span>
+                                <span class="page-status">実装済</span>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+            
+            <div style="margin-top: 15px; padding: 10px; background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 5px;">
+                <strong>🤖 核心機能：</strong><br>
+                • LINE Bot (Jiji) - 24時間AI相談<br>
+                • 79店舗データベース - S/A/B/C級認定<br>
+                • 感情分析マッチング - 6カテゴリ分析<br>
+                • 統合サポートシステム
+            </div>
+            
+            <div style="margin-top: 10px; padding: 8px; background: #e3f2fd; border: 1px solid #90caf9; border-radius: 5px;">
+                <strong>📊 技術スタック：</strong><br>
+                • Frontend: HTML5, CSS3, JavaScript<br>
+                • Backend: Node.js, Express.js<br>
+                • Database: Supabase PostgreSQL<br>
+                • AI: OpenAI GPT-5<br>
+                • Deploy: Railway (99.5%稼働率)
+            </div>
+        </div>
+        
+        <!-- ワイヤーフレームセクション -->
+        <div class="wireframes-section">
+            <!-- TOPページ -->
+            <div class="wireframe-page">
+                <h3 class="wireframe-title">🏠 TOPページ (index_ui_check.html)</h3>
+                <div class="wireframe-content">
+                    <div class="wf-header">
+                        <span>🌺 Dive Buddy's</span>
+                        <span>会員登録 | LINE相談</span>
+                    </div>
+                    <div class="wf-nav">ホーム | ショップ検索 | 海況情報 | 旅行ガイド | ダイビング情報 | 会員登録</div>
+                    <div class="wf-hero">
+                        <div class="wf-hero-title">「『どうしよう...』が『楽しみ！』に変わる瞬間」</div>
+                        <div style="font-size: 6px;">AIチャット(Jiji)でショップマッチング！</div>
+                        <div class="wf-buttons">
+                            <div class="wf-btn">ダイビングショップを探す</div>
+                            <div class="wf-btn wf-btn-line">公式LINE登録</div>
+                        </div>
+                    </div>
+                    <div class="wf-icon-nav">
+                        <div class="wf-icon-item">🏪<br>ショップ検索</div>
+                        <div class="wf-icon-item">🌊<br>海況情報</div>
+                        <div class="wf-icon-item">✈️<br>旅行プランニング</div>
+                        <div class="wf-icon-item">🐟<br>ダイビング情報</div>
+                        <div class="wf-icon-item">👥<br>会員サービス</div>
+                        <div class="wf-icon-item">🤝<br>ショップ向け</div>
+                    </div>
+                    <div class="wf-content">
+                        <div class="wf-content-title">沖縄ダイビングを完全サポート</div>
+                        <div class="wf-cards">
+                            <div class="wf-card">石垣島<br>プレミアム</div>
+                            <div class="wf-card">宮古島<br>地形ダイビング</div>
+                            <div class="wf-card">沖縄本島<br>多彩なポイント</div>
+                            <div class="wf-card">統計・実績<br>79店舗</div>
+                        </div>
+                    </div>
+                    <div class="wf-footer">© 2025 Dive Buddy's</div>
+                </div>
+                <div class="page-info">メインランディングページ | AIチャット導線 | 6つのサービス紹介</div>
+            </div>
+            
+            <!-- 初めての方へ -->
+            <div class="wireframe-page">
+                <h3 class="wireframe-title">🔰 初めての方へ (beginner.html)</h3>
+                <div class="wireframe-content">
+                    <div class="wf-header">
+                        <span>🌺 Dive Buddy's</span>
+                        <span>初めての方へ | ショップ検索</span>
+                    </div>
+                    <div class="wf-nav">初めての方へ | ショップ検索 | 海況情報 | 旅行ガイド | 会員登録</div>
+                    <div class="wf-hero">
+                        <div class="wf-hero-title">初めての沖縄ダイビング、不安ですよね？</div>
+                        <div style="font-size: 6px;">🤖 Jiji があなた専属のダイビングバディに</div>
+                    </div>
+                    <div class="wf-beginner-content">
+                        <div class="wf-concern-section">
+                            <div style="font-weight: bold; font-size: 7px; color: #dc2626;">❌ 6つの不安・心配事</div>
+                            <div style="font-size: 6px;">ショップ選び | 一人参加 | スキル不安 | 費用 | 計画 | 安全性</div>
+                        </div>
+                        <div class="wf-solution-section">
+                            <div style="font-weight: bold; font-size: 7px; color: #16a34a;">✅ Jijiの解決方法</div>
+                            <div style="font-size: 6px;">AI感情分析 | 79店舗DB | 24時間相談 | アドバイス | 安全重視 | 透明費用</div>
+                        </div>
+                        <div class="wf-steps">
+                            <div class="wf-step">1</div>
+                            <div class="wf-step">2</div>
+                            <div class="wf-step">3</div>
+                            <div class="wf-step">4</div>
+                        </div>
+                        <div style="background: #fef3c7; padding: 3px; border-radius: 2px; font-size: 6px; text-align: center;">
+                            よくある質問 (FAQ)
+                        </div>
+                    </div>
+                    <div class="wf-footer">LINE登録 | ショップ検索</div>
+                </div>
+                <div class="page-info">初心者特化ページ | 不安解消 | Jiji紹介 | 利用フロー</div>
+            </div>
+            
+            <!-- ショップ検索 -->
+            <div class="wireframe-page">
+                <h3 class="wireframe-title">🏪 ショップ検索 (shops-database/)</h3>
+                <div class="wireframe-content">
+                    <div class="wf-header">
+                        <span>🌺 Dive Buddy's</span>
+                        <span>検索 | フィルター</span>
+                    </div>
+                    <div class="wf-nav">ホーム | ショップ検索 | 海況情報 | 旅行ガイド | 会員登録</div>
+                    <div style="height: 25px; background: #f0f9ff; border: 1px solid #7dd3fc; padding: 3px; margin-bottom: 5px;">
+                        <div style="font-size: 7px; font-weight: bold;">🔍 検索・フィルター</div>
+                        <div style="font-size: 6px;">エリア | 価格帯 | 初心者対応 | Jiji認定級</div>
+                    </div>
+                    <div class="wf-content">
+                        <div class="wf-content-title">79店舗データベース</div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2px; margin-bottom: 3px;">
+                            <div style="background: #dcfce7; border: 1px solid #86efac; padding: 2px; border-radius: 2px; font-size: 6px;">
+                                <strong>S級認定</strong><br>石垣島マリン<br>⭐⭐⭐⭐⭐
+                            </div>
+                            <div style="background: #e0f2fe; border: 1px solid #7dd3fc; padding: 2px; border-radius: 2px; font-size: 6px;">
+                                <strong>A級認定</strong><br>宮古ダイブ<br>⭐⭐⭐⭐
+                            </div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 2px; font-size: 6px;">
+                            <div style="background: #fff7ed; border: 1px solid #fed7aa; padding: 2px; text-align: center;">詳細情報</div>
+                            <div style="background: #fff7ed; border: 1px solid #fed7aa; padding: 2px; text-align: center;">口コミ</div>
+                            <div style="background: #fff7ed; border: 1px solid #fed7aa; padding: 2px; text-align: center;">予約</div>
+                        </div>
+                    </div>
+                    <div class="wf-footer">34項目分析 | S/A/B/C級認定</div>
+                </div>
+                <div class="page-info">検索・フィルター | 詳細情報 | 認定システム | 口コミ・評価</div>
+            </div>
+            
+            <!-- 会員システム -->
+            <div class="wireframe-page">
+                <h3 class="wireframe-title">👤 会員システム (member/)</h3>
+                <div class="wireframe-content">
+                    <div class="wf-header">
+                        <span>🌺 Dive Buddy's</span>
+                        <span>マイページ | ログアウト</span>
+                    </div>
+                    <div class="wf-nav">ホーム | マイページ | プロフィール | ポイント | ダイビング履歴</div>
+                    <div style="height: 30px; background: #f0f9ff; border: 1px solid #7dd3fc; padding: 5px; margin-bottom: 5px;">
+                        <div style="font-size: 7px; font-weight: bold;">👋 こんにちは、田中さん</div>
+                        <div style="font-size: 6px;">現在のポイント: 1,250pt | ダイビング回数: 12回</div>
+                    </div>
+                    <div class="wf-content">
+                        <div class="wf-content-title">会員機能</div>
+                        <div class="wf-cards">
+                            <div class="wf-card">プロフィール<br>管理・編集</div>
+                            <div class="wf-card">ダイビング<br>履歴・記録</div>
+                            <div class="wf-card">ポイント<br>管理・交換</div>
+                            <div class="wf-card">口コミ<br>投稿・管理</div>
+                        </div>
+                        <div style="background: #fef3c7; border: 1px solid #fde047; padding: 3px; border-radius: 2px; margin-top: 3px;">
+                            <div style="font-size: 6px; font-weight: bold;">🎁 特典・キャンペーン</div>
+                            <div style="font-size: 6px;">会員限定割引 | ポイント2倍キャンペーン</div>
+                        </div>
+                    </div>
+                    <div class="wf-footer">LINE連携 | プロフィール同期</div>
+                </div>
+                <div class="page-info">LINE連携 | ポイントシステム | ダイビング履歴 | 口コミ投稿</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 2枚目：全ページワイヤーフレーム -->
+    <div class="page-break">
+        <div class="document-header">
+            <h1 class="document-title">📱 全ページワイヤーフレーム詳細</h1>
+            <p class="document-subtitle">実装済み全ページのレイアウト設計 | 機能・導線・コンテンツ配置</p>
+        </div>
+        
+        <div class="wireframes-section-page2">
+            <!-- 海況情報 -->
+            <div class="wireframe-page-small">
+                <h3 class="wireframe-title">🌊 海況情報 (weather-ocean/)</h3>
+                <div class="wireframe-content">
+                    <div class="wf-header">
+                        <span>🌺 Dive Buddy's</span>
+                        <span>リアルタイム更新</span>
+                    </div>
+                    <div class="wf-nav">ホーム | 海況情報 | 天気予報 | 波高データ</div>
+                    <div style="height: 20px; background: #0ea5e9; color: white; display: flex; align-items: center; justify-content: center; font-size: 6px; margin-bottom: 3px;">
+                        🌊 リアルタイム海況・天気情報
+                    </div>
+                    <div class="wf-content">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2px; margin-bottom: 3px;">
+                            <div style="background: #e0f2fe; border: 1px solid #7dd3fc; padding: 2px; font-size: 5px; text-align: center;">
+                                <strong>石垣島</strong><br>晴れ 27°C<br>波高: 1.5m
+                            </div>
+                            <div style="background: #e0f2fe; border: 1px solid #7dd3fc; padding: 2px; font-size: 5px; text-align: center;">
+                                <strong>宮古島</strong><br>曇り 26°C<br>波高: 2.0m
+                            </div>
+                        </div>
+                        <div style="background: #fef3c7; border: 1px solid #fde047; padding: 3px; font-size: 5px;">
+                            <strong>今日のダイビング推奨度：</strong><br>
+                            石垣島: ★★★★★ | 宮古島: ★★★☆☆
+                        </div>
+                    </div>
+                    <div class="wf-footer">気象庁API連携</div>
+                </div>
+                <div class="page-info">気象庁データ | 波高・風向き | ダイビング推奨度</div>
+            </div>
+            
+            <!-- 旅行ガイド -->
+            <div class="wireframe-page-small">
+                <h3 class="wireframe-title">✈️ 旅行ガイド (travel-guide/)</h3>
+                <div class="wireframe-content">
+                    <div class="wf-header">
+                        <span>🌺 Dive Buddy's</span>
+                        <span>航空券 | 宿泊</span>
+                    </div>
+                    <div class="wf-nav">ホーム | 石垣島 | 宮古島 | 沖縄本島 | 航空券 | 宿泊</div>
+                    <div style="height: 20px; background: #f97316; color: white; display: flex; align-items: center; justify-content: center; font-size: 6px; margin-bottom: 3px;">
+                        ✈️ 沖縄ダイビング旅行ガイド
+                    </div>
+                    <div class="wf-content">
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; margin-bottom: 3px;">
+                            <div style="background: #fef3c7; border: 1px solid #fde047; padding: 2px; font-size: 5px; text-align: center;">
+                                石垣島<br>ガイド
+                            </div>
+                            <div style="background: #fef3c7; border: 1px solid #fde047; padding: 2px; font-size: 5px; text-align: center;">
+                                宮古島<br>ガイド
+                            </div>
+                            <div style="background: #fef3c7; border: 1px solid #fde047; padding: 2px; font-size: 5px; text-align: center;">
+                                沖縄本島<br>ガイド
+                            </div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2px;">
+                            <div style="background: #e0f2fe; border: 1px solid #7dd3fc; padding: 2px; font-size: 5px; text-align: center;">
+                                航空券検索<br>料金比較
+                            </div>
+                            <div style="background: #e0f2fe; border: 1px solid #7dd3fc; padding: 2px; font-size: 5px; text-align: center;">
+                                宿泊施設<br>エリア別
+                            </div>
+                        </div>
+                    </div>
+                    <div class="wf-footer">費用計算ツール</div>
+                </div>
+                <div class="page-info">島別ガイド | 航空券比較 | 宿泊エリア | 費用計算</div>
+            </div>
+            
+            <!-- ダイビング情報（ブログ） -->
+            <div class="wireframe-page-small">
+                <h3 class="wireframe-title">📝 ダイビング情報 (blog/)</h3>
+                <div class="wireframe-content">
+                    <div class="wf-header">
+                        <span>🌺 Dive Buddy's</span>
+                        <span>記事検索 | カテゴリ</span>
+                    </div>
+                    <div class="wf-nav">ホーム | 記事一覧 | 検索 | 海洋生物 | ダイビングスポット</div>
+                    <div style="height: 18px; background: #10b981; color: white; display: flex; align-items: center; justify-content: center; font-size: 6px; margin-bottom: 3px;">
+                        📝 ダイビング情報・記事
+                    </div>
+                    <div class="wf-content">
+                        <div style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 2px; margin-bottom: 2px; font-size: 5px;">
+                            <strong>最新記事</strong><br>
+                            石垣島マンタポイント攻略法
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2px;">
+                            <div style="background: #fef3c7; border: 1px solid #fde047; padding: 2px; font-size: 5px; text-align: center;">
+                                海洋生物<br>図鑑
+                            </div>
+                            <div style="background: #fef3c7; border: 1px solid #fde047; padding: 2px; font-size: 5px; text-align: center;">
+                                ダイビング<br>スポット
+                            </div>
+                        </div>
+                        <div style="background: #e0f2fe; border: 1px solid #7dd3fc; padding: 2px; margin-top: 2px; font-size: 5px; text-align: center;">
+                            記事検索・カテゴリ絞り込み
+                        </div>
+                    </div>
+                    <div class="wf-footer">47記事 | 検索機能</div>
+                </div>
+                <div class="page-info">47記事 | 海洋生物図鑑 | スポット情報 | 検索機能</div>
+            </div>
+            
+            <!-- お問い合わせ -->
+            <div class="wireframe-page-small">
+                <h3 class="wireframe-title">📞 お問い合わせ (contact.html)</h3>
+                <div class="wireframe-content">
+                    <div class="wf-header">
+                        <span>🌺 Dive Buddy's</span>
+                        <span>サポート</span>
+                    </div>
+                    <div class="wf-nav">ホーム | お問い合わせ | よくある質問 | サポート</div>
+                    <div style="height: 18px; background: #6366f1; color: white; display: flex; align-items: center; justify-content: center; font-size: 6px; margin-bottom: 3px;">
+                        📞 お問い合わせ・サポート
+                    </div>
+                    <div class="wf-content">
+                        <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 3px; margin-bottom: 3px; font-size: 5px;">
+                            <strong>📧 お問い合わせフォーム</strong><br>
+                            お名前: [ ]<br>
+                            メール: [ ]<br>
+                            お問い合わせ内容: [ ]
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2px;">
+                            <div style="background: #00c300; color: white; padding: 2px; font-size: 5px; text-align: center;">
+                                LINE<br>サポート
+                            </div>
+                            <div style="background: #f59e0b; color: white; padding: 2px; font-size: 5px; text-align: center;">
+                                FAQ<br>よくある質問
+                            </div>
+                        </div>
+                    </div>
+                    <div class="wf-footer">24時間受付</div>
+                </div>
+                <div class="page-info">問い合わせフォーム | LINEサポート | FAQ</div>
+            </div>
+            
+            <!-- ショップ向け -->
+            <div class="wireframe-page-small">
+                <h3 class="wireframe-title">🤝 ショップ向け (partners/)</h3>
+                <div class="wireframe-content">
+                    <div class="wf-header">
+                        <span>🌺 Dive Buddy's</span>
+                        <span>掲載申込 | 管理画面</span>
+                    </div>
+                    <div class="wf-nav">ホーム | 掲載案内 | 料金プラン | ショップ管理 | 分析</div>
+                    <div style="height: 18px; background: #8b5cf6; color: white; display: flex; align-items: center; justify-content: center; font-size: 6px; margin-bottom: 3px;">
+                        🤝 ダイビングショップ様向け
+                    </div>
+                    <div class="wf-content">
+                        <div style="background: #fef3c7; border: 1px solid #fde047; padding: 2px; margin-bottom: 2px; font-size: 5px;">
+                            <strong>💰 掲載プラン</strong><br>
+                            ベーシック: 月額5,000円<br>
+                            プレミアム: 月額15,000円
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2px;">
+                            <div style="background: #dcfce7; border: 1px solid #86efac; padding: 2px; font-size: 5px; text-align: center;">
+                                ショップ<br>管理画面
+                            </div>
+                            <div style="background: #ddd6fe; border: 1px solid #c4b5fd; padding: 2px; font-size: 5px; text-align: center;">
+                                売上<br>分析
+                            </div>
+                        </div>
+                    </div>
+                    <div class="wf-footer">B2B管理システム</div>
+                </div>
+                <div class="page-info">掲載申込 | 料金プラン | 管理画面 | 分析レポート</div>
+            </div>
+            
+            <!-- 利用規約 -->
+            <div class="wireframe-page-small">
+                <h3 class="wireframe-title">📄 利用規約 (legal.html)</h3>
+                <div class="wireframe-content">
+                    <div class="wf-header">
+                        <span>🌺 Dive Buddy's</span>
+                        <span>法的事項</span>
+                    </div>
+                    <div class="wf-nav">ホーム | 利用規約 | プライバシーポリシー | 運営会社</div>
+                    <div style="height: 18px; background: #64748b; color: white; display: flex; align-items: center; justify-content: center; font-size: 6px; margin-bottom: 3px;">
+                        📄 利用規約・法的事項
+                    </div>
+                    <div class="wf-content">
+                        <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 3px; font-size: 5px; height: 100px; overflow: hidden;">
+                            <strong>第1条（適用）</strong><br>
+                            本規約は、当サービス「Dive Buddy's」の利用条件を定めるものです。<br><br>
+                            <strong>第2条（利用登録）</strong><br>
+                            利用希望者は、本規約に同意の上で...<br><br>
+                            <strong>第3条（禁止事項）</strong><br>
+                            ユーザーは、本サービスの利用にあたり...
+                        </div>
+                    </div>
+                    <div class="wf-footer">法的文書</div>
+                </div>
+                <div class="page-info">利用規約 | プライバシーポリシー | 運営会社情報</div>
+            </div>
+            
+            <!-- 管理画面（追加分） -->
+            <div class="wireframe-page-small">
+                <h3 class="wireframe-title">⚡ 管理画面 (admin/)</h3>
+                <div class="wireframe-content">
+                    <div class="wf-header">
+                        <span>🌺 Admin Panel</span>
+                        <span>ログアウト</span>
+                    </div>
+                    <div class="wf-nav">ダッシュボード | ショップ管理 | ブログ編集 | 分析 | 監視</div>
+                    <div style="height: 18px; background: #dc2626; color: white; display: flex; align-items: center; justify-content: center; font-size: 6px; margin-bottom: 3px;">
+                        ⚡ 管理者専用画面
+                    </div>
+                    <div class="wf-content">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2px; margin-bottom: 2px;">
+                            <div style="background: #fef3c7; border: 1px solid #fde047; padding: 2px; font-size: 5px; text-align: center;">
+                                ショップ<br>管理
+                            </div>
+                            <div style="background: #e0f2fe; border: 1px solid #7dd3fc; padding: 2px; font-size: 5px; text-align: center;">
+                                ブログ<br>編集
+                            </div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2px;">
+                            <div style="background: #dcfce7; border: 1px solid #86efac; padding: 2px; font-size: 5px; text-align: center;">
+                                分析<br>レポート
+                            </div>
+                            <div style="background: #fef2f2; border: 1px solid #fecaca; padding: 2px; font-size: 5px; text-align: center;">
+                                システム<br>監視
+                            </div>
+                        </div>
+                    </div>
+                    <div class="wf-footer">管理者権限必要</div>
+                </div>
+                <div class="page-info">ダッシュボード | ショップ管理 | コンテンツ編集 | 監視</div>
+            </div>
+            
+            <!-- 実装状況一覧 -->
+            <div class="wireframe-page-small">
+                <h3 class="wireframe-title">📊 実装状況サマリー</h3>
+                <div class="wireframe-content">
+                    <div style="background: #1e40af; color: white; padding: 5px; text-align: center; font-size: 7px; font-weight: bold; margin-bottom: 5px;">
+                        🌊 Dive Buddy's 全体構成
+                    </div>
+                    <div class="wf-content">
+                        <div style="margin-bottom: 5px;">
+                            <div style="background: #10b981; color: white; padding: 2px; font-size: 6px; text-align: center; margin-bottom: 2px;">
+                                ✅ 実装完了（Phase 1-4）
+                            </div>
+                            <div style="font-size: 5px; line-height: 1.2;">
+                                • TOPページ & 初めての方へ<br>
+                                • ショップDB & 海況情報<br>
+                                • 旅行ガイド & ブログシステム<br>
+                                • 会員システム & 管理画面<br>
+                                • LINE Bot統合 & AI感情分析
+                            </div>
+                        </div>
+                        <div style="background: #f0fdf4; border: 1px solid #86efac; padding: 3px; font-size: 5px;">
+                            <strong>🎯 システム仕様:</strong><br>
+                            • Node.js + Express.js<br>
+                            • Supabase PostgreSQL<br>
+                            • OpenAI GPT-5<br>
+                            • Railway本番環境<br>
+                            • 99.5%稼働率達成
+                        </div>
+                    </div>
+                    <div style="background: #1e40af; color: white; padding: 2px; font-size: 5px; text-align: center;">
+                        合計29タスク完了済み
+                    </div>
+                </div>
+                <div class="page-info">全体システム構成 | 技術スタック | 実装進捗</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 凡例 -->
+    <div class="legend">
+        <div style="font-weight: bold; margin-bottom: 5px; color: #1e40af;">🔖 凡例</div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #10b981;"></div>
+            <span>実装済み</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #f59e0b;"></div>
+            <span>計画中</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #1e40af;"></div>
+            <span>ヘッダー・ナビ</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #f97316;"></div>
+            <span>CTAボタン</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #00c300;"></div>
+            <span>LINE連携</span>
+        </div>
+    </div>
+</body>
+</html>

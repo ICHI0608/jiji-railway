@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 Dive Buddy's システム監視ダッシュボード</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Hiragino Sans', 'Yu Gothic', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 30px;
+        }
+
+        .card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .card h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .status-healthy { background-color: #28a745; }
+        .status-warning { background-color: #ffc107; }
+        .status-critical { background-color: #dc3545; }
+        .status-info { background-color: #17a2b8; }
+
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .metric:last-child {
+            border-bottom: none;
+        }
+
+        .metric-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .metric-value {
+            font-weight: bold;
+            color: #333;
+            font-size: 1.1rem;
+        }
+
+        .metric-value.good { color: #28a745; }
+        .metric-value.warning { color: #ffc107; }
+        .metric-value.danger { color: #dc3545; }
+
+        .chart-container {
+            height: 200px;
+            margin: 20px 0;
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            position: relative;
+        }
+
+        .refresh-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            margin: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .refresh-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .alert-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .alert-item {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 4px solid;
+        }
+
+        .alert-critical {
+            background-color: #f8d7da;
+            border-color: #dc3545;
+            color: #721c24;
+        }
+
+        .alert-warning {
+            background-color: #fff3cd;
+            border-color: #ffc107;
+            color: #856404;
+        }
+
+        .alert-info {
+            background-color: #d1ecf1;
+            border-color: #17a2b8;
+            color: #0c5460;
+        }
+
+        .alert-time {
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+
+        .log-container {
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .log-entry {
+            padding: 5px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .log-timestamp {
+            color: #666;
+            margin-right: 10px;
+        }
+
+        .log-level-info { color: #17a2b8; }
+        .log-level-error { color: #dc3545; }
+        .log-level-warning { color: #ffc107; }
+
+        .auto-refresh {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 20px;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .endpoint-stats {
+            display: grid;
+            gap: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+        }
+
+        .endpoint-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .memory-chart {
+            width: 100%;
+            height: 150px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 システム監視ダッシュボード</h1>
+            <p>Dive Buddy's プラットフォーム リアルタイム監視</p>
+        </div>
+
+        <div class="auto-refresh">
+            <label>
+                <input type="checkbox" id="auto-refresh" checked> 自動更新 (30秒間隔)
+            </label>
+            <button class="refresh-btn" onclick="refreshAllData()">
+                <span id="refresh-text">🔄 手動更新</span>
+            </button>
+            <span id="last-update">最終更新: --</span>
+        </div>
+
+        <div class="dashboard-grid">
+            <!-- システム概要 -->
+            <div class="card">
+                <h3>
+                    <span class="status-indicator" id="system-status"></span>
+                    システム概要
+                </h3>
+                <div class="metric">
+                    <span class="metric-label">稼働時間</span>
+                    <span class="metric-value" id="uptime">--</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">バージョン</span>
+                    <span class="metric-value" id="version">--</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">環境</span>
+                    <span class="metric-value" id="environment">--</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">データベース</span>
+                    <span class="metric-value" id="database-status">--</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">ドメイン</span>
+                    <span class="metric-value" id="domain">--</span>
+                </div>
+            </div>
+
+            <!-- リクエスト統計 -->
+            <div class="card">
+                <h3>📈 リクエスト統計</h3>
+                <div class="metric">
+                    <span class="metric-label">総リクエスト数</span>
+                    <span class="metric-value" id="total-requests">--</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">エラー数</span>
+                    <span class="metric-value" id="error-count">--</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">エラー率</span>
+                    <span class="metric-value" id="error-rate">--%</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">アクティブ接続</span>
+                    <span class="metric-value" id="active-connections">--</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">平均レスポンス時間</span>
+                    <span class="metric-value" id="avg-response-time">--ms</span>
+                </div>
+            </div>
+
+            <!-- パフォーマンス -->
+            <div class="card">
+                <h3>⚡ パフォーマンス</h3>
+                <div class="metric">
+                    <span class="metric-label">Node.jsバージョン</span>
+                    <span class="metric-value" id="node-version">--</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">プラットフォーム</span>
+                    <span class="metric-value" id="platform">--</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">現在のメモリ使用量</span>
+                    <span class="metric-value" id="current-memory">-- MB</span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="memory-chart" class="memory-chart"></canvas>
+                </div>
+            </div>
+
+            <!-- アラート -->
+            <div class="card">
+                <h3>🚨 アクティブアラート</h3>
+                <div class="metric">
+                    <span class="metric-label">Critical</span>
+                    <span class="metric-value danger" id="critical-count">0</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Warning</span>
+                    <span class="metric-value warning" id="warning-count">0</span>
+                </div>
+                <div class="metric">
+                    <span class="metric-label">Info</span>
+                    <span class="metric-value" id="info-count">0</span>
+                </div>
+                <div class="alert-list" id="alert-list">
+                    <!-- アラートがここに表示される -->
+                </div>
+            </div>
+
+            <!-- 人気エンドポイント -->
+            <div class="card">
+                <h3>📊 人気エンドポイント</h3>
+                <div class="endpoint-stats" id="endpoint-stats">
+                    <!-- エンドポイント統計がここに表示される -->
+                </div>
+            </div>
+
+            <!-- 最近のエラー -->
+            <div class="card">
+                <h3>❌ 最近のエラー</h3>
+                <div class="log-container" id="recent-errors">
+                    <!-- 最近のエラーがここに表示される -->
+                </div>
+            </div>
+
+            <!-- システムログ -->
+            <div class="card" style="grid-column: 1 / -1;">
+                <h3>📝 システムログ</h3>
+                <div class="log-container" id="system-logs">
+                    <!-- システムログがここに表示される -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        let memoryChart = null;
+        let autoRefreshInterval = null;
+
+        // 初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeMemoryChart();
+            refreshAllData();
+            setupAutoRefresh();
+        });
+
+        // メモリ使用量チャート初期化
+        function initializeMemoryChart() {
+            const ctx = document.getElementById('memory-chart').getContext('2d');
+            memoryChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Heap Used (MB)',
+                        data: [],
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Memory (MB)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    }
+                }
+            });
+        }
+
+        // 全データ更新
+        async function refreshAllData() {
+            const refreshBtn = document.getElementById('refresh-text');
+            refreshBtn.innerHTML = '<div class="loading"></div> 更新中...';
+            
+            try {
+                await Promise.all([
+                    updateSystemStats(),
+                    updateAlerts(),
+                    updateLogs()
+                ]);
+                
+                document.getElementById('last-update').textContent = 
+                    `最終更新: ${new Date().toLocaleString('ja-JP')}`;
+            } catch (error) {
+                console.error('データ更新エラー:', error);
+            } finally {
+                refreshBtn.innerHTML = '🔄 手動更新';
+            }
+        }
+
+        // システム統計更新
+        async function updateSystemStats() {
+            try {
+                const response = await fetch('/api/monitoring/stats');
+                const data = await response.json();
+                
+                if (data.success) {
+                    // システム概要
+                    document.getElementById('uptime').textContent = data.system_info.uptime_human;
+                    document.getElementById('node-version').textContent = data.system_info.node_version;
+                    document.getElementById('platform').textContent = data.system_info.platform;
+                    
+                    // リクエスト統計
+                    document.getElementById('total-requests').textContent = 
+                        data.request_stats.total_requests.toLocaleString();
+                    document.getElementById('error-count').textContent = 
+                        data.request_stats.error_count;
+                    
+                    const errorRate = data.request_stats.error_rate;
+                    const errorRateElement = document.getElementById('error-rate');
+                    errorRateElement.textContent = errorRate + '%';
+                    errorRateElement.className = 'metric-value ' + 
+                        (errorRate > 10 ? 'danger' : errorRate > 5 ? 'warning' : 'good');
+                    
+                    document.getElementById('active-connections').textContent = 
+                        data.request_stats.active_connections;
+                    
+                    const avgResponseTime = data.request_stats.avg_response_time;
+                    const avgResponseElement = document.getElementById('avg-response-time');
+                    avgResponseElement.textContent = avgResponseTime + 'ms';
+                    avgResponseElement.className = 'metric-value ' + 
+                        (avgResponseTime > 2000 ? 'danger' : avgResponseTime > 1000 ? 'warning' : 'good');
+                    
+                    // データベース状態
+                    document.getElementById('database-status').textContent = 
+                        data.database.status === 'connected' ? 'Supabase' : 'フォールバック';
+                    
+                    // メモリ使用量
+                    if (data.resources.current_memory) {
+                        const currentMemory = data.resources.current_memory.heap_used;
+                        const memoryElement = document.getElementById('current-memory');
+                        memoryElement.textContent = currentMemory + ' MB';
+                        memoryElement.className = 'metric-value ' + 
+                            (currentMemory > 400 ? 'danger' : currentMemory > 200 ? 'warning' : 'good');
+                    }
+                    
+                    // メモリチャート更新
+                    if (data.resources.memory_trend && memoryChart) {
+                        const memoryData = data.resources.memory_trend;
+                        const labels = memoryData.map(m => new Date(m.timestamp).toLocaleTimeString('ja-JP'));
+                        const values = memoryData.map(m => m.heap_used);
+                        
+                        memoryChart.data.labels = labels;
+                        memoryChart.data.datasets[0].data = values;
+                        memoryChart.update();
+                    }
+                    
+                    // エンドポイント統計
+                    const endpointStats = document.getElementById('endpoint-stats');
+                    endpointStats.innerHTML = '';
+                    data.performance.top_endpoints.forEach(endpoint => {
+                        const div = document.createElement('div');
+                        div.className = 'endpoint-item';
+                        div.innerHTML = `
+                            <span>${endpoint.endpoint}</span>
+                            <span>${endpoint.count}</span>
+                        `;
+                        endpointStats.appendChild(div);
+                    });
+                    
+                    // システム状態インジケーター
+                    const systemStatus = document.getElementById('system-status');
+                    const errorRate = data.request_stats.error_rate;
+                    const currentMemory = data.resources.current_memory ? data.resources.current_memory.heap_used : 0;
+                    
+                    if (errorRate > 10 || currentMemory > 500) {
+                        systemStatus.className = 'status-indicator status-critical';
+                    } else if (errorRate > 5 || currentMemory > 300) {
+                        systemStatus.className = 'status-indicator status-warning';
+                    } else {
+                        systemStatus.className = 'status-indicator status-healthy';
+                    }
+                }
+                
+                // ヘルスチェック情報も更新
+                const healthResponse = await fetch('/health');
+                const healthData = await healthResponse.json();
+                
+                document.getElementById('version').textContent = healthData.version || '--';
+                document.getElementById('environment').textContent = healthData.environment || '--';
+                document.getElementById('domain').textContent = healthData.domain || '--';
+                
+            } catch (error) {
+                console.error('システム統計更新エラー:', error);
+            }
+        }
+
+        // アラート更新
+        async function updateAlerts() {
+            try {
+                const response = await fetch('/api/monitoring/alerts');
+                const data = await response.json();
+                
+                if (data.success) {
+                    // アラートカウント
+                    document.getElementById('critical-count').textContent = data.severity_counts.critical;
+                    document.getElementById('warning-count').textContent = data.severity_counts.warning;
+                    document.getElementById('info-count').textContent = data.severity_counts.info;
+                    
+                    // アラートリスト
+                    const alertList = document.getElementById('alert-list');
+                    alertList.innerHTML = '';
+                    
+                    if (data.alerts.length === 0) {
+                        alertList.innerHTML = '<div style="text-align: center; color: #28a745; padding: 20px;">✅ アクティブなアラートはありません</div>';
+                    } else {
+                        data.alerts.forEach(alert => {
+                            const div = document.createElement('div');
+                            div.className = `alert-item alert-${alert.severity}`;
+                            div.innerHTML = `
+                                <div><strong>${alert.message}</strong></div>
+                                <div class="alert-time">${new Date(alert.timestamp).toLocaleString('ja-JP')}</div>
+                            `;
+                            alertList.appendChild(div);
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('アラート更新エラー:', error);
+            }
+        }
+
+        // ログ更新
+        async function updateLogs() {
+            try {
+                const response = await fetch('/api/monitoring/logs?limit=20');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const systemLogs = document.getElementById('system-logs');
+                    systemLogs.innerHTML = '';
+                    
+                    data.logs.forEach(log => {
+                        const div = document.createElement('div');
+                        div.className = 'log-entry';
+                        const timestamp = new Date(log.timestamp).toLocaleString('ja-JP');
+                        div.innerHTML = `
+                            <span class="log-timestamp">${timestamp}</span>
+                            <span class="log-level-${log.level}">[${log.level.toUpperCase()}]</span>
+                            ${log.message}
+                        `;
+                        systemLogs.appendChild(div);
+                    });
+                    
+                    // エラーログも表示
+                    const errorLogs = data.logs.filter(log => log.level === 'error').slice(0, 10);
+                    const recentErrors = document.getElementById('recent-errors');
+                    recentErrors.innerHTML = '';
+                    
+                    if (errorLogs.length === 0) {
+                        recentErrors.innerHTML = '<div style="text-align: center; color: #28a745;">✅ 最近のエラーはありません</div>';
+                    } else {
+                        errorLogs.forEach(log => {
+                            const div = document.createElement('div');
+                            div.className = 'log-entry';
+                            const timestamp = new Date(log.timestamp).toLocaleString('ja-JP');
+                            div.innerHTML = `
+                                <span class="log-timestamp">${timestamp}</span>
+                                <span class="log-level-error">[ERROR]</span>
+                                ${log.message}
+                            `;
+                            recentErrors.appendChild(div);
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('ログ更新エラー:', error);
+            }
+        }
+
+        // 自動更新設定
+        function setupAutoRefresh() {
+            const autoRefreshCheckbox = document.getElementById('auto-refresh');
+            
+            function startAutoRefresh() {
+                if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+                autoRefreshInterval = setInterval(refreshAllData, 30000); // 30秒間隔
+            }
+            
+            function stopAutoRefresh() {
+                if (autoRefreshInterval) {
+                    clearInterval(autoRefreshInterval);
+                    autoRefreshInterval = null;
+                }
+            }
+            
+            autoRefreshCheckbox.addEventListener('change', function() {
+                if (this.checked) {
+                    startAutoRefresh();
+                } else {
+                    stopAutoRefresh();
+                }
+            });
+            
+            // 初期状態で自動更新開始
+            if (autoRefreshCheckbox.checked) {
+                startAutoRefresh();
+            }
+        }
+    </script>
+</body>
+</html>

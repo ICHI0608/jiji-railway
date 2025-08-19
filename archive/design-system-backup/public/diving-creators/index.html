@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ダイビングクリエイター紹介 | Dive Buddy's</title>
+    
+    <!-- SEO -->
+    <meta name="description" content="沖縄ダイビングのスキル向上に役立つYouTube・ブログクリエイターを厳選紹介。最新投稿と人気動画で学ぶダイビング技術。">
+    <meta name="keywords" content="ダイビング,YouTube,クリエイター,沖縄,水中撮影,スキル向上,初心者,上級者">
+    
+    <!-- OGP -->
+    <meta property="og:title" content="ダイビングクリエイター紹介 | Dive Buddy's">
+    <meta property="og:description" content="沖縄ダイビングのプロが認めるYouTubeクリエイター5選。最新動画と人気コンテンツでスキルアップ。">
+    <meta property="og:url" content="https://dive-buddys.com/diving-creators/">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://dive-buddys.com/images/diving-creators-og.jpg">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="/css/design-system.css">
+    <link rel="stylesheet" href="/css/common.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        /* ページ専用スタイル */
+        .creators-hero {
+            background: linear-gradient(135deg, var(--color-accent-1) 0%, var(--color-accent-1-dark) 100%);
+            padding: var(--section-gap) 0 var(--space-16);
+            color: var(--color-base-bg);
+            text-align: center;
+        }
+        
+        .creators-hero h1 {
+            font-size: var(--font-size-4xl);
+            font-weight: var(--font-weight-bold);
+            margin-bottom: var(--spacing-4);
+        }
+        
+        .creators-hero p {
+            font-size: var(--font-size-lg);
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .creators-filters {
+            background: var(--color-white);
+            padding: var(--spacing-6) 0;
+            border-bottom: 1px solid var(--color-gray-200);
+        }
+        
+        .filter-buttons {
+            display: flex;
+            gap: var(--spacing-3);
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .filter-btn {
+            padding: var(--spacing-2) var(--spacing-4);
+            background: var(--color-gray-100);
+            border: 1px solid var(--color-gray-300);
+            border-radius: var(--border-radius-lg);
+            font-size: var(--font-size-sm);
+            cursor: pointer;
+            transition: var(--transition-base);
+        }
+        
+        .filter-btn:hover, .filter-btn.active {
+            background: var(--color-primary);
+            color: var(--color-white);
+            border-color: var(--color-primary);
+        }
+        
+        .creators-grid {
+            padding: var(--spacing-12) 0;
+        }
+        
+        .creator-card {
+            background: var(--color-white);
+            border-radius: var(--border-radius-xl);
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            margin-bottom: var(--spacing-8);
+            transition: var(--transition-base);
+        }
+        
+        .creator-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-xl);
+        }
+        
+        .creator-header {
+            padding: var(--spacing-6);
+            border-bottom: 1px solid var(--color-gray-200);
+        }
+        
+        .creator-info {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-4);
+        }
+        
+        .creator-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        .creator-details h3 {
+            font-size: var(--font-size-xl);
+            font-weight: var(--font-weight-semibold);
+            margin-bottom: var(--spacing-2);
+        }
+        
+        .creator-stats {
+            display: flex;
+            gap: var(--spacing-4);
+            color: var(--color-gray-600);
+            font-size: var(--font-size-sm);
+        }
+        
+        .creator-stats span {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-1);
+        }
+        
+        .creator-description {
+            padding: 0 var(--spacing-6) var(--spacing-4);
+            color: var(--color-gray-700);
+            line-height: var(--line-height-relaxed);
+        }
+        
+        .creator-tags {
+            padding: 0 var(--spacing-6) var(--spacing-4);
+            display: flex;
+            gap: var(--spacing-2);
+            flex-wrap: wrap;
+        }
+        
+        .tag {
+            background: var(--color-gray-100);
+            color: var(--color-gray-700);
+            padding: var(--spacing-1) var(--spacing-3);
+            border-radius: var(--border-radius-full);
+            font-size: var(--font-size-xs);
+        }
+        
+        .videos-section {
+            padding: var(--spacing-6);
+        }
+        
+        .videos-tabs {
+            display: flex;
+            margin-bottom: var(--spacing-4);
+            border-bottom: 1px solid var(--color-gray-200);
+        }
+        
+        .video-tab {
+            padding: var(--spacing-3) var(--spacing-4);
+            background: none;
+            border: none;
+            font-size: var(--font-size-sm);
+            font-weight: var(--font-weight-medium);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: var(--transition-base);
+        }
+        
+        .video-tab.active {
+            color: var(--color-primary);
+            border-bottom-color: var(--color-primary);
+        }
+        
+        .videos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: var(--spacing-4);
+        }
+        
+        .video-card {
+            background: var(--color-gray-50);
+            border-radius: var(--border-radius-lg);
+            overflow: hidden;
+            transition: var(--transition-base);
+        }
+        
+        .video-card:hover {
+            background: var(--color-gray-100);
+        }
+        
+        .video-thumbnail {
+            position: relative;
+            width: 100%;
+            height: 160px;
+            background: var(--color-gray-300);
+            overflow: hidden;
+        }
+        
+        .video-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .video-play-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+        
+        .video-info {
+            padding: var(--spacing-4);
+        }
+        
+        .video-title {
+            font-weight: var(--font-weight-medium);
+            margin-bottom: var(--spacing-2);
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .video-meta {
+            display: flex;
+            justify-content: space-between;
+            color: var(--color-gray-600);
+            font-size: var(--font-size-xs);
+        }
+        
+        .loading-placeholder {
+            padding: var(--spacing-12) var(--spacing-4);
+            text-align: center;
+            color: var(--color-gray-600);
+        }
+        
+        .error-message {
+            padding: var(--spacing-6);
+            background: var(--color-error);
+            color: var(--color-white);
+            border-radius: var(--border-radius-lg);
+            margin-bottom: var(--spacing-4);
+            text-align: center;
+        }
+        
+        @media (max-width: 768px) {
+            .creators-hero h1 {
+                font-size: var(--font-size-3xl);
+            }
+            
+            .creator-info {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .videos-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- ヘッダー -->
+    <header class="main-header">
+        <nav class="main-nav">
+            <a href="/" class="main-logo">
+                <h1>🌊 Dive Buddy's</h1>
+                <span>あなた専属のダイビングバディ</span>
+            </a>
+            
+            <div class="main-nav-menu">
+                <a href="/shops-database/">ショップ検索</a>
+                <a href="/blog/">ダイビング情報</a>
+                <a href="/weather-ocean/">海況情報</a>
+                <a href="/diving-creators/" class="active">クリエイター</a>
+            </div>
+            
+            <div class="main-nav-buttons">
+                <a href="https://line.me/ti/p/@2007331165" class="btn btn-primary" target="_blank">
+                    💬 Jijiに相談
+                </a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- ヒーロー -->
+    <section class="creators-hero">
+        <div class="center-content">
+            <h1>🎥 ダイビングクリエイター紹介</h1>
+            <p>ダイビング愛好家必見！技術解説から海中撮影、旅行情報まで、厳選された6名のクリエイターをご紹介。最新動画と人気コンテンツでスキルアップ&お得な旅行情報をゲット！</p>
+        </div>
+    </section>
+
+    <!-- フィルター -->
+    <section class="creators-filters">
+        <div class="center-content">
+            <div class="filter-buttons">
+                <button class="filter-btn active" data-filter="all">全て</button>
+                <button class="filter-btn" data-filter="beginner_friendly">初心者向け</button>
+                <button class="filter-btn" data-filter="technical_diving">テクニカル</button>
+                <button class="filter-btn" data-filter="marine_life">海中生物</button>
+                <button class="filter-btn" data-filter="equipment_review">器材レビュー</button>
+                <button class="filter-btn" data-filter="underwater_photography">水中撮影</button>
+                <button class="filter-btn" data-filter="professional_training">プロ養成</button>
+                <button class="filter-btn" data-filter="regional_guide">地域ガイド</button>
+                <button class="filter-btn" data-filter="travel_deals">旅行・セール情報</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- クリエイター一覧 -->
+    <section class="creators-grid">
+        <div class="center-content">
+            <div id="creators-container">
+                <div class="loading-placeholder">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>クリエイター情報を読み込み中...</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- JavaScript -->
+    <script src="/js/common.js"></script>
+    <script>
+        class DivingCreatorsPage {
+            constructor() {
+                this.creators = [];
+                this.filteredCreators = [];
+                this.currentFilter = 'all';
+                this.init();
+            }
+
+            async init() {
+                await this.loadCreators();
+                this.setupFilters();
+                this.renderCreators();
+            }
+
+            async loadCreators() {
+                try {
+                    // クリエイターデータ読み込み
+                    const response = await fetch('/api/diving-creators');
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const data = await response.json();
+                    this.creators = data.creators || [];
+                    this.filteredCreators = [...this.creators];
+                } catch (error) {
+                    console.error('クリエイターデータ読み込みエラー:', error);
+                    this.showError('クリエイター情報の読み込みに失敗しました。しばらく待ってから再度お試しください。');
+                }
+            }
+
+            setupFilters() {
+                const filterButtons = document.querySelectorAll('.filter-btn');
+                filterButtons.forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        // アクティブ状態更新
+                        filterButtons.forEach(b => b.classList.remove('active'));
+                        e.target.classList.add('active');
+                        
+                        // フィルター適用
+                        this.currentFilter = e.target.dataset.filter;
+                        this.applyFilter();
+                    });
+                });
+            }
+
+            applyFilter() {
+                if (this.currentFilter === 'all') {
+                    this.filteredCreators = [...this.creators];
+                } else {
+                    this.filteredCreators = this.creators.filter(creator => 
+                        creator.specialties && 
+                        creator.specialties.some(specialty => 
+                            this.getSpecialtyCategory(specialty) === this.currentFilter
+                        )
+                    );
+                }
+                this.renderCreators();
+            }
+
+            getSpecialtyCategory(specialty) {
+                const categoryMap = {
+                    '初心者指導': 'beginner_friendly',
+                    '安全ダイビング': 'beginner_friendly',
+                    '技術解説': 'technical_diving',
+                    '地形ダイビング': 'technical_diving',
+                    'ガイド技術': 'technical_diving',
+                    '海中撮影': 'underwater_photography',
+                    '水中撮影': 'underwater_photography',
+                    '動画編集': 'underwater_photography',
+                    '海中生物': 'marine_life',
+                    '海洋生物学': 'marine_life',
+                    '生態解説': 'marine_life',
+                    '器材レビュー': 'equipment_review',
+                    '器材解説': 'equipment_review',
+                    'プロ養成': 'professional_training',
+                    '技術教育': 'professional_training',
+                    '資格取得': 'professional_training',
+                    '実践指導': 'professional_training',
+                    '離島紹介': 'regional_guide',
+                    'ダイビングスポット': 'regional_guide',
+                    '地域情報': 'regional_guide',
+                    '沖縄観光': 'regional_guide',
+                    '航空券セール情報': 'travel_deals',
+                    '旅行情報': 'travel_deals',
+                    '宿泊情報': 'travel_deals',
+                    '格安旅行': 'travel_deals'
+                };
+                
+                return categoryMap[specialty] || 'other';
+            }
+
+            renderCreators() {
+                const container = document.getElementById('creators-container');
+                
+                if (this.filteredCreators.length === 0) {
+                    container.innerHTML = `
+                        <div class="loading-placeholder">
+                            <p>該当するクリエイターが見つかりませんでした。</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const html = this.filteredCreators.map(creator => this.renderCreatorCard(creator)).join('');
+                container.innerHTML = html;
+
+                // 動画タブの初期化
+                this.initVideoTabs();
+            }
+
+            renderCreatorCard(creator) {
+                return `
+                    <div class="creator-card" data-creator-id="${creator.id}">
+                        <div class="creator-header">
+                            <div class="creator-info">
+                                <img src="/images/creators/${creator.id}-avatar.jpg" 
+                                     alt="${creator.name}" class="creator-avatar"
+                                     onerror="this.src='/images/default-avatar.jpg'">
+                                <div class="creator-details">
+                                    <h3>${creator.name}</h3>
+                                    <div class="creator-stats">
+                                        <span><i class="fas fa-users"></i> ${this.formatSubscriberCount(creator.subscriberCount)}</span>
+                                        <span><i class="fas fa-video"></i> ${creator.videoCount || creator.postCount}本</span>
+                                        <span><i class="fas fa-map-marker-alt"></i> ${creator.region}</span>
+                                        ${creator.platform === 'instagram' ? '<span><i class="fab fa-instagram"></i> Instagram</span>' : '<span><i class="fab fa-youtube"></i> YouTube</span>'}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="creator-description">
+                            <p>${creator.description}</p>
+                        </div>
+                        
+                        <div class="creator-tags">
+                            ${creator.specialties.map(specialty => 
+                                `<span class="tag">${specialty}</span>`
+                            ).join('')}
+                        </div>
+                        
+                        <div class="videos-section">
+                            <div class="videos-tabs">
+                                <button class="video-tab active" data-tab="latest" data-creator="${creator.id}">
+                                    最新動画
+                                </button>
+                                <button class="video-tab" data-tab="popular" data-creator="${creator.id}">
+                                    人気動画ベスト3
+                                </button>
+                            </div>
+                            
+                            <div class="videos-content" id="videos-${creator.id}">
+                                <div class="loading-placeholder">
+                                    <i class="fas fa-spinner fa-spin"></i>
+                                    <p>動画情報を読み込み中...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            initVideoTabs() {
+                const videoTabs = document.querySelectorAll('.video-tab');
+                videoTabs.forEach(tab => {
+                    tab.addEventListener('click', async (e) => {
+                        const creatorId = e.target.dataset.creator;
+                        const tabType = e.target.dataset.tab;
+                        
+                        // タブの状態更新
+                        const creatorTabs = document.querySelectorAll(`[data-creator="${creatorId}"]`);
+                        creatorTabs.forEach(t => t.classList.remove('active'));
+                        e.target.classList.add('active');
+                        
+                        // 動画読み込み
+                        await this.loadVideos(creatorId, tabType);
+                    });
+                });
+
+                // 初期表示（最新動画）
+                this.filteredCreators.forEach(creator => {
+                    this.loadVideos(creator.id, 'latest');
+                });
+            }
+
+            async loadVideos(creatorId, type) {
+                const container = document.getElementById(`videos-${creatorId}`);
+                container.innerHTML = `
+                    <div class="loading-placeholder">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>動画情報を読み込み中...</p>
+                    </div>
+                `;
+
+                try {
+                    const response = await fetch(`/api/creator-videos?creatorId=${creatorId}&type=${type}`);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    const videos = data.videos || [];
+                    
+                    if (videos.length === 0) {
+                        container.innerHTML = `
+                            <div class="loading-placeholder">
+                                <p>動画情報が見つかりませんでした。</p>
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    container.innerHTML = `
+                        <div class="videos-grid">
+                            ${videos.map(video => this.renderVideoCard(video)).join('')}
+                        </div>
+                    `;
+                } catch (error) {
+                    console.error(`動画読み込みエラー (${creatorId}, ${type}):`, error);
+                    container.innerHTML = `
+                        <div class="error-message">
+                            動画情報の読み込みに失敗しました。
+                        </div>
+                    `;
+                }
+            }
+
+            renderVideoCard(video) {
+                return `
+                    <div class="video-card">
+                        <a href="${video.url}" target="_blank" class="video-thumbnail">
+                            <img src="${video.thumbnail}" alt="${video.title}" loading="lazy">
+                            <div class="video-play-overlay">
+                                <i class="fas fa-play"></i>
+                            </div>
+                        </a>
+                        <div class="video-info">
+                            <div class="video-title">${video.title}</div>
+                            <div class="video-meta">
+                                <span>${this.formatPublishedDate(video.publishedAt)}</span>
+                                ${video.viewCount ? `<span>${this.formatViewCount(video.viewCount)} 回視聴</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            formatViewCount(viewCount) {
+                if (viewCount >= 1000000) {
+                    return Math.floor(viewCount / 100000) / 10 + '万';
+                } else if (viewCount >= 1000) {
+                    return Math.floor(viewCount / 100) / 10 + 'K';
+                }
+                return viewCount.toString();
+            }
+
+            formatSubscriberCount(count) {
+                if (count >= 10000) {
+                    return Math.floor(count / 1000) / 10 + '万人';
+                } else if (count >= 1000) {
+                    return Math.floor(count / 100) / 10 + 'K人';
+                }
+                return count.toString() + '人';
+            }
+
+            formatPublishedDate(publishedAt) {
+                const date = new Date(publishedAt);
+                const now = new Date();
+                const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
+                
+                if (diffDays === 0) return '今日';
+                if (diffDays === 1) return '1日前';
+                if (diffDays < 30) return `${diffDays}日前`;
+                if (diffDays < 365) return `${Math.floor(diffDays / 30)}ヶ月前`;
+                return `${Math.floor(diffDays / 365)}年前`;
+            }
+
+            showError(message) {
+                const container = document.getElementById('creators-container');
+                container.innerHTML = `
+                    <div class="error-message">
+                        ${message}
+                    </div>
+                `;
+            }
+        }
+
+        // ページ初期化
+        document.addEventListener('DOMContentLoaded', () => {
+            new DivingCreatorsPage();
+        });
+    </script>
+</body>
+</html>

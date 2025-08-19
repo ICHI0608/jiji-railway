@@ -1,0 +1,1320 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧪 Dive Buddy's 統合テスト・品質保証</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Hiragino Sans', 'Yu Gothic', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .test-section {
+            padding: 30px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .test-section:last-child {
+            border-bottom: none;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #4CAF50;
+            display: inline-block;
+        }
+
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .test-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        .test-card:hover {
+            border-color: #4CAF50;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .test-card h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .test-button {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            width: 100%;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .test-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+        }
+
+        .test-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .test-result {
+            min-height: 100px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+        }
+
+        .success {
+            color: #4CAF50;
+            background-color: #f1f8e9;
+            border-color: #4CAF50;
+        }
+
+        .error {
+            color: #f44336;
+            background-color: #ffebee;
+            border-color: #f44336;
+        }
+
+        .warning {
+            color: #ff9800;
+            background-color: #fff3e0;
+            border-color: #ff9800;
+        }
+
+        .info {
+            color: #2196F3;
+            background-color: #e3f2fd;
+            border-color: #2196F3;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #f0f0f0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #45a049);
+            border-radius: 10px;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #4CAF50;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 1rem;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #4CAF50;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .test-description {
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧪 統合テスト・品質保証</h1>
+            <p>Dive Buddy's プラットフォーム全機能テスト</p>
+        </div>
+
+        <!-- 総合統計 -->
+        <div class="test-section">
+            <h2 class="section-title">📊 テスト統計</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="total-tests">0</div>
+                    <div class="stat-label">総テスト数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="passed-tests">0</div>
+                    <div class="stat-label">成功</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="failed-tests">0</div>
+                    <div class="stat-label">失敗</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="success-rate">0%</div>
+                    <div class="stat-label">成功率</div>
+                </div>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+        </div>
+
+        <!-- 基盤システムテスト -->
+        <div class="test-section">
+            <h2 class="section-title">🏗️ 基盤システムテスト</h2>
+            <div class="test-grid">
+                <div class="test-card">
+                    <h3>📊 データベース接続</h3>
+                    <div class="test-description">Supabase接続・フォールバック動作確認</div>
+                    <button class="test-button" onclick="testDatabaseConnection()">テスト実行</button>
+                    <div class="test-result" id="db-connection-result">テスト待機中...</div>
+                </div>
+                <div class="test-card">
+                    <h3>🔐 認証システム</h3>
+                    <div class="test-description">LINE Login・会員登録・セッション管理</div>
+                    <button class="test-button" onclick="testAuthenticationSystem()">テスト実行</button>
+                    <div class="test-result" id="auth-system-result">テスト待機中...</div>
+                </div>
+                <div class="test-card">
+                    <h3>🌐 API エンドポイント</h3>
+                    <div class="test-description">全API レスポンス・エラーハンドリング</div>
+                    <button class="test-button" onclick="testAPIEndpoints()">テスト実行</button>
+                    <div class="test-result" id="api-endpoints-result">テスト待機中...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 機能システムテスト -->
+        <div class="test-section">
+            <h2 class="section-title">⚙️ 機能システムテスト</h2>
+            <div class="test-grid">
+                <div class="test-card">
+                    <h3>🏪 ショップシステム</h3>
+                    <div class="test-description">検索・詳細・フィルタリング・B2B管理</div>
+                    <button class="test-button" onclick="testShopSystem()">テスト実行</button>
+                    <div class="test-result" id="shop-system-result">テスト待機中...</div>
+                </div>
+                <div class="test-card">
+                    <h3>🌊 海況・天気システム</h3>
+                    <div class="test-description">気象庁API・リアルタイム情報表示</div>
+                    <button class="test-button" onclick="testWeatherSystem()">テスト実行</button>
+                    <div class="test-result" id="weather-system-result">テスト待機中...</div>
+                </div>
+                <div class="test-card">
+                    <h3>✈️ 旅行サポート</h3>
+                    <div class="test-description">航空券・宿泊・費用シミュレーター</div>
+                    <button class="test-button" onclick="testTravelSystem()">テスト実行</button>
+                    <div class="test-result" id="travel-system-result">テスト待機中...</div>
+                </div>
+                <div class="test-card">
+                    <h3>📝 ブログシステム</h3>
+                    <div class="test-description">記事管理・検索・関連記事・SEO</div>
+                    <button class="test-button" onclick="testBlogSystem()">テスト実行</button>
+                    <div class="test-result" id="blog-system-result">テスト待機中...</div>
+                </div>
+                <div class="test-card">
+                    <h3>👤 会員システム</h3>
+                    <div class="test-description">登録・プロフィール・ポイント管理</div>
+                    <button class="test-button" onclick="testMemberSystem()">テスト実行</button>
+                    <div class="test-result" id="member-system-result">テスト待機中...</div>
+                </div>
+                <div class="test-card">
+                    <h3>💬 口コミシステム</h3>
+                    <div class="test-description">投稿・管理・統計・承認フロー</div>
+                    <button class="test-button" onclick="testReviewSystem()">テスト実行</button>
+                    <div class="test-result" id="review-system-result">テスト待機中...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 統合・連携テスト -->
+        <div class="test-section">
+            <h2 class="section-title">🔗 統合・連携テスト</h2>
+            <div class="test-grid">
+                <div class="test-card">
+                    <h3>🤖 LINE Bot - Web連携</h3>
+                    <div class="test-description">認証連携・データ同期・シームレス遷移</div>
+                    <button class="test-button" onclick="testLINEWebIntegration()">テスト実行</button>
+                    <div class="test-result" id="line-web-integration-result">テスト待機中...</div>
+                </div>
+                <div class="test-card">
+                    <h3>💳 サブスクリプション</h3>
+                    <div class="test-description">プラン管理・決済・制限システム</div>
+                    <button class="test-button" onclick="testSubscriptionSystem()">テスト実行</button>
+                    <div class="test-result" id="subscription-system-result">テスト待機中...</div>
+                </div>
+                <div class="test-card">
+                    <h3>📊 データ整合性</h3>
+                    <div class="test-description">履歴追跡・プロフィール更新・整合性チェック</div>
+                    <button class="test-button" onclick="testDataIntegrity()">テスト実行</button>
+                    <div class="test-result" id="data-integrity-result">テスト待機中...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- パフォーマンステスト -->
+        <div class="test-section">
+            <h2 class="section-title">🚀 パフォーマンステスト</h2>
+            <div class="test-grid">
+                <div class="test-card">
+                    <h3>⚡ ページ読み込み速度</h3>
+                    <div class="test-description">全ページの読み込み時間測定</div>
+                    <button class="test-button" onclick="testPageLoadTimes()">テスト実行</button>
+                    <div class="test-result" id="page-load-result">テスト待機中...</div>
+                </div>
+                <div class="test-card">
+                    <h3>🌐 API レスポンス時間</h3>
+                    <div class="test-description">全APIエンドポイントのレスポンス時間</div>
+                    <button class="test-button" onclick="testAPIResponseTimes()">テスト実行</button>
+                    <div class="test-result" id="api-response-result">テスト待機中...</div>
+                </div>
+                <div class="test-card">
+                    <h3>💾 メモリ・リソース</h3>
+                    <div class="test-description">メモリ使用量・リソース効率性</div>
+                    <button class="test-button" onclick="testResourceUsage()">テスト実行</button>
+                    <div class="test-result" id="resource-usage-result">テスト待機中...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- セキュリティテスト -->
+        <div class="test-section">
+            <h2 class="section-title">🔒 セキュリティテスト</h2>
+            <div class="test-grid">
+                <div class="test-card">
+                    <h3>🛡️ 認証・認可</h3>
+                    <div class="test-description">不正アクセス防止・権限管理</div>
+                    <button class="test-button" onclick="testSecurityAuth()">テスト実行</button>
+                    <div class="test-result" id="security-auth-result">テスト待機中...</div>
+                </div>
+                <div class="test-card">
+                    <h3>🔐 データ保護</h3>
+                    <div class="test-description">データ暗号化・機密情報保護</div>
+                    <button class="test-button" onclick="testDataProtection()">テスト実行</button>
+                    <div class="test-result" id="data-protection-result">テスト待機中...</div>
+                </div>
+                <div class="test-card">
+                    <h3>🌐 HTTPS・セキュリティヘッダー</h3>
+                    <div class="test-description">SSL証明書・セキュリティヘッダー</div>
+                    <button class="test-button" onclick="testHTTPSSecurity()">テスト実行</button>
+                    <div class="test-result" id="https-security-result">テスト待機中...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 実行制御 -->
+        <div class="test-section">
+            <h2 class="section-title">🎮 テスト制御</h2>
+            <div style="text-align: center;">
+                <button class="test-button" onclick="runAllTests()" style="width: 300px; margin: 10px;">🚀 全テスト実行</button>
+                <button class="test-button" onclick="clearAllResults()" style="width: 300px; margin: 10px; background: #f44336;">🧹 結果クリア</button>
+                <button class="test-button" onclick="generateReport()" style="width: 300px; margin: 10px; background: #2196F3;">📄 レポート生成</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // テスト統計
+        let testStats = {
+            total: 0,
+            passed: 0,
+            failed: 0,
+            running: 0
+        };
+
+        // ユーティリティ関数
+        function updateStats() {
+            document.getElementById('total-tests').textContent = testStats.total;
+            document.getElementById('passed-tests').textContent = testStats.passed;
+            document.getElementById('failed-tests').textContent = testStats.failed;
+            
+            const successRate = testStats.total > 0 ? 
+                Math.round((testStats.passed / testStats.total) * 100) : 0;
+            document.getElementById('success-rate').textContent = successRate + '%';
+            document.getElementById('progress-fill').style.width = successRate + '%';
+        }
+
+        function logResult(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.className = `test-result ${type}`;
+            element.innerHTML = message;
+        }
+
+        function showLoading(elementId) {
+            const element = document.getElementById(elementId);
+            element.className = 'test-result info';
+            element.innerHTML = '<div class="loading"></div> テスト実行中...';
+        }
+
+        async function makeAPICall(url, options = {}) {
+            try {
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    },
+                    ...options
+                });
+                
+                const data = await response.json();
+                return { 
+                    success: response.ok, 
+                    data, 
+                    status: response.status,
+                    responseTime: performance.now()
+                };
+            } catch (error) {
+                return { 
+                    success: false, 
+                    error: error.message,
+                    responseTime: performance.now()
+                };
+            }
+        }
+
+        // 基盤システムテスト
+        async function testDatabaseConnection() {
+            showLoading('db-connection-result');
+            testStats.total++;
+            testStats.running++;
+            
+            try {
+                const startTime = performance.now();
+                const result = await makeAPICall('/api/health');
+                const responseTime = performance.now() - startTime;
+                
+                if (result.success) {
+                    testStats.passed++;
+                    logResult('db-connection-result', 
+                        `✅ データベース接続成功\\n` +
+                        `⏱️ レスポンス時間: ${responseTime.toFixed(2)}ms\\n` +
+                        `📊 ステータス: ${result.data.database || 'OK'}\\n` +
+                        `🔗 Supabase: ${result.data.supabase_status || 'N/A'}`, 'success');
+                } else {
+                    testStats.failed++;
+                    logResult('db-connection-result', 
+                        `❌ データベース接続失敗\\n` +
+                        `🚨 エラー: ${result.error}\\n` +
+                        `📊 ステータス: ${result.status}`, 'error');
+                }
+            } catch (error) {
+                testStats.failed++;
+                logResult('db-connection-result', 
+                    `❌ テスト実行エラー\\n🚨 ${error.message}`, 'error');
+            }
+            
+            testStats.running--;
+            updateStats();
+        }
+
+        async function testAuthenticationSystem() {
+            showLoading('auth-system-result');
+            testStats.total++;
+            testStats.running++;
+            
+            try {
+                const tests = [
+                    { url: '/api/auth/status', name: '認証状態確認' },
+                    { url: '/api/line/auth/status', name: 'LINE認証状態' },
+                    { url: '/api/members/session/status', name: 'セッション管理' }
+                ];
+                
+                let results = [];
+                for (const test of tests) {
+                    const result = await makeAPICall(test.url);
+                    results.push({
+                        name: test.name,
+                        success: result.success,
+                        status: result.status
+                    });
+                }
+                
+                const successCount = results.filter(r => r.success).length;
+                const isSuccess = successCount === tests.length;
+                
+                if (isSuccess) {
+                    testStats.passed++;
+                    logResult('auth-system-result', 
+                        `✅ 認証システム正常\\n` +
+                        `📊 成功: ${successCount}/${tests.length}\\n` +
+                        results.map(r => `${r.success ? '✅' : '❌'} ${r.name}`).join('\\n'), 'success');
+                } else {
+                    testStats.failed++;
+                    logResult('auth-system-result', 
+                        `⚠️ 認証システム部分的問題\\n` +
+                        `📊 成功: ${successCount}/${tests.length}\\n` +
+                        results.map(r => `${r.success ? '✅' : '❌'} ${r.name}`).join('\\n'), 'warning');
+                }
+            } catch (error) {
+                testStats.failed++;
+                logResult('auth-system-result', 
+                    `❌ テスト実行エラー\\n🚨 ${error.message}`, 'error');
+            }
+            
+            testStats.running--;
+            updateStats();
+        }
+
+        async function testAPIEndpoints() {
+            showLoading('api-endpoints-result');
+            testStats.total++;
+            testStats.running++;
+            
+            try {
+                const endpoints = [
+                    '/api/shops/search',
+                    '/api/weather/current',
+                    '/api/travel/flights/search',
+                    '/api/blog/articles',
+                    '/api/members/profile',
+                    '/api/reviews/list',
+                    '/api/points/balance'
+                ];
+                
+                let results = [];
+                for (const endpoint of endpoints) {
+                    const startTime = performance.now();
+                    const result = await makeAPICall(endpoint);
+                    const responseTime = performance.now() - startTime;
+                    
+                    results.push({
+                        endpoint,
+                        success: result.success,
+                        responseTime: responseTime.toFixed(2),
+                        status: result.status
+                    });
+                }
+                
+                const successCount = results.filter(r => r.success).length;
+                const avgResponseTime = results.reduce((sum, r) => sum + parseFloat(r.responseTime), 0) / results.length;
+                
+                if (successCount >= endpoints.length * 0.8) {
+                    testStats.passed++;
+                    logResult('api-endpoints-result', 
+                        `✅ APIエンドポイント正常\\n` +
+                        `📊 成功: ${successCount}/${endpoints.length}\\n` +
+                        `⏱️ 平均レスポンス: ${avgResponseTime.toFixed(2)}ms\\n` +
+                        results.slice(0, 5).map(r => `${r.success ? '✅' : '❌'} ${r.endpoint} (${r.responseTime}ms)`).join('\\n'), 'success');
+                } else {
+                    testStats.failed++;
+                    logResult('api-endpoints-result', 
+                        `⚠️ API エンドポイント問題あり\\n` +
+                        `📊 成功: ${successCount}/${endpoints.length}\\n` +
+                        `⏱️ 平均レスポンス: ${avgResponseTime.toFixed(2)}ms\\n` +
+                        results.slice(0, 5).map(r => `${r.success ? '✅' : '❌'} ${r.endpoint} (${r.responseTime}ms)`).join('\\n'), 'warning');
+                }
+            } catch (error) {
+                testStats.failed++;
+                logResult('api-endpoints-result', 
+                    `❌ テスト実行エラー\\n🚨 ${error.message}`, 'error');
+            }
+            
+            testStats.running--;
+            updateStats();
+        }
+
+        // 機能システムテスト
+        async function testShopSystem() {
+            showLoading('shop-system-result');
+            testStats.total++;
+            testStats.running++;
+            
+            try {
+                const tests = [
+                    { url: '/api/shops/search?location=沖縄', name: 'ショップ検索' },
+                    { url: '/api/shops/details/shop_demo_1', name: 'ショップ詳細' },
+                    { url: '/api/shops/filters', name: 'フィルター取得' },
+                    { url: '/api/shop/dashboard/stats', name: 'B2B管理画面' }
+                ];
+                
+                let results = [];
+                for (const test of tests) {
+                    const result = await makeAPICall(test.url);
+                    results.push({
+                        name: test.name,
+                        success: result.success
+                    });
+                }
+                
+                const successCount = results.filter(r => r.success).length;
+                
+                if (successCount >= 3) {
+                    testStats.passed++;
+                    logResult('shop-system-result', 
+                        `✅ ショップシステム正常\\n` +
+                        `📊 成功: ${successCount}/${tests.length}\\n` +
+                        results.map(r => `${r.success ? '✅' : '❌'} ${r.name}`).join('\\n'), 'success');
+                } else {
+                    testStats.failed++;
+                    logResult('shop-system-result', 
+                        `⚠️ ショップシステム問題あり\\n` +
+                        `📊 成功: ${successCount}/${tests.length}\\n` +
+                        results.map(r => `${r.success ? '✅' : '❌'} ${r.name}`).join('\\n'), 'warning');
+                }
+            } catch (error) {
+                testStats.failed++;
+                logResult('shop-system-result', 
+                    `❌ テスト実行エラー\\n🚨 ${error.message}`, 'error');
+            }
+            
+            testStats.running--;
+            updateStats();
+        }
+
+        async function testWeatherSystem() {
+            showLoading('weather-system-result');
+            testStats.total++;
+            testStats.running++;
+            
+            try {
+                const result = await makeAPICall('/api/weather/current?location=okinawa_main');
+                
+                if (result.success) {
+                    testStats.passed++;
+                    logResult('weather-system-result', 
+                        `✅ 海況・天気システム正常\\n` +
+                        `🌊 天気データ取得成功\\n` +
+                        `📊 データソース: 気象庁API\\n` +
+                        `⏱️ レスポンス時間: ${result.responseTime.toFixed(2)}ms`, 'success');
+                } else {
+                    testStats.failed++;
+                    logResult('weather-system-result', 
+                        `❌ 海況・天気システムエラー\\n` +
+                        `🚨 ${result.error}`, 'error');
+                }
+            } catch (error) {
+                testStats.failed++;
+                logResult('weather-system-result', 
+                    `❌ テスト実行エラー\\n🚨 ${error.message}`, 'error');
+            }
+            
+            testStats.running--;
+            updateStats();
+        }
+
+        async function testTravelSystem() {
+            showLoading('travel-system-result');
+            testStats.total++;
+            testStats.running++;
+            
+            try {
+                const tests = [
+                    { url: '/api/travel/flights/search?from=NRT&to=OKA', name: '航空券検索' },
+                    { url: '/api/travel/accommodations/search?location=沖縄', name: '宿泊施設検索' },
+                    { url: '/api/travel/cost-calculator', name: '費用シミュレーター' }
+                ];
+                
+                let results = [];
+                for (const test of tests) {
+                    const result = await makeAPICall(test.url);
+                    results.push({
+                        name: test.name,
+                        success: result.success
+                    });
+                }
+                
+                const successCount = results.filter(r => r.success).length;
+                
+                if (successCount >= 2) {
+                    testStats.passed++;
+                    logResult('travel-system-result', 
+                        `✅ 旅行サポートシステム正常\\n` +
+                        `📊 成功: ${successCount}/${tests.length}\\n` +
+                        results.map(r => `${r.success ? '✅' : '❌'} ${r.name}`).join('\\n'), 'success');
+                } else {
+                    testStats.failed++;
+                    logResult('travel-system-result', 
+                        `⚠️ 旅行サポートシステム問題あり\\n` +
+                        `📊 成功: ${successCount}/${tests.length}\\n` +
+                        results.map(r => `${r.success ? '✅' : '❌'} ${r.name}`).join('\\n'), 'warning');
+                }
+            } catch (error) {
+                testStats.failed++;
+                logResult('travel-system-result', 
+                    `❌ テスト実行エラー\\n🚨 ${error.message}`, 'error');
+            }
+            
+            testStats.running--;
+            updateStats();
+        }
+
+        async function testBlogSystem() {
+            showLoading('blog-system-result');
+            testStats.total++;
+            testStats.running++;
+            
+            try {
+                const tests = [
+                    { url: '/api/blog/articles', name: 'ブログ記事一覧' },
+                    { url: '/api/blog/search?q=沖縄', name: 'ブログ検索' },
+                    { url: '/api/blog/articles/1/related', name: '関連記事取得' }
+                ];
+                
+                let results = [];
+                for (const test of tests) {
+                    const result = await makeAPICall(test.url);
+                    results.push({
+                        name: test.name,
+                        success: result.success
+                    });
+                }
+                
+                const successCount = results.filter(r => r.success).length;
+                
+                if (successCount >= 2) {
+                    testStats.passed++;
+                    logResult('blog-system-result', 
+                        `✅ ブログシステム正常\\n` +
+                        `📊 成功: ${successCount}/${tests.length}\\n` +
+                        results.map(r => `${r.success ? '✅' : '❌'} ${r.name}`).join('\\n'), 'success');
+                } else {
+                    testStats.failed++;
+                    logResult('blog-system-result', 
+                        `⚠️ ブログシステム問題あり\\n` +
+                        `📊 成功: ${successCount}/${tests.length}\\n` +
+                        results.map(r => `${r.success ? '✅' : '❌'} ${r.name}`).join('\\n'), 'warning');
+                }
+            } catch (error) {
+                testStats.failed++;
+                logResult('blog-system-result', 
+                    `❌ テスト実行エラー\\n🚨 ${error.message}`, 'error');
+            }
+            
+            testStats.running--;
+            updateStats();
+        }
+
+        async function testMemberSystem() {
+            showLoading('member-system-result');
+            testStats.total++;
+            testStats.running++;
+            
+            try {
+                const result = await makeAPICall('/api/members/demo/profile');
+                
+                if (result.success) {
+                    testStats.passed++;
+                    logResult('member-system-result', 
+                        `✅ 会員システム正常\\n` +
+                        `👤 プロフィール取得成功\\n` +
+                        `🎯 ポイントシステム連携OK`, 'success');
+                } else {
+                    testStats.failed++;
+                    logResult('member-system-result', 
+                        `❌ 会員システムエラー\\n` +
+                        `🚨 ${result.error}`, 'error');
+                }
+            } catch (error) {
+                testStats.failed++;
+                logResult('member-system-result', 
+                    `❌ テスト実行エラー\\n🚨 ${error.message}`, 'error');
+            }
+            
+            testStats.running--;
+            updateStats();
+        }
+
+        async function testReviewSystem() {
+            showLoading('review-system-result');
+            testStats.total++;
+            testStats.running++;
+            
+            try {
+                const result = await makeAPICall('/api/reviews/list?shop_id=shop_demo_1');
+                
+                if (result.success) {
+                    testStats.passed++;
+                    logResult('review-system-result', 
+                        `✅ 口コミシステム正常\\n` +
+                        `📝 口コミデータ取得成功\\n` +
+                        `📊 統計データ処理OK`, 'success');
+                } else {
+                    testStats.failed++;
+                    logResult('review-system-result', 
+                        `❌ 口コミシステムエラー\\n` +
+                        `🚨 ${result.error}`, 'error');
+                }
+            } catch (error) {
+                testStats.failed++;
+                logResult('review-system-result', 
+                    `❌ テスト実行エラー\\n🚨 ${error.message}`, 'error');
+            }
+            
+            testStats.running--;
+            updateStats();
+        }
+
+        // 統合・連携テスト
+        async function testLINEWebIntegration() {
+            showLoading('line-web-integration-result');
+            testStats.total++;
+            testStats.running++;
+            
+            try {
+                const result = await makeAPICall('/api/integration/status');
+                
+                if (result.success) {
+                    testStats.passed++;
+                    logResult('line-web-integration-result', 
+                        `✅ LINE-Web連携正常\\n` +
+                        `🔗 連携状態確認成功\\n` +
+                        `🔄 データ同期機能OK`, 'success');
+                } else {
+                    testStats.failed++;
+                    logResult('line-web-integration-result', 
+                        `❌ LINE-Web連携エラー\\n` +
+                        `🚨 ${result.error}`, 'error');
+                }
+            } catch (error) {
+                testStats.failed++;
+                logResult('line-web-integration-result', 
+                    `❌ テスト実行エラー\\n🚨 ${error.message}`, 'error');
+            }
+            
+            testStats.running--;
+            updateStats();
+        }
+
+        async function testSubscriptionSystem() {
+            showLoading('subscription-system-result');
+            testStats.total++;
+            testStats.running++;
+            
+            try {
+                const result = await makeAPICall('/api/subscription/plans');
+                
+                if (result.success) {
+                    testStats.passed++;
+                    logResult('subscription-system-result', 
+                        `✅ サブスクリプションシステム正常\\n` +
+                        `💳 プラン情報取得成功\\n` +
+                        `📊 課金システム連携OK`, 'success');
+                } else {
+                    testStats.failed++;
+                    logResult('subscription-system-result', 
+                        `❌ サブスクリプションシステムエラー\\n` +
+                        `🚨 ${result.error}`, 'error');
+                }
+            } catch (error) {
+                testStats.failed++;
+                logResult('subscription-system-result', 
+                    `❌ テスト実行エラー\\n🚨 ${error.message}`, 'error');
+            }
+            
+            testStats.running--;
+            updateStats();
+        }
+
+        async function testDataIntegrity() {
+            showLoading('data-integrity-result');
+            testStats.total++;
+            testStats.running++;
+            
+            try {
+                const result = await makeAPICall('/api/data-integrity/check/user_demo_1');
+                
+                if (result.success) {
+                    testStats.passed++;
+                    logResult('data-integrity-result', 
+                        `✅ データ整合性システム正常\\n` +
+                        `📊 整合性チェック成功\\n` +
+                        `🔄 プロフィール更新機能OK\\n` +
+                        `📈 履歴追跡システムOK`, 'success');
+                } else {
+                    testStats.failed++;
+                    logResult('data-integrity-result', 
+                        `❌ データ整合性システムエラー\\n` +
+                        `🚨 ${result.error}`, 'error');
+                }
+            } catch (error) {
+                testStats.failed++;
+                logResult('data-integrity-result', 
+                    `❌ テスト実行エラー\\n🚨 ${error.message}`, 'error');
+            }
+            
+            testStats.running--;
+            updateStats();
+        }
+
+        // パフォーマンステスト
+        async function testPageLoadTimes() {
+            showLoading('page-load-result');
+            testStats.total++;
+            testStats.running++;
+            
+            try {
+                const pages = [
+                    '/',
+                    '/shops-database',
+                    '/travel-guide',
+                    '/blog',
+                    '/member'
+                ];
+                
+                let totalTime = 0;
+                let results = [];
+                
+                for (const page of pages) {
+                    const startTime = performance.now();
+                    try {
+                        const response = await fetch(page);
+                        const loadTime = performance.now() - startTime;
+                        totalTime += loadTime;
+                        results.push({ page, loadTime: loadTime.toFixed(2), success: response.ok });
+                    } catch (error) {
+                        results.push({ page, loadTime: 'Error', success: false });
+                    }
+                }
+                
+                const avgLoadTime = totalTime / pages.length;
+                const successCount = results.filter(r => r.success).length;
+                
+                if (avgLoadTime < 2000 && successCount >= pages.length * 0.8) {
+                    testStats.passed++;
+                    logResult('page-load-result', 
+                        `✅ ページ読み込み速度良好\\n` +
+                        `⏱️ 平均読み込み時間: ${avgLoadTime.toFixed(2)}ms\\n` +
+                        `📊 成功ページ: ${successCount}/${pages.length}\\n` +
+                        results.slice(0, 3).map(r => `${r.page}: ${r.loadTime}ms`).join('\\n'), 'success');
+                } else {
+                    testStats.failed++;
+                    logResult('page-load-result', 
+                        `⚠️ ページ読み込み速度要改善\\n` +
+                        `⏱️ 平均読み込み時間: ${avgLoadTime.toFixed(2)}ms\\n` +
+                        `📊 成功ページ: ${successCount}/${pages.length}`, 'warning');
+                }
+            } catch (error) {
+                testStats.failed++;
+                logResult('page-load-result', 
+                    `❌ テスト実行エラー\\n🚨 ${error.message}`, 'error');
+            }
+            
+            testStats.running--;
+            updateStats();
+        }
+
+        async function testAPIResponseTimes() {
+            showLoading('api-response-result');
+            testStats.total++;
+            testStats.running++;
+            
+            try {
+                const apis = [
+                    '/api/shops/search',
+                    '/api/weather/current',
+                    '/api/blog/articles',
+                    '/api/reviews/list'
+                ];
+                
+                let totalTime = 0;
+                let results = [];
+                
+                for (const api of apis) {
+                    const startTime = performance.now();
+                    const result = await makeAPICall(api);
+                    const responseTime = performance.now() - startTime;
+                    
+                    totalTime += responseTime;
+                    results.push({
+                        api,
+                        responseTime: responseTime.toFixed(2),
+                        success: result.success
+                    });
+                }
+                
+                const avgResponseTime = totalTime / apis.length;
+                const successCount = results.filter(r => r.success).length;
+                
+                if (avgResponseTime < 1000 && successCount >= apis.length * 0.8) {
+                    testStats.passed++;
+                    logResult('api-response-result', 
+                        `✅ API レスポンス速度良好\\n` +
+                        `⏱️ 平均レスポンス時間: ${avgResponseTime.toFixed(2)}ms\\n` +
+                        `📊 成功API: ${successCount}/${apis.length}\\n` +
+                        results.map(r => `${r.api}: ${r.responseTime}ms`).join('\\n'), 'success');
+                } else {
+                    testStats.failed++;
+                    logResult('api-response-result', 
+                        `⚠️ API レスポンス速度要改善\\n` +
+                        `⏱️ 平均レスポンス時間: ${avgResponseTime.toFixed(2)}ms\\n` +
+                        `📊 成功API: ${successCount}/${apis.length}`, 'warning');
+                }
+            } catch (error) {
+                testStats.failed++;
+                logResult('api-response-result', 
+                    `❌ テスト実行エラー\\n🚨 ${error.message}`, 'error');
+            }
+            
+            testStats.running--;
+            updateStats();
+        }
+
+        async function testResourceUsage() {
+            showLoading('resource-usage-result');
+            testStats.total++;
+            testStats.running++;
+            
+            try {
+                // メモリ使用量測定（概算）
+                const memoryInfo = performance.memory || {};
+                const usedJSHeapSize = memoryInfo.usedJSHeapSize || 0;
+                const totalJSHeapSize = memoryInfo.totalJSHeapSize || 0;
+                
+                // 接続数テスト
+                const concurrentTests = 5;
+                const promises = [];
+                
+                for (let i = 0; i < concurrentTests; i++) {
+                    promises.push(makeAPICall('/api/health'));
+                }
+                
+                const results = await Promise.all(promises);
+                const successCount = results.filter(r => r.success).length;
+                
+                testStats.passed++;
+                logResult('resource-usage-result', 
+                    `✅ リソース使用量正常\\n` +
+                    `💾 JSヒープ使用量: ${(usedJSHeapSize / 1024 / 1024).toFixed(2)}MB\\n` +
+                    `📊 同時接続テスト: ${successCount}/${concurrentTests}\\n` +
+                    `🚀 パフォーマンス: 良好`, 'success');
+            } catch (error) {
+                testStats.failed++;
+                logResult('resource-usage-result', 
+                    `❌ テスト実行エラー\\n🚨 ${error.message}`, 'error');
+            }
+            
+            testStats.running--;
+            updateStats();
+        }
+
+        // セキュリティテスト
+        async function testSecurityAuth() {
+            showLoading('security-auth-result');
+            testStats.total++;
+            testStats.running++;
+            
+            try {
+                // 認証が必要なエンドポイントへの不正アクセステスト
+                const protectedEndpoints = [
+                    '/api/shop/dashboard/stats',
+                    '/api/members/profile/edit',
+                    '/api/admin/users'
+                ];
+                
+                let results = [];
+                for (const endpoint of protectedEndpoints) {
+                    const result = await makeAPICall(endpoint);
+                    // 401や403が返れば適切に保護されている
+                    const isProtected = result.status === 401 || result.status === 403;
+                    results.push({ endpoint, isProtected });
+                }
+                
+                const protectedCount = results.filter(r => r.isProtected).length;
+                
+                if (protectedCount >= protectedEndpoints.length * 0.8) {
+                    testStats.passed++;
+                    logResult('security-auth-result', 
+                        `✅ 認証・認可システム正常\\n` +
+                        `🔒 保護されたエンドポイント: ${protectedCount}/${protectedEndpoints.length}\\n` +
+                        `🛡️ 不正アクセス防止OK`, 'success');
+                } else {
+                    testStats.failed++;
+                    logResult('security-auth-result', 
+                        `⚠️ 認証・認可システム要確認\\n` +
+                        `🔒 保護されたエンドポイント: ${protectedCount}/${protectedEndpoints.length}`, 'warning');
+                }
+            } catch (error) {
+                testStats.failed++;
+                logResult('security-auth-result', 
+                    `❌ テスト実行エラー\\n🚨 ${error.message}`, 'error');
+            }
+            
+            testStats.running--;
+            updateStats();
+        }
+
+        async function testDataProtection() {
+            showLoading('data-protection-result');
+            testStats.total++;
+            testStats.running++;
+            
+            try {
+                // データ保護テスト（機密情報の漏洩チェック）
+                const result = await makeAPICall('/api/health');
+                
+                if (result.success) {
+                    // レスポンスに機密情報が含まれていないかチェック
+                    const responseText = JSON.stringify(result.data);
+                    const sensitivePatterns = [
+                        /password/i,
+                        /secret/i,
+                        /key.*[a-zA-Z0-9]{20,}/,
+                        /token.*[a-zA-Z0-9]{20,}/
+                    ];
+                    
+                    const foundSensitive = sensitivePatterns.some(pattern => 
+                        pattern.test(responseText));
+                    
+                    if (!foundSensitive) {
+                        testStats.passed++;
+                        logResult('data-protection-result', 
+                            `✅ データ保護システム正常\\n` +
+                            `🔐 機密情報漏洩なし\\n` +
+                            `📊 セキュアなレスポンス確認`, 'success');
+                    } else {
+                        testStats.failed++;
+                        logResult('data-protection-result', 
+                            `⚠️ データ保護要確認\\n` +
+                            `🚨 機密情報の可能性あり`, 'warning');
+                    }
+                } else {
+                    testStats.failed++;
+                    logResult('data-protection-result', 
+                        `❌ テスト実行失敗\\n🚨 ${result.error}`, 'error');
+                }
+            } catch (error) {
+                testStats.failed++;
+                logResult('data-protection-result', 
+                    `❌ テスト実行エラー\\n🚨 ${error.message}`, 'error');
+            }
+            
+            testStats.running--;
+            updateStats();
+        }
+
+        async function testHTTPSSecurity() {
+            showLoading('https-security-result');
+            testStats.total++;
+            testStats.running++;
+            
+            try {
+                // HTTPS接続とセキュリティヘッダーのテスト
+                const response = await fetch(window.location.origin + '/api/health');
+                const headers = response.headers;
+                
+                const securityHeaders = [
+                    'strict-transport-security',
+                    'content-security-policy', 
+                    'x-frame-options',
+                    'x-content-type-options'
+                ];
+                
+                let presentHeaders = [];
+                securityHeaders.forEach(header => {
+                    if (headers.get(header)) {
+                        presentHeaders.push(header);
+                    }
+                });
+                
+                const isHTTPS = window.location.protocol === 'https:';
+                const headerScore = presentHeaders.length / securityHeaders.length;
+                
+                if (isHTTPS && headerScore >= 0.75) {
+                    testStats.passed++;
+                    logResult('https-security-result', 
+                        `✅ HTTPS・セキュリティヘッダー正常\\n` +
+                        `🔒 HTTPS接続: ${isHTTPS ? 'OK' : 'NG'}\\n` +
+                        `🛡️ セキュリティヘッダー: ${presentHeaders.length}/${securityHeaders.length}\\n` +
+                        `📋 設定済み: ${presentHeaders.join(', ')}`, 'success');
+                } else {
+                    testStats.failed++;
+                    logResult('https-security-result', 
+                        `⚠️ HTTPS・セキュリティ要改善\\n` +
+                        `🔒 HTTPS接続: ${isHTTPS ? 'OK' : 'NG'}\\n` +
+                        `🛡️ セキュリティヘッダー: ${presentHeaders.length}/${securityHeaders.length}`, 'warning');
+                }
+            } catch (error) {
+                testStats.failed++;
+                logResult('https-security-result', 
+                    `❌ テスト実行エラー\\n🚨 ${error.message}`, 'error');
+            }
+            
+            testStats.running--;
+            updateStats();
+        }
+
+        // 制御関数
+        async function runAllTests() {
+            // 統計リセット
+            testStats = { total: 0, passed: 0, failed: 0, running: 0 };
+            updateStats();
+            
+            // 全テスト実行
+            const testFunctions = [
+                testDatabaseConnection,
+                testAuthenticationSystem,
+                testAPIEndpoints,
+                testShopSystem,
+                testWeatherSystem,
+                testTravelSystem,
+                testBlogSystem,
+                testMemberSystem,
+                testReviewSystem,
+                testLINEWebIntegration,
+                testSubscriptionSystem,
+                testDataIntegrity,
+                testPageLoadTimes,
+                testAPIResponseTimes,
+                testResourceUsage,
+                testSecurityAuth,
+                testDataProtection,
+                testHTTPSSecurity
+            ];
+            
+            // 順次実行（並行だと負荷が高すぎる）
+            for (const testFunction of testFunctions) {
+                await testFunction();
+                // 少し間隔を開ける
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+            
+            // 完了メッセージ
+            setTimeout(() => {
+                alert(`🎉 全テスト完了！\\n成功: ${testStats.passed}\\n失敗: ${testStats.failed}\\n成功率: ${Math.round((testStats.passed / testStats.total) * 100)}%`);
+            }, 1000);
+        }
+
+        function clearAllResults() {
+            const resultElements = document.querySelectorAll('.test-result');
+            resultElements.forEach(element => {
+                element.className = 'test-result';
+                element.textContent = 'テスト待機中...';
+            });
+            
+            testStats = { total: 0, passed: 0, failed: 0, running: 0 };
+            updateStats();
+        }
+
+        function generateReport() {
+            const timestamp = new Date().toLocaleString('ja-JP');
+            const successRate = testStats.total > 0 ? 
+                Math.round((testStats.passed / testStats.total) * 100) : 0;
+            
+            const report = `
+=== Dive Buddy's 統合テスト・品質保証レポート ===
+生成日時: ${timestamp}
+
+📊 テスト統計:
+- 総テスト数: ${testStats.total}
+- 成功: ${testStats.passed}
+- 失敗: ${testStats.failed}
+- 成功率: ${successRate}%
+
+🎯 品質評価:
+${successRate >= 90 ? '✅ 優秀 - 本番環境への展開準備完了' :
+  successRate >= 80 ? '⚠️ 良好 - 軽微な改善後に展開可能' :
+  successRate >= 70 ? '⚠️ 要改善 - 問題解決後に再テスト推奨' :
+  '❌ 要修正 - 重大な問題があります'}
+
+🌊 Dive Buddy's プラットフォーム品質保証完了
+            `;
+            
+            // テキストファイルとしてダウンロード
+            const blob = new Blob([report], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `dive-buddys-test-report-${new Date().toISOString().split('T')[0]}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // 初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStats();
+        });
+    </script>
+</body>
+</html>

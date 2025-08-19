@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🗺️ Dive Buddy's WEBページ構造チャート</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Hiragino Sans', 'Yu Gothic', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .sitemap {
+            padding: 30px;
+        }
+        
+        .level {
+            margin-bottom: 30px;
+        }
+        
+        .level-title {
+            font-size: 1.5rem;
+            color: #333;
+            margin-bottom: 20px;
+            padding: 10px 0;
+            border-bottom: 3px solid #667eea;
+        }
+        
+        .page-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .page-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .page-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .page-title {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+        
+        .page-url {
+            font-family: 'Courier New', monospace;
+            color: #666;
+            font-size: 0.9rem;
+            background: #f1f3f4;
+            padding: 5px 8px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            word-break: break-all;
+        }
+        
+        .page-description {
+            color: #555;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+        
+        .connections {
+            margin-top: 15px;
+        }
+        
+        .connection-title {
+            font-weight: bold;
+            color: #667eea;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+        
+        .connection-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        
+        .connection-tag {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            border: 1px solid #bbdefb;
+        }
+        
+        .api-tag {
+            background: #f3e5f5;
+            color: #7b1fa2;
+            border-color: #ce93d8;
+        }
+        
+        .internal-tag {
+            background: #e8f5e8;
+            color: #388e3c;
+            border-color: #a5d6a7;
+        }
+        
+        .external-tag {
+            background: #fff3e0;
+            color: #f57c00;
+            border-color: #ffcc80;
+        }
+        
+        .priority-high {
+            border-left: 5px solid #f44336;
+        }
+        
+        .priority-medium {
+            border-left: 5px solid #ff9800;
+        }
+        
+        .priority-low {
+            border-left: 5px solid #4caf50;
+        }
+        
+        .legend {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .legend-title {
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .legend-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .color-box {
+            width: 20px;
+            height: 15px;
+            border-radius: 3px;
+        }
+        
+        .navigation-flow {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 30px;
+        }
+        
+        .flow-title {
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 1.2rem;
+        }
+        
+        .flow-diagram {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .flow-step {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #e9ecef;
+            text-align: center;
+        }
+        
+        .flow-arrow {
+            text-align: center;
+            font-size: 1.5rem;
+            color: #667eea;
+            margin: 10px 0;
+        }
+
+        .print-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+
+        .print-btn:hover {
+            background: #5a6fd8;
+        }
+
+        @media print {
+            .print-btn { display: none; }
+            body { background: white; padding: 0; }
+            .container { box-shadow: none; }
+        }
+    </style>
+</head>
+<body>
+    <button class="print-btn" onclick="window.print()">🖨️ 印刷</button>
+    
+    <div class="container">
+        <div class="header">
+            <h1>🗺️ Dive Buddy's WEBページ構造チャート</h1>
+            <p>全29ページの関連性・優先度・API連携マップ</p>
+            <p style="font-size: 0.9rem; opacity: 0.8; margin-top: 10px;">
+                作成日: 2025年7月29日 | バージョン: v1.0 | 総ページ数: 29
+            </p>
+        </div>
+        
+        <div class="sitemap">
+            <!-- 凡例 -->
+            <div class="legend">
+                <div class="legend-title">🔍 凡例・優先度</div>
+                <div class="legend-items">
+                    <div class="legend-item">
+                        <div class="color-box" style="background: #f44336;"></div>
+                        <span>最優先 (コア機能・収益直結)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="color-box" style="background: #ff9800;"></div>
+                        <span>重要 (差別化・ユーザー体験)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="color-box" style="background: #4caf50;"></div>
+                        <span>標準 (サポート・補助機能)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="connection-tag api-tag">API</div>
+                        <span>API連携</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="connection-tag internal-tag">内部</div>
+                        <span>内部リンク</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="connection-tag external-tag">外部</div>
+                        <span>外部サービス</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- レベル1: エントリーポイント -->
+            <div class="level">
+                <div class="level-title">🏠 Level 1: エントリーポイント</div>
+                <div class="page-grid">
+                    <div class="page-card priority-high">
+                        <div class="page-title">🌊 メインランディングページ</div>
+                        <div class="page-url">https://dive-buddys.com/</div>
+                        <div class="page-description">サイトの顔。SEO最重要。全機能への入り口</div>
+                        <div class="connections">
+                            <div class="connection-title">🔗 主要リンク</div>
+                            <div class="connection-list">
+                                <span class="connection-tag internal-tag">ショップDB</span>
+                                <span class="connection-tag internal-tag">旅行ガイド</span>
+                                <span class="connection-tag internal-tag">ブログ</span>
+                                <span class="connection-tag internal-tag">会員登録</span>
+                                <span class="connection-tag external-tag">LINE Bot</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="page-card priority-medium">
+                        <div class="page-title">ℹ️ サービス紹介</div>
+                        <div class="page-url">https://dive-buddys.com/about</div>
+                        <div class="page-description">サービス概要・特徴説明</div>
+                        <div class="connections">
+                            <div class="connection-title">🔗 接続</div>
+                            <div class="connection-list">
+                                <span class="connection-tag internal-tag">トップページ</span>
+                                <span class="connection-tag internal-tag">会員登録</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- レベル2: コア機能 -->
+            <div class="level">
+                <div class="level-title">🎯 Level 2: コア機能 (収益・差別化)</div>
+                <div class="page-grid">
+                    <div class="page-card priority-high">
+                        <div class="page-title">🏪 ショップデータベース</div>
+                        <div class="page-url">https://dive-buddys.com/shops-database</div>
+                        <div class="page-description">メイン機能。79店舗検索・フィルタリング</div>
+                        <div class="connections">
+                            <div class="connection-title">🔗 API連携</div>
+                            <div class="connection-list">
+                                <span class="connection-tag api-tag">/api/shops/search</span>
+                                <span class="connection-tag api-tag">/api/shops/filters</span>
+                                <span class="connection-tag internal-tag">詳細ページ</span>
+                                <span class="connection-tag internal-tag">口コミ</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="page-card priority-high">
+                        <div class="page-title">🏪 ショップ詳細ページ</div>
+                        <div class="page-url">https://dive-buddys.com/shops-database/details.html</div>
+                        <div class="page-description">コンバージョン最重要。予約・問い合わせ導線</div>
+                        <div class="connections">
+                            <div class="connection-title">🔗 統合機能</div>
+                            <div class="connection-list">
+                                <span class="connection-tag api-tag">/api/shops/details/:id</span>
+                                <span class="connection-tag api-tag">/api/reviews/list</span>
+                                <span class="connection-tag internal-tag">口コミ投稿</span>
+                                <span class="connection-tag external-tag">電話・メール</span>
+                                <span class="connection-tag external-tag">LINE Bot</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="page-card priority-high">
+                        <div class="page-title">✈️ 旅行ガイドメイン</div>
+                        <div class="page-url">https://dive-buddys.com/travel-guide</div>
+                        <div class="page-description">差別化機能。包括的旅行サポート</div>
+                        <div class="connections">
+                            <div class="connection-title">🔗 サブ機能</div>
+                            <div class="connection-list">
+                                <span class="connection-tag internal-tag">宿泊検索</span>
+                                <span class="connection-tag internal-tag">費用シミュレーター</span>
+                                <span class="connection-tag api-tag">/api/travel/flights</span>
+                                <span class="connection-tag external-tag">予約サイト</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="page-card priority-high">
+                        <div class="page-title">🏪 ショップダッシュボード</div>
+                        <div class="page-url">https://dive-buddys.com/shop/dashboard</div>
+                        <div class="page-description">B2B収益化。ショップ事業者向け管理画面</div>
+                        <div class="connections">
+                            <div class="connection-title">🔗 B2B機能</div>
+                            <div class="connection-list">
+                                <span class="connection-tag api-tag">/api/shop/dashboard/stats</span>
+                                <span class="connection-tag internal-tag">プロフィール編集</span>
+                                <span class="connection-tag internal-tag">サブスクリプション</span>
+                                <span class="connection-tag internal-tag">口コミ管理</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- レベル3: ユーザー体験向上 -->
+            <div class="level">
+                <div class="level-title">👤 Level 3: ユーザー体験・エンゲージメント</div>
+                <div class="page-grid">
+                    <div class="page-card priority-medium">
+                        <div class="page-title">📝 ブログメイン</div>
+                        <div class="page-url">https://dive-buddys.com/blog</div>
+                        <div class="page-description">SEO・コンテンツマーケティング。5記事投入済み</div>
+                        <div class="connections">
+                            <div class="connection-title">🔗 コンテンツ</div>
+                            <div class="connection-list">
+                                <span class="connection-tag api-tag">/api/blog/articles</span>
+                                <span class="connection-tag api-tag">/api/blog/search</span>
+                                <span class="connection-tag internal-tag">記事詳細</span>
+                                <span class="connection-tag internal-tag">関連記事</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="page-card priority-medium">
+                        <div class="page-title">👤 会員システム</div>
+                        <div class="page-url">https://dive-buddys.com/member</div>
+                        <div class="page-description">ユーザー管理・ポイントシステム</div>
+                        <div class="connections">
+                            <div class="connection-title">🔗 認証・管理</div>
+                            <div class="connection-list">
+                                <span class="connection-tag internal-tag">会員登録</span>
+                                <span class="connection-tag internal-tag">プロフィール</span>
+                                <span class="connection-tag internal-tag">ポイント管理</span>
+                                <span class="connection-tag external-tag">LINE認証</span>
+                                <span class="connection-tag api-tag">/api/members/*</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="page-card priority-medium">
+                        <div class="page-title">💬 口コミ投稿</div>
+                        <div class="page-url">https://dive-buddys.com/reviews/submit.html</div>
+                        <div class="page-description">UGC生成。ポイント獲得システム連携</div>
+                        <div class="connections">
+                            <div class="connection-title">🔗 連携</div>
+                            <div class="connection-list">
+                                <span class="connection-tag api-tag">/api/reviews/submit</span>
+                                <span class="connection-tag api-tag">/api/points/earn</span>
+                                <span class="connection-tag internal-tag">ショップ詳細</span>
+                                <span class="connection-tag internal-tag">会員システム</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="page-card priority-medium">
+                        <div class="page-title">🌊 海況・天気</div>
+                        <div class="page-url">https://dive-buddys.com/weather-ocean</div>
+                        <div class="page-description">専門機能。気象庁API統合</div>
+                        <div class="connections">
+                            <div class="connection-title">🔗 データソース</div>
+                            <div class="connection-list">
+                                <span class="connection-tag api-tag">/api/weather/current</span>
+                                <span class="connection-tag external-tag">気象庁API</span>
+                                <span class="connection-tag internal-tag">ショップ詳細</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- レベル4: サポート・ツール -->
+            <div class="level">
+                <div class="level-title">🔧 Level 4: サポート・ツール・管理</div>
+                <div class="page-grid">
+                    <div class="page-card priority-medium">
+                        <div class="page-title">💰 費用シミュレーター</div>
+                        <div class="page-url">https://dive-buddys.com/travel-guide/cost-simulator</div>
+                        <div class="page-description">便利ツール。Chart.js統合</div>
+                        <div class="connections">
+                            <div class="connection-title">🔗 計算機能</div>
+                            <div class="connection-list">
+                                <span class="connection-tag api-tag">/api/travel/cost-calculator</span>
+                                <span class="connection-tag internal-tag">旅行ガイド</span>
+                                <span class="connection-tag internal-tag">宿泊検索</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="page-card priority-medium">
+                        <div class="page-title">🏨 宿泊施設検索</div>
+                        <div class="page-url">https://dive-buddys.com/travel-guide/accommodation</div>
+                        <div class="page-description">楽天トラベル等API統合（フォールバック有）</div>
+                        <div class="connections">
+                            <div class="connection-title">🔗 予約連携</div>
+                            <div class="connection-list">
+                                <span class="connection-tag api-tag">/api/travel/accommodations</span>
+                                <span class="connection-tag external-tag">楽天・じゃらん</span>
+                                <span class="connection-tag internal-tag">費用計算</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="page-card priority-medium">
+                        <div class="page-title">💳 サブスクリプション</div>
+                        <div class="page-url">https://dive-buddys.com/shop/subscription.html</div>
+                        <div class="page-description">B2B収益化。3プラン体系</div>
+                        <div class="connections">
+                            <div class="connection-title">🔗 決済</div>
+                            <div class="connection-list">
+                                <span class="connection-tag api-tag">/api/subscription/plans</span>
+                                <span class="connection-tag external-tag">Stripe</span>
+                                <span class="connection-tag internal-tag">ショップダッシュボード</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="page-card priority-low">
+                        <div class="page-title">🤖 LINE-Web遷移</div>
+                        <div class="page-url">https://dive-buddys.com/transition.html</div>
+                        <div class="page-description">LINE Bot連携。シームレス体験</div>
+                        <div class="connections">
+                            <div class="connection-title">🔗 統合</div>
+                            <div class="connection-list">
+                                <span class="connection-tag api-tag">/api/integration/authenticate</span>
+                                <span class="connection-tag external-tag">LINE Bot</span>
+                                <span class="connection-tag internal-tag">会員システム</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- レベル5: システム・サポート -->
+            <div class="level">
+                <div class="level-title">⚙️ Level 5: システム管理・サポート</div>
+                <div class="page-grid">
+                    <div class="page-card priority-low">
+                        <div class="page-title">📊 システム監視</div>
+                        <div class="page-url">https://dive-buddys.com/admin/monitoring.html</div>
+                        <div class="page-description">リアルタイム監視ダッシュボード</div>
+                        <div class="connections">
+                            <div class="connection-title">🔗 監視API</div>
+                            <div class="connection-list">
+                                <span class="connection-tag api-tag">/api/monitoring/stats</span>
+                                <span class="connection-tag api-tag">/api/monitoring/alerts</span>
+                                <span class="connection-tag api-tag">/health</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="page-card priority-low">
+                        <div class="page-title">🧪 統合テスト</div>
+                        <div class="page-url">https://dive-buddys.com/test/integration-test.html</div>
+                        <div class="page-description">品質保証。18種テスト項目</div>
+                        <div class="connections">
+                            <div class="connection-title">🔗 テスト対象</div>
+                            <div class="connection-list">
+                                <span class="connection-tag api-tag">全APIエンドポイント</span>
+                                <span class="connection-tag internal-tag">全機能テスト</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="page-card priority-low">
+                        <div class="page-title">📞 お問い合わせ</div>
+                        <div class="page-url">https://dive-buddys.com/contact</div>
+                        <div class="page-description">サポート窓口</div>
+                        <div class="connections">
+                            <div class="connection-title">🔗 サポート</div>
+                            <div class="connection-list">
+                                <span class="connection-tag internal-tag">ヘルプページ</span>
+                                <span class="connection-tag external-tag">メール送信</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="page-card priority-low">
+                        <div class="page-title">📚 その他サポートページ</div>
+                        <div class="page-url">https://dive-buddys.com/help, /legal, /privacy, /terms</div>
+                        <div class="page-description">ヘルプ・利用規約・プライバシーポリシー</div>
+                        <div class="connections">
+                            <div class="connection-title">🔗 法的</div>
+                            <div class="connection-list">
+                                <span class="connection-tag internal-tag">フッターリンク</span>
+                                <span class="connection-tag internal-tag">会員登録</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ユーザーフロー -->
+            <div class="navigation-flow">
+                <div class="flow-title">🔄 主要ユーザーフロー</div>
+                
+                <h4>🎯 新規ユーザー獲得フロー</h4>
+                <div class="flow-diagram">
+                    <div class="flow-step">
+                        <strong>🌊 トップページ</strong><br>
+                        初回訪問・概要理解
+                    </div>
+                    <div class="flow-arrow">↓</div>
+                    <div class="flow-step">
+                        <strong>🏪 ショップ検索</strong><br>
+                        条件指定・フィルタリング
+                    </div>
+                    <div class="flow-arrow">↓</div>
+                    <div class="flow-step">
+                        <strong>🏪 ショップ詳細</strong><br>
+                        情報確認・口コミ閲覧
+                    </div>
+                    <div class="flow-arrow">↓</div>
+                    <div class="flow-step">
+                        <strong>📞 予約・問い合わせ</strong><br>
+                        コンバージョン達成
+                    </div>
+                </div>
+                
+                <h4 style="margin-top: 20px;">💎 リピーター育成フロー</h4>
+                <div class="flow-diagram">
+                    <div class="flow-step">
+                        <strong>👤 会員登録</strong><br>
+                        LINE認証 or Web登録
+                    </div>
+                    <div class="flow-arrow">↓</div>
+                    <div class="flow-step">
+                        <strong>💬 口コミ投稿</strong><br>
+                        体験共有・ポイント獲得
+                    </div>
+                    <div class="flow-arrow">↓</div>
+                    <div class="flow-step">
+                        <strong>🎁 ポイント活用</strong><br>
+                        特典交換・リピート促進
+                    </div>
+                    <div class="flow-arrow">↓</div>
+                    <div class="flow-step">
+                        <strong>📝 ブログ閲覧</strong><br>
+                        情報収集・エンゲージメント
+                    </div>
+                </div>
+                
+                <h4 style="margin-top: 20px;">🏪 B2B事業者フロー</h4>
+                <div class="flow-diagram">
+                    <div class="flow-step">
+                        <strong>🤝 パートナー登録</strong><br>
+                        事業者としての申込み
+                    </div>
+                    <div class="flow-arrow">↓</div>
+                    <div class="flow-step">
+                        <strong>🏪 ダッシュボード</strong><br>
+                        口コミ・統計確認
+                    </div>
+                    <div class="flow-arrow">↓</div>
+                    <div class="flow-step">
+                        <strong>💳 サブスクリプション</strong><br>
+                        プラン選択・継続課金
+                    </div>
+                </div>
+            </div>
+
+            <!-- 修正優先度サマリー -->
+            <div class="navigation-flow" style="margin-top: 30px;">
+                <div class="flow-title">🛠️ 修正作業優先度</div>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                    <div style="background: #ffebee; padding: 15px; border-radius: 8px; border-left: 4px solid #f44336;">
+                        <h4 style="color: #c62828; margin-bottom: 10px;">🔥 最優先 (即修正)</h4>
+                        <ul style="margin-left: 20px; color: #555;">
+                            <li>メインランディングページ</li>
+                            <li>ショップデータベース・検索</li>
+                            <li>ショップ詳細ページ</li>
+                            <li>ショップダッシュボード</li>
+                        </ul>
+                    </div>
+                    
+                    <div style="background: #fff3e0; padding: 15px; border-radius: 8px; border-left: 4px solid #ff9800;">
+                        <h4 style="color: #ef6c00; margin-bottom: 10px;">⚠️ 重要 (早期修正)</h4>
+                        <ul style="margin-left: 20px; color: #555;">
+                            <li>旅行ガイド・費用シミュレーター</li>
+                            <li>ブログシステム</li>
+                            <li>会員システム・認証</li>
+                            <li>口コミ・ポイントシステム</li>
+                        </ul>
+                    </div>
+                    
+                    <div style="background: #e8f5e8; padding: 15px; border-radius: 8px; border-left: 4px solid #4caf50;">
+                        <h4 style="color: #2e7d32; margin-bottom: 10px;">✅ 標準 (後回し可)</h4>
+                        <ul style="margin-left: 20px; color: #555;">
+                            <li>システム監視・テスト</li>
+                            <li>サポートページ群</li>
+                            <li>LINE連携ページ</li>
+                            <li>管理・設定ページ</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

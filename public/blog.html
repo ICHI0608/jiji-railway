@@ -3,13 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ブログ - Jiji AI感情分析ダイビングマッチング</title>
-    <meta name="description" content="Jijiの最新情報、ダイビング業界の革新、初心者サポート、技術解説など、価値のあるコンテンツをお届けします。">
+    <title>ダイビング情報ブログ - Dive Buddy's</title>
+    <meta name="description" content="沖縄の海で新しい自分に出会う。透明度抜群の海でのダイビング体験、おすすめスポット、安心して楽しめる情報をお届けします。">
     
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
+    <!-- 統一デザインシステム -->
+    <link rel="stylesheet" href="/css/design-system.css">
     <!-- Styles -->
     <link rel="stylesheet" href="/css/common.css">
     
@@ -124,6 +126,37 @@
         
         .search-button:hover {
             background: #5a6fd8;
+        }
+
+        .search-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-top: none;
+            border-radius: 0 0 15px 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            z-index: 100;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .suggestion-item {
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .suggestion-item:hover {
+            background: #f8f9ff;
+        }
+
+        .suggestion-item:last-child {
+            border-bottom: none;
         }
         
         .blog-posts {
@@ -423,6 +456,7 @@
                 <button class="search-button" onclick="searchPosts()">
                     <i class="fas fa-search"></i>
                 </button>
+                <div id="searchSuggestions" class="search-suggestions"></div>
             </div>
         </div>
     </section>
@@ -654,8 +688,22 @@
 
         function setupSearch() {
             const searchInput = document.getElementById('searchInput');
+            let suggestionTimer = null;
+            
             searchInput.addEventListener('input', function() {
-                currentSearchTerm = this.value.toLowerCase();
+                const value = this.value.trim();
+                currentSearchTerm = value.toLowerCase();
+                
+                // サジェスト機能
+                clearTimeout(suggestionTimer);
+                if (value.length >= 2) {
+                    suggestionTimer = setTimeout(() => {
+                        loadSearchSuggestions(value);
+                    }, 300);
+                } else {
+                    hideSearchSuggestions();
+                }
+                
                 filterPosts();
             });
             
@@ -665,6 +713,47 @@
                     searchPosts();
                 }
             });
+
+            // 外部クリックでサジェストを閉じる
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.search-box')) {
+                    hideSearchSuggestions();
+                }
+            });
+        }
+
+        async function loadSearchSuggestions(query) {
+            try {
+                const response = await fetch(`/api/blog/suggest?q=${encodeURIComponent(query)}`);
+                const data = await response.json();
+                
+                if (data.success && data.suggestions.length > 0) {
+                    showSearchSuggestions(data.suggestions);
+                } else {
+                    hideSearchSuggestions();
+                }
+            } catch (error) {
+                console.error('サジェスト取得エラー:', error);
+                hideSearchSuggestions();
+            }
+        }
+
+        function showSearchSuggestions(suggestions) {
+            const container = document.getElementById('searchSuggestions');
+            container.innerHTML = suggestions.map(suggestion => 
+                `<div class="suggestion-item" onclick="selectSuggestion('${suggestion}')">${suggestion}</div>`
+            ).join('');
+            container.style.display = 'block';
+        }
+
+        function hideSearchSuggestions() {
+            document.getElementById('searchSuggestions').style.display = 'none';
+        }
+
+        function selectSuggestion(suggestion) {
+            document.getElementById('searchInput').value = suggestion;
+            hideSearchSuggestions();
+            searchPosts();
         }
 
         function filterPosts() {
@@ -686,7 +775,22 @@
 
         function searchPosts() {
             const searchInput = document.getElementById('searchInput');
-            currentSearchTerm = searchInput.value.toLowerCase();
+            const query = searchInput.value.trim();
+            
+            if (!query) {
+                currentSearchTerm = '';
+                filterPosts();
+                return;
+            }
+            
+            // 高度な検索が必要な場合は検索ページにリダイレクト
+            if (query.length > 2) {
+                window.location.href = `/blog/search?q=${encodeURIComponent(query)}`;
+                return;
+            }
+            
+            // 簡易検索
+            currentSearchTerm = query.toLowerCase();
             filterPosts();
             
             trackEvent('blog_search', {

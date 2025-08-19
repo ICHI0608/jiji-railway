@@ -1,0 +1,138 @@
+# Robots.txt for dive-buddys.com
+# Generated: 2025-07-29
+
+User-agent: *
+Allow: /
+
+# 新導線v2.0 優先ページ
+Allow: /
+Allow: /diving-guide/
+Allow: /shops-database/
+Allow: /weather-ocean/
+Allow: /travel-guide/
+Allow: /member/
+Allow: /about
+Allow: /blog/
+Allow: /reviews/
+Allow: /contact
+
+# 静的リソース
+Allow: /app/
+Allow: /images/
+Allow: /favicon/
+Allow: /sitemap.xml
+
+# 制限エリア
+Disallow: /admin/
+Disallow: /api/
+Disallow: /shop/dashboard
+Disallow: /shop/edit-profile
+Disallow: /shop/subscription
+Disallow: /member/profile
+Disallow: /data/
+Disallow: /docs/
+Disallow: /node_modules/
+Disallow: /*.json$
+Disallow: /*.md$
+
+# アーカイブ・開発ファイル
+Disallow: /archive/
+Disallow: /design-system-backup/
+Disallow: /app/v28-*
+Disallow: /index_ui_check.html
+
+# 一時的なページ
+Disallow: /transition
+Disallow: /temp/
+Disallow: /test/
+
+# サイトマップ
+Sitemap: https://dive-buddys.com/sitemap.xml
+
+# 検索エンジン別設定
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 2
+
+User-agent: Slurp
+Allow: /
+Crawl-delay: 3
+
+# ソーシャルメディアボット
+User-agent: facebookexternalhit
+Allow: /
+
+User-agent: Twitterbot
+Allow: /
+
+User-agent: LinkedInBot
+Allow: /
+
+# 悪意のあるボット・スクレイパーの制限
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: MajesticSEO
+Disallow: /
+
+User-agent: BLEXBot
+Disallow: /
+
+User-agent: DataForSeoBot
+Disallow: /
+
+# 過度なクローリングを行うボット
+User-agent: *
+Crawl-delay: 1
+
+# 特定の検索エンジンにより細かい制御
+User-agent: Googlebot
+Crawl-delay: 0
+Allow: /
+
+User-agent: Bingbot
+Crawl-delay: 1
+Allow: /
+
+# 地域SEO向けbot許可
+User-agent: Googlebot-Image
+Allow: /images/
+Allow: /favicon/
+
+# ニュースボット（将来のブログ記事用）
+User-agent: Googlebot-News
+Allow: /blog/
+
+# 動画ボット（将来の動画コンテンツ用）
+User-agent: Googlebot-Video
+Allow: /videos/
+
+# Yahoo Japan固有
+User-agent: Y!J-BRW
+Allow: /
+Crawl-delay: 2
+
+# 追加の制限ディレクトリ
+Disallow: /error/
+Disallow: /tmp/
+Disallow: /cache/
+Disallow: /*.log$
+Disallow: /*?utm_*
+
+# パフォーマンス向上のため重いファイル制限
+Disallow: /*.zip$
+Disallow: /*.pdf$
+Disallow: /*.xlsx$

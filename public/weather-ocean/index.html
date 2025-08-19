@@ -4,10 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>海況・天気情報 | Dive Buddy's</title>
-    <meta name="description" content="沖縄ダイビングのリアルタイム海況・天気情報。気象庁API連携でダイビング適性を自動判定。宮古島・石垣島・沖縄本島対応。">
+    <meta name="description" content="沖縄ダイビングのリアルタイム海況・天気情報。3日間詳細予報とダイビング適性を自動判定。石垣島・宮古島・沖縄本島・慶良間諸島対応。台風情報・警報も。">
     
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- 統一デザインシステム -->
+    <link rel="stylesheet" href="/css/design-system.css">
     <link rel="stylesheet" href="../app/v28-styles.css">
     
     <style>
@@ -973,7 +975,8 @@
                 </div>
                 <h1 class="database-title">🌊 海況・天気情報</h1>
                 <p class="database-subtitle">
-                    沖縄ダイビングの最新海況・天気情報。リアルタイムデータと週間予報でベストなダイビング日程を計画しよう。
+                    沖縄ダイビングの最新海況・天気情報。3日間リアルタイムデータと7日間予報でベストなダイビング日程を計画しよう。<br>
+                    <strong>NEW:</strong> 詳細海況ページで潮汐・風向・波浪情報も確認可能
                 </p>
                 <div style="margin-top: 20px; font-size: 0.9rem; opacity: 0.9;">
                     <i class="fas fa-clock"></i> 最終更新: <span id="lastUpdate">取得中...</span>
@@ -1032,6 +1035,7 @@
                 <button class="forecast-tab active" data-area="ishigaki">🏝️ 石垣島</button>
                 <button class="forecast-tab" data-area="miyako">🌺 宮古島</button>
                 <button class="forecast-tab" data-area="okinawa">🏖️ 沖縄本島</button>
+                <button class="forecast-tab" data-area="kerama">🐢 慶良間諸島</button>
             </div>
             
             <div id="forecastContainer">
@@ -1286,15 +1290,15 @@
             setInterval(updateCurrentConditions, 300000); // 5分ごと
         });
         
-        // リアルタイム海況情報更新
+        // リアルタイム海況情報更新（3日間詳細対応）
         async function updateCurrentConditions() {
             try {
-                console.log('🌊 海況・天気情報を更新中...');
+                console.log('🌊 3日間海況・天気情報を更新中...');
                 
-                // 複数エリアの並行取得
-                const areas = ['okinawa_main', 'ishigaki', 'miyakojima'];
+                // 複数エリアの3日間データを並行取得
+                const areas = ['okinawa_main', 'ishigaki', 'miyakojima', 'kerama'];
                 const areaPromises = areas.map(area => 
-                    fetch(`/api/weather/diving-condition/${area}`)
+                    fetch(`/api/weather/diving-condition/${area}?days=3`)
                         .then(response => response.json())
                         .catch(error => ({ success: false, area, error: error.message }))
                 );
@@ -1309,6 +1313,7 @@
                 if (validData.length > 0) {
                     renderWeatherConditions(validData);
                     updateLastUpdateTime();
+                    console.log(`✅ ${validData.length}エリアの3日間データ取得完了`);
                 } else {
                     console.warn('全ての気象庁APIデータ取得に失敗、サンプルデータ表示');
                     renderWeatherConditions(getSampleWeatherData());
@@ -1427,6 +1432,13 @@
                         
                         <div class="diving-reasons">
                             <div class="reasons-text">${area.diving_conditions?.factors ? formatDivingReasons(area.diving_conditions.factors) : '良好なコンディション'}</div>
+                        </div>
+                        
+                        <div style="margin-top: 15px; text-align: center;">
+                            <a href="/weather-ocean/details?area=${area.region.toLowerCase()}" 
+                               style="color: var(--color-accent-1); text-decoration: none; font-size: 0.9rem;">
+                                📊 詳細海況情報を見る
+                            </a>
                         </div>
                     </div>
                 `;
@@ -1556,6 +1568,24 @@
                             weather: { status: 'poor', reason: '雨天' },
                             wind: { status: 'fair', reason: 'やや強い風' },
                             waves: { status: 'poor', reason: '高い波' }
+                        }
+                    }
+                },
+                {
+                    region: '慶良間諸島',
+                    temperature: 26,
+                    weather: '晴れ',
+                    wind_direction: '北',
+                    wind_speed: 2,
+                    wave_height: 0.8,
+                    visibility: 35,
+                    water_temperature: 25,
+                    diving_suitability_score: 92,
+                    diving_conditions: {
+                        factors: {
+                            weather: { status: 'excellent', reason: '快晴' },
+                            wind: { status: 'excellent', reason: '微風' },
+                            waves: { status: 'excellent', reason: 'べた凪' }
                         }
                     }
                 }
@@ -2165,7 +2195,7 @@
         // サンプルデータ
         function getSampleForecastData() {
             const baseDate = new Date();
-            const areas = ['ishigaki', 'miyako', 'okinawa'];
+            const areas = ['ishigaki', 'miyako', 'okinawa', 'kerama'];
             const forecastData = {};
 
             areas.forEach(area => {
@@ -2173,6 +2203,11 @@
                 for (let i = 0; i < 7; i++) {
                     const date = new Date(baseDate);
                     date.setDate(date.getDate() + i);
+                    
+                    // エリア別の特性を反映
+                    let baseScore = 70;
+                    if (area === 'kerama') baseScore = 85; // 慶良間は高スコア
+                    if (area === 'ishigaki') baseScore = 80; // 石垣も高め
                     
                     forecastData[area].push({
                         date: date.toISOString().split('T')[0],
@@ -2182,7 +2217,7 @@
                         wave_height: (0.8 + Math.random() * 1.5).toFixed(1),
                         wind_direction: ['北', '北東', '東', '南東'][Math.floor(Math.random() * 4)],
                         wind_speed: 2 + Math.floor(Math.random() * 5),
-                        diving_score: 50 + Math.floor(Math.random() * 40)
+                        diving_score: baseScore + Math.floor(Math.random() * 20)
                     });
                 }
             });

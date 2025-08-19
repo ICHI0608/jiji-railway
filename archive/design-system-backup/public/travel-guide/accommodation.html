@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>宿泊施設検索 | Dive Buddy's - ダイビング旅行に最適な宿泊先</title>
+    <meta name="description" content="沖縄・離島のダイビング旅行に最適な宿泊施設を検索・比較。ダイバー専用ホテルからリゾートまで幅広く掲載。">
+    
+    <link rel="stylesheet" href="/app/v28-styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        .accommodation-page {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+        }
+
+        .page-header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            color: white;
+            padding: 4rem 0 2rem;
+            text-align: center;
+        }
+
+        .page-header h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .page-header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .search-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        .search-panel {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .search-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-input {
+            padding: 0.8rem 1rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .search-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            grid-column: 1 / -1;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+
+        .search-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .filters-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-radius: 12px;
+            margin-top: 1rem;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .checkbox-custom {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #667eea;
+            border-radius: 4px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .checkbox-custom:checked {
+            background: #667eea;
+        }
+
+        .checkbox-custom:checked::after {
+            content: '✓';
+            position: absolute;
+            color: white;
+            font-size: 14px;
+            top: -2px;
+            left: 2px;
+        }
+
+        .results-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .accommodation-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .accommodation-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.15);
+        }
+
+        .card-image {
+            width: 100%;
+            height: 220px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+
+        .card-image::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, rgba(102, 126, 234, 0.3), transparent);
+        }
+
+        .diving-badge {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            z-index: 2;
+        }
+
+        .price-badge {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 0.5rem 1rem;
+            border-radius: 15px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #667eea;
+            z-index: 2;
+        }
+
+        .card-content {
+            padding: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .card-location {
+            color: #666;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card-rating {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .stars {
+            color: #fbbf24;
+        }
+
+        .rating-text {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .diving-features {
+            margin-bottom: 1rem;
+        }
+
+        .diving-features h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #667eea;
+        }
+
+        .features-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .feature-tag {
+            background: #e0f2fe;
+            color: #0891b2;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .card-description {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn-details {
+            flex: 1;
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-details:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+        }
+
+        .btn-bookmark {
+            background: #f1f1f1;
+            color: #666;
+            border: none;
+            padding: 0.8rem;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-bookmark:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .loading-container {
+            text-align: center;
+            padding: 3rem;
+            color: white;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-top: 5px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 3rem;
+            color: #666;
+            grid-column: 1 / -1;
+        }
+
+        .no-results-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .search-stats {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .page-header h1 {
+                font-size: 2rem;
+            }
+
+            .search-form {
+                grid-template-columns: 1fr;
+            }
+
+            .results-container {
+                grid-template-columns: 1fr;
+            }
+
+            .filters-section {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="accommodation-page">
+        <!-- ヘッダー -->
+        <header class="main-header">
+            <nav class="main-nav">
+                <a href="/" class="main-logo">
+                    <h1>🌺 Dive Buddy's</h1>
+                    <span>宿泊施設検索</span>
+                </a>
+                
+                <ul class="main-nav-menu">
+                    <li><a href="/">ホーム</a></li>
+                    <li><a href="/about">サービス</a></li>
+                    <li><a href="/member">会員システム</a></li>
+                    <li><a href="/shops-database">ショップDB</a></li>
+                    <li><a href="/blog">ブログ</a></li>
+                    <li><a href="/travel-guide" class="active">旅行ガイド</a></li>
+                    <li><a href="/weather-ocean">海況・天気</a></li>
+                    <li><a href="/partners">ショップ向け</a></li>
+                    <li><a href="/contact">お問い合わせ</a></li>
+                </ul>
+                
+                <div class="main-nav-buttons">
+                    <a href="/member" class="btn btn-secondary">
+                        <i class="fas fa-user-plus"></i> 会員登録
+                    </a>
+                    <a href="https://line.me/ti/p/@2007331165" class="btn btn-primary btn-line-connect" target="_blank">
+                        <i class="fab fa-line"></i> Jijiに相談
+                    </a>
+                </div>
+            </nav>
+        </header>
+
+        <section class="page-header">
+            <div class="container">
+                <h1><i class="fas fa-bed"></i> 宿泊施設検索</h1>
+                <p>ダイビング旅行に最適な宿泊施設を検索・比較。ダイバー専用ホテルからリゾートまで幅広く掲載</p>
+            </div>
+        </section>
+
+        <div class="search-container">
+            <!-- 検索パネル -->
+            <div class="search-panel">
+                <form class="search-form" id="searchForm">
+                    <div class="form-group">
+                        <label for="location">
+                            <i class="fas fa-map-marker-alt"></i> 場所
+                        </label>
+                        <select class="form-input" id="location" name="location">
+                            <option value="">すべての地域</option>
+                            <option value="石垣島">石垣島</option>
+                            <option value="宮古島">宮古島</option>
+                            <option value="沖縄本島">沖縄本島</option>
+                            <option value="慶良間諸島">慶良間諸島</option>
+                            <option value="西表島">西表島</option>
+                            <option value="与那国島">与那国島</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="checkin">
+                            <i class="fas fa-calendar-alt"></i> チェックイン
+                        </label>
+                        <input type="date" class="form-input" id="checkin" name="checkin">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="checkout">
+                            <i class="fas fa-calendar-alt"></i> チェックアウト
+                        </label>
+                        <input type="date" class="form-input" id="checkout" name="checkout">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="guests">
+                            <i class="fas fa-users"></i> 人数
+                        </label>
+                        <select class="form-input" id="guests" name="guests">
+                            <option value="1">1名</option>
+                            <option value="2" selected>2名</option>
+                            <option value="3">3名</option>
+                            <option value="4">4名</option>
+                            <option value="5">5名以上</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="priceRange">
+                            <i class="fas fa-yen-sign"></i> 価格帯
+                        </label>
+                        <select class="form-input" id="priceRange" name="price_range">
+                            <option value="all">すべて</option>
+                            <option value="budget">エコノミー (〜10,000円)</option>
+                            <option value="mid">スタンダード (10,000〜20,000円)</option>
+                            <option value="luxury">プレミアム (20,000円〜)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="accommodationType">
+                            <i class="fas fa-building"></i> 宿泊施設タイプ
+                        </label>
+                        <select class="form-input" id="accommodationType" name="accommodation_type">
+                            <option value="all">すべて</option>
+                            <option value="hotel">ホテル</option>
+                            <option value="resort">リゾート</option>
+                            <option value="lodge">ロッジ</option>
+                            <option value="eco_lodge">エコロッジ</option>
+                        </select>
+                    </div>
+                </form>
+
+                <!-- フィルター -->
+                <div class="filters-section">
+                    <div class="filter-group">
+                        <input type="checkbox" id="divingFriendly" class="checkbox-custom">
+                        <label for="divingFriendly">ダイビング特化</label>
+                    </div>
+                    <div class="filter-group">
+                        <input type="checkbox" id="hasPool" class="checkbox-custom">
+                        <label for="hasPool">プール付き</label>
+                    </div>
+                    <div class="filter-group">
+                        <input type="checkbox" id="hasRestaurant" class="checkbox-custom">
+                        <label for="hasRestaurant">レストラン</label>
+                    </div>
+                    <div class="filter-group">
+                        <input type="checkbox" id="hasTransfer" class="checkbox-custom">
+                        <label for="hasTransfer">送迎サービス</label>
+                    </div>
+                </div>
+
+                <button type="submit" class="search-button" onclick="performSearch()">
+                    <i class="fas fa-search"></i> 宿泊施設を検索
+                </button>
+            </div>
+
+            <!-- 検索統計 -->
+            <div id="searchStats" class="search-stats" style="display: none;"></div>
+
+            <!-- 読み込み中 -->
+            <div id="loadingContainer" class="loading-container" style="display: none;">
+                <div class="loading-spinner"></div>
+                <h2>宿泊施設を検索中...</h2>
+            </div>
+
+            <!-- 検索結果 -->
+            <div id="resultsContainer" class="results-container">
+                <!-- 結果カードが動的に挿入される -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class AccommodationSearch {
+            constructor() {
+                this.accommodations = [];
+                this.searchParams = {};
+                this.init();
+            }
+
+            init() {
+                // デフォルト日付を設定
+                this.setDefaultDates();
+                // 初期検索を実行
+                this.performSearch();
+            }
+
+            setDefaultDates() {
+                const today = new Date();
+                const tomorrow = new Date(today);
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                
+                document.getElementById('checkin').value = today.toISOString().split('T')[0];
+                document.getElementById('checkout').value = tomorrow.toISOString().split('T')[0];
+            }
+
+            async performSearch() {
+                try {
+                    this.showLoading();
+
+                    // フォームデータを収集
+                    const formData = new FormData(document.getElementById('searchForm'));
+                    const params = new URLSearchParams(formData);
+                    
+                    // ダイビング特化フィルター
+                    if (document.getElementById('divingFriendly').checked) {
+                        params.append('diving_friendly', 'true');
+                    }
+
+                    console.log('🔍 宿泊施設検索開始:', Object.fromEntries(params));
+
+                    const response = await fetch(`/api/travel/accommodations/search?${params.toString()}`);
+                    const data = await response.json();
+
+                    if (data.success) {
+                        this.accommodations = data.accommodations;
+                        this.searchParams = data.search_params;
+                        this.renderResults();
+                        this.updateSearchStats();
+                    } else {
+                        this.showError('検索に失敗しました: ' + data.message);
+                    }
+
+                } catch (error) {
+                    console.error('宿泊施設検索エラー:', error);
+                    this.showError('ネットワークエラーが発生しました');
+                } finally {
+                    this.hideLoading();
+                }
+            }
+
+            renderResults() {
+                const container = document.getElementById('resultsContainer');
+                
+                if (this.accommodations.length === 0) {
+                    container.innerHTML = `
+                        <div class="no-results">
+                            <div class="no-results-icon">
+                                <i class="fas fa-search"></i>
+                            </div>
+                            <h3>該当する宿泊施設が見つかりませんでした</h3>
+                            <p>検索条件を変更してお試しください</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const html = this.accommodations.map(acc => this.createAccommodationCard(acc)).join('');
+                container.innerHTML = html;
+            }
+
+            createAccommodationCard(acc) {
+                const stars = this.generateStarRating(acc.rating);
+                const mainImage = acc.images && acc.images[0] ? acc.images[0] : 'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800&q=80';
+                
+                return `
+                    <div class="accommodation-card">
+                        <div class="card-image" style="background-image: url('${mainImage}')">
+                            ${acc.diving_friendly ? '<div class="diving-badge">ダイビング特化</div>' : ''}
+                            <div class="price-badge">¥${acc.price_per_night.toLocaleString()}/泊</div>
+                        </div>
+                        <div class="card-content">
+                            <h3 class="card-title">${acc.name}</h3>
+                            <div class="card-location">
+                                <i class="fas fa-map-marker-alt"></i>
+                                ${acc.location} - ${acc.area}
+                            </div>
+                            <div class="card-rating">
+                                <div class="stars">${stars}</div>
+                                <span class="rating-text">${acc.rating} (${acc.review_count}件の口コミ)</span>
+                            </div>
+                            
+                            ${acc.diving_features && acc.diving_features.length > 0 ? `
+                                <div class="diving-features">
+                                    <h4><i class="fas fa-water"></i> ダイビング設備</h4>
+                                    <div class="features-list">
+                                        ${acc.diving_features.slice(0, 3).map(feature => 
+                                            `<span class="feature-tag">${feature}</span>`
+                                        ).join('')}
+                                    </div>
+                                </div>
+                            ` : ''}
+                            
+                            <p class="card-description">${acc.description}</p>
+                            
+                            <div class="card-actions">
+                                <button class="btn-details" onclick="viewAccommodationDetails('${acc.id}')">
+                                    <i class="fas fa-info-circle"></i> 詳細を見る
+                                </button>
+                                <button class="btn-bookmark" onclick="bookmarkAccommodation('${acc.id}')">
+                                    <i class="fas fa-bookmark"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            generateStarRating(rating) {
+                const fullStars = Math.floor(rating);
+                const halfStar = rating % 1 >= 0.5;
+                const emptyStars = 5 - fullStars - (halfStar ? 1 : 0);
+                
+                return '★'.repeat(fullStars) + 
+                       (halfStar ? '☆' : '') + 
+                       '☆'.repeat(emptyStars);
+            }
+
+            updateSearchStats() {
+                const statsElement = document.getElementById('searchStats');
+                const count = this.accommodations.length;
+                
+                let statsText = `${count}件の宿泊施設が見つかりました`;
+                
+                if (this.searchParams.location) {
+                    statsText += ` | ${this.searchParams.location}`;
+                }
+                
+                if (this.searchParams.diving_friendly === 'true') {
+                    statsText += ` | ダイビング特化施設`;
+                }
+
+                statsElement.textContent = statsText;
+                statsElement.style.display = 'block';
+            }
+
+            showLoading() {
+                document.getElementById('loadingContainer').style.display = 'block';
+                document.getElementById('resultsContainer').style.display = 'none';
+            }
+
+            hideLoading() {
+                document.getElementById('loadingContainer').style.display = 'none';
+                document.getElementById('resultsContainer').style.display = 'grid';
+            }
+
+            showError(message) {
+                const container = document.getElementById('resultsContainer');
+                container.innerHTML = `
+                    <div class="no-results">
+                        <div class="no-results-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <h3>エラーが発生しました</h3>
+                        <p>${message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // グローバル関数
+        function performSearch() {
+            window.accommodationSearch.performSearch();
+        }
+
+        function viewAccommodationDetails(id) {
+            // 詳細ページへ遷移（今後実装）
+            console.log('宿泊施設詳細:', id);
+            alert(`宿泊施設 ${id} の詳細ページは今後実装予定です`);
+        }
+
+        function bookmarkAccommodation(id) {
+            console.log('ブックマーク追加:', id);
+            alert('ブックマーク機能は今後実装予定です');
+        }
+
+        // 初期化
+        document.addEventListener('DOMContentLoaded', () => {
+            window.accommodationSearch = new AccommodationSearch();
+        });
+    </script>
+</body>
+</html>

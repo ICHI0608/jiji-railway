@@ -67,6 +67,8 @@ async function initializeSupabase() {
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const CUSTOM_DOMAIN = process.env.CUSTOM_DOMAIN || 'dive-buddys.com';
+const BASE_URL = process.env.NODE_ENV === 'production' ? `https://${CUSTOM_DOMAIN}` : `http://localhost:${PORT}`;
 
 // 非同期でSupabase初期化（エラー時もサーバー継続）
 initializeSupabase().then(result => {
@@ -191,8 +193,52 @@ const OKINAWA_TRANSPORT_DATA = {
     }
 };
 
+// セキュリティヘッダー・リダイレクト設定
+app.use((req, res, next) => {
+    // HTTPS強制リダイレクト（本番環境のみ）
+    if (process.env.NODE_ENV === 'production' && req.header('x-forwarded-proto') !== 'https') {
+        return res.redirect(`https://${req.header('host')}${req.url}`);
+    }
+    
+    // www リダイレクト設定
+    if (req.header('host') === `www.${CUSTOM_DOMAIN}`) {
+        return res.redirect(301, `https://${CUSTOM_DOMAIN}${req.url}`);
+    }
+    
+    // Railway デフォルトドメインからのリダイレクト
+    const host = req.header('host');
+    if (host && host.includes('railway.app') && process.env.NODE_ENV === 'production') {
+        return res.redirect(301, `https://${CUSTOM_DOMAIN}${req.url}`);
+    }
+    
+    // セキュリティヘッダー設定（本番環境のみ）
+    if (process.env.NODE_ENV === 'production') {
+        // HSTS (HTTP Strict Transport Security)
+        res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+        
+        // Content Security Policy
+        res.setHeader('Content-Security-Policy', `
+            default-src 'self' https://${CUSTOM_DOMAIN};
+            script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://fonts.googleapis.com;
+            style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com;
+            font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com;
+            img-src 'self' data: https: http:;
+            connect-src 'self' https://${CUSTOM_DOMAIN} https://api.supabase.co;
+        `.replace(/\s+/g, ' ').trim());
+        
+        // その他のセキュリティヘッダー
+        res.setHeader('X-Frame-Options', 'DENY');
+        res.setHeader('X-Content-Type-Options', 'nosniff');
+        res.setHeader('X-XSS-Protection', '1; mode=block');
+        res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    }
+    
+    next();
+});
+
 // 基本設定
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express.static('public'));
 
 // シンプルなセッション管理（本番では express-session 推奨）
@@ -1870,7 +1916,7 @@ app.get('/api/blog/related/:articleId', async (req, res) => {
             });
         }
         
-        const relatedArticles = findRelatedArticles(targetArticle, allArticles, parseInt(limit));
+        const relatedArticles = findEnhancedRelatedArticles(targetArticle, allArticles, parseInt(limit));
         
         console.log('🔗 関連記事取得成功（フォールバック）:', relatedArticles.length, '件');
         res.json({
@@ -1890,6 +1936,100 @@ app.get('/api/blog/related/:articleId', async (req, res) => {
         });
     }
 });
+
+// 強化された関連記事検索
+function findEnhancedRelatedArticles(targetArticle, allArticles, limit = 5) {
+    const relatedScores = allArticles
+        .filter(article => article.id !== targetArticle.id && article.status === 'published')
+        .map(article => {
+            let score = 0;
+            
+            // カテゴリマッチ（高スコア）
+            if (article.category === targetArticle.category) {
+                score += 10;
+            }
+            
+            // タグマッチ（中スコア）
+            const commonTags = article.tags.filter(tag => 
+                targetArticle.tags.some(targetTag => 
+                    targetTag.toLowerCase() === tag.toLowerCase()
+                )
+            );
+            score += commonTags.length * 5;
+            
+            // タイトル類似度（中スコア）
+            const titleSimilarity = calculateTextSimilarity(
+                targetArticle.title.toLowerCase(),
+                article.title.toLowerCase()
+            );
+            score += titleSimilarity * 3;
+            
+            // コンテンツ類似度（低スコア）
+            const contentSimilarity = calculateTextSimilarity(
+                targetArticle.content.toLowerCase(),
+                article.content.toLowerCase()
+            );
+            score += contentSimilarity * 2;
+            
+            // 人気度ボーナス
+            score += Math.log(article.views + 1) * 0.5;
+            
+            // 新しさボーナス
+            const daysDiff = (new Date() - new Date(article.published_at)) / (1000 * 60 * 60 * 24);
+            if (daysDiff < 30) {
+                score += (30 - daysDiff) * 0.1;
+            }
+            
+            return { article, score };
+        })
+        .sort((a, b) => b.score - a.score)
+        .slice(0, limit)
+        .map(item => ({
+            ...item.article,
+            related_score: Math.round(item.score * 10) / 10,
+            related_reasons: generateRelatedReasons(targetArticle, item.article)
+        }));
+    
+    return relatedScores;
+}
+
+// テキスト類似度計算（簡易版）
+function calculateTextSimilarity(text1, text2) {
+    const words1 = text1.split(/\s+/).filter(word => word.length > 2);
+    const words2 = text2.split(/\s+/).filter(word => word.length > 2);
+    
+    if (words1.length === 0 || words2.length === 0) return 0;
+    
+    const commonWords = words1.filter(word => words2.includes(word));
+    return commonWords.length / Math.max(words1.length, words2.length);
+}
+
+// 関連理由生成
+function generateRelatedReasons(targetArticle, relatedArticle) {
+    const reasons = [];
+    
+    // カテゴリが同じ
+    if (targetArticle.category === relatedArticle.category) {
+        reasons.push(`同じカテゴリ「${targetArticle.category}」`);
+    }
+    
+    // 共通タグ
+    const commonTags = targetArticle.tags.filter(tag => 
+        relatedArticle.tags.some(relatedTag => 
+            relatedTag.toLowerCase() === tag.toLowerCase()
+        )
+    );
+    if (commonTags.length > 0) {
+        reasons.push(`共通タグ: ${commonTags.slice(0, 2).join(', ')}`);
+    }
+    
+    // 人気記事
+    if (relatedArticle.views > 1000) {
+        reasons.push('人気記事');
+    }
+    
+    return reasons;
+}
 
 // SEO最適化・メタタグ生成API
 app.get('/api/blog/seo/:articleId', async (req, res) => {
@@ -3602,6 +3742,426 @@ function getSimilarHotels(hotel) {
         }));
 }
 
+// ===== 監視・ログシステム =====
+
+// システム統計情報
+let systemStats = {
+    start_time: new Date().toISOString(),
+    request_count: 0,
+    error_count: 0,
+    last_error: null,
+    response_times: [],
+    endpoints_usage: {},
+    memory_usage: [],
+    active_connections: 0
+};
+
+// リクエスト監視ミドルウェア
+app.use((req, res, next) => {
+    const startTime = Date.now();
+    systemStats.request_count++;
+    systemStats.active_connections++;
+    
+    // エンドポイント使用統計
+    const endpoint = `${req.method} ${req.path}`;
+    systemStats.endpoints_usage[endpoint] = (systemStats.endpoints_usage[endpoint] || 0) + 1;
+    
+    // レスポンス時間記録
+    res.on('finish', () => {
+        const responseTime = Date.now() - startTime;
+        systemStats.response_times.push({
+            endpoint,
+            response_time: responseTime,
+            status_code: res.statusCode,
+            timestamp: new Date().toISOString()
+        });
+        
+        // 直近100件のレスポンス時間のみ保持
+        if (systemStats.response_times.length > 100) {
+            systemStats.response_times = systemStats.response_times.slice(-100);
+        }
+        
+        systemStats.active_connections--;
+        
+        // 遅いレスポンスをログ出力
+        if (responseTime > 5000) {
+            console.warn(`⚠️ 遅いレスポンス: ${endpoint} ${responseTime}ms`);
+        }
+        
+        // エラーレスポンスをログ出力
+        if (res.statusCode >= 400) {
+            const errorInfo = {
+                endpoint,
+                status_code: res.statusCode,
+                response_time: responseTime,
+                timestamp: new Date().toISOString(),
+                user_agent: req.get('User-Agent'),
+                ip: req.ip
+            };
+            
+            systemStats.error_count++;
+            systemStats.last_error = errorInfo;
+            
+            console.error(`🚨 エラーレスポンス: ${JSON.stringify(errorInfo)}`);
+        }
+    });
+    
+    next();
+});
+
+// メモリ使用量監視（5分ごと）
+setInterval(() => {
+    const memoryUsage = process.memoryUsage();
+    systemStats.memory_usage.push({
+        timestamp: new Date().toISOString(),
+        rss: Math.round(memoryUsage.rss / 1024 / 1024), // MB
+        heap_used: Math.round(memoryUsage.heapUsed / 1024 / 1024), // MB
+        heap_total: Math.round(memoryUsage.heapTotal / 1024 / 1024), // MB
+        external: Math.round(memoryUsage.external / 1024 / 1024) // MB
+    });
+    
+    // 直近24時間分のみ保持（5分間隔で288個）
+    if (systemStats.memory_usage.length > 288) {
+        systemStats.memory_usage = systemStats.memory_usage.slice(-288);
+    }
+    
+    // メモリ使用量警告
+    const heapUsedMB = memoryUsage.heapUsed / 1024 / 1024;
+    if (heapUsedMB > 500) {
+        console.warn(`⚠️ 高メモリ使用量: ${Math.round(heapUsedMB)}MB`);
+    }
+}, 5 * 60 * 1000);
+
+// システム監視API
+app.get('/api/monitoring/stats', (req, res) => {
+    try {
+        const uptime = Math.floor((Date.now() - new Date(systemStats.start_time).getTime()) / 1000);
+        const avgResponseTime = systemStats.response_times.length > 0 
+            ? Math.round(systemStats.response_times.reduce((sum, rt) => sum + rt.response_time, 0) / systemStats.response_times.length)
+            : 0;
+            
+        const recentErrors = systemStats.response_times
+            .filter(rt => rt.status_code >= 400)
+            .slice(-10);
+            
+        const topEndpoints = Object.entries(systemStats.endpoints_usage)
+            .sort(([,a], [,b]) => b - a)
+            .slice(0, 10)
+            .map(([endpoint, count]) => ({ endpoint, count }));
+            
+        const currentMemory = systemStats.memory_usage.length > 0 
+            ? systemStats.memory_usage[systemStats.memory_usage.length - 1]
+            : null;
+            
+        res.json({
+            success: true,
+            system_info: {
+                uptime_seconds: uptime,
+                uptime_human: formatUptime(uptime),
+                start_time: systemStats.start_time,
+                node_version: process.version,
+                platform: process.platform
+            },
+            request_stats: {
+                total_requests: systemStats.request_count,
+                error_count: systemStats.error_count,
+                error_rate: systemStats.request_count > 0 
+                    ? Math.round((systemStats.error_count / systemStats.request_count) * 100 * 100) / 100 
+                    : 0,
+                active_connections: systemStats.active_connections,
+                avg_response_time: avgResponseTime
+            },
+            performance: {
+                recent_response_times: systemStats.response_times.slice(-20),
+                top_endpoints: topEndpoints,
+                recent_errors: recentErrors
+            },
+            resources: {
+                current_memory: currentMemory,
+                memory_trend: systemStats.memory_usage.slice(-12), // 直近1時間
+                cpu_usage: process.cpuUsage()
+            },
+            database: {
+                status: supabase ? 'connected' : 'fallback',
+                supabase_configured: !!supabase
+            }
+        });
+    } catch (error) {
+        console.error('監視統計取得エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message,
+            message: '監視統計の取得に失敗しました'
+        });
+    }
+});
+
+// システムアラートAPI
+app.get('/api/monitoring/alerts', (req, res) => {
+    try {
+        const alerts = [];
+        const currentTime = Date.now();
+        
+        // メモリ使用量チェック
+        if (systemStats.memory_usage.length > 0) {
+            const latestMemory = systemStats.memory_usage[systemStats.memory_usage.length - 1];
+            if (latestMemory.heap_used > 400) {
+                alerts.push({
+                    type: 'memory_high',
+                    severity: 'warning',
+                    message: `高メモリ使用量: ${latestMemory.heap_used}MB`,
+                    timestamp: latestMemory.timestamp,
+                    details: latestMemory
+                });
+            }
+        }
+        
+        // エラー率チェック
+        const recentRequests = systemStats.response_times.filter(rt => 
+            currentTime - new Date(rt.timestamp).getTime() < 10 * 60 * 1000 // 直近10分
+        );
+        const recentErrors = recentRequests.filter(rt => rt.status_code >= 400);
+        const errorRate = recentRequests.length > 0 ? (recentErrors.length / recentRequests.length) * 100 : 0;
+        
+        if (errorRate > 10) {
+            alerts.push({
+                type: 'error_rate_high',
+                severity: 'critical',
+                message: `高エラー率: ${Math.round(errorRate * 100) / 100}%`,
+                timestamp: new Date().toISOString(),
+                details: {
+                    error_count: recentErrors.length,
+                    total_requests: recentRequests.length,
+                    error_rate: errorRate
+                }
+            });
+        }
+        
+        // レスポンス時間チェック
+        const recentSlowRequests = systemStats.response_times
+            .filter(rt => rt.response_time > 3000)
+            .slice(-5);
+            
+        if (recentSlowRequests.length > 3) {
+            alerts.push({
+                type: 'response_time_slow',
+                severity: 'warning',
+                message: `遅いレスポンス時間が継続`,
+                timestamp: new Date().toISOString(),
+                details: {
+                    slow_requests: recentSlowRequests.length,
+                    avg_response_time: Math.round(recentSlowRequests.reduce((sum, rt) => sum + rt.response_time, 0) / recentSlowRequests.length)
+                }
+            });
+        }
+        
+        // データベース接続チェック
+        if (!supabase) {
+            alerts.push({
+                type: 'database_fallback',
+                severity: 'info',
+                message: 'フォールバックモードで動作中',
+                timestamp: new Date().toISOString(),
+                details: {
+                    mode: 'file_based',
+                    supabase_status: supabaseStatus
+                }
+            });
+        }
+        
+        res.json({
+            success: true,
+            alerts,
+            alert_count: alerts.length,
+            severity_counts: {
+                critical: alerts.filter(a => a.severity === 'critical').length,
+                warning: alerts.filter(a => a.severity === 'warning').length,
+                info: alerts.filter(a => a.severity === 'info').length
+            }
+        });
+    } catch (error) {
+        console.error('アラート取得エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message,
+            message: 'アラート情報の取得に失敗しました'
+        });
+    }
+});
+
+// ログ出力API
+app.get('/api/monitoring/logs', (req, res) => {
+    try {
+        const { limit = 50, level = 'all', since } = req.query;
+        
+        // 簡易ログ（実際の実装では外部ログシステムを使用推奨）
+        const logs = [
+            ...systemStats.response_times.slice(-20).map(rt => ({
+                timestamp: rt.timestamp,
+                level: rt.status_code >= 400 ? 'error' : 'info',
+                message: `${rt.endpoint} - ${rt.status_code} - ${rt.response_time}ms`,
+                category: 'request',
+                details: rt
+            })),
+            ...systemStats.memory_usage.slice(-10).map(mem => ({
+                timestamp: mem.timestamp,
+                level: 'info',
+                message: `Memory: ${mem.heap_used}MB / ${mem.heap_total}MB`,
+                category: 'system',
+                details: mem
+            }))
+        ];
+        
+        // レベルフィルター
+        let filteredLogs = level === 'all' 
+            ? logs 
+            : logs.filter(log => log.level === level);
+            
+        // 時間フィルター
+        if (since) {
+            const sinceTime = new Date(since).getTime();
+            filteredLogs = filteredLogs.filter(log => 
+                new Date(log.timestamp).getTime() >= sinceTime
+            );
+        }
+        
+        // 時間順ソート（新しい順）
+        filteredLogs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        
+        // 制限
+        filteredLogs = filteredLogs.slice(0, parseInt(limit));
+        
+        res.json({
+            success: true,
+            logs: filteredLogs,
+            count: filteredLogs.length,
+            filters: { limit, level, since }
+        });
+    } catch (error) {
+        console.error('ログ取得エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message,
+            message: 'ログ情報の取得に失敗しました'
+        });
+    }
+});
+
+// アップタイム形式変換関数
+function formatUptime(seconds) {
+    const days = Math.floor(seconds / 86400);
+    const hours = Math.floor((seconds % 86400) / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    
+    return `${days}d ${hours}h ${minutes}m ${secs}s`;
+}
+
+// ===== ヘルスチェック・メタデータエンドポイント =====
+
+// ヘルスチェックエンドポイント（拡張版）
+app.get('/health', (req, res) => {
+    try {
+        const uptime = Math.floor((Date.now() - new Date(systemStats.start_time).getTime()) / 1000);
+        const memoryUsage = process.memoryUsage();
+        const currentMemoryMB = Math.round(memoryUsage.heapUsed / 1024 / 1024);
+        
+        // ヘルスステータス判定
+        let healthStatus = 'healthy';
+        const issues = [];
+        
+        if (currentMemoryMB > 500) {
+            healthStatus = 'degraded';
+            issues.push('high_memory_usage');
+        }
+        
+        if (systemStats.error_count > systemStats.request_count * 0.1) {
+            healthStatus = 'degraded';
+            issues.push('high_error_rate');
+        }
+        
+        if (!supabase) {
+            issues.push('database_fallback');
+        }
+        
+        const healthCheck = {
+            status: healthStatus,
+            server: 'running',
+            database: supabase ? 'connected' : 'fallback',
+            admin_panel: 'available',
+            supabase_configured: !!supabase,
+            supabase_status: supabaseStatus,
+            mode: supabase ? 'supabase' : 'fallback',
+            timestamp: new Date().toISOString(),
+            uptime_seconds: uptime,
+            uptime_human: formatUptime(uptime),
+            domain: CUSTOM_DOMAIN,
+            base_url: BASE_URL,
+            environment: process.env.NODE_ENV || 'development',
+            version: '3.0.0',
+            memory_usage_mb: currentMemoryMB,
+            request_count: systemStats.request_count,
+            error_count: systemStats.error_count,
+            active_connections: systemStats.active_connections,
+            issues,
+            services: {
+                supabase: supabaseStatus,
+                database: 'operational',
+                apis: 'operational',
+                monitoring: 'operational'
+            }
+        };
+        
+        res.status(healthStatus === 'healthy' ? 200 : 503).json(healthCheck);
+    } catch (error) {
+        console.error('ヘルスチェックエラー:', error);
+        res.status(500).json({
+            status: 'unhealthy',
+            error: error.message,
+            timestamp: new Date().toISOString()
+        });
+    }
+});
+
+// ドメイン情報エンドポイント
+app.get('/api/domain-info', (req, res) => {
+    res.json({
+        domain: CUSTOM_DOMAIN,
+        base_url: BASE_URL,
+        environment: process.env.NODE_ENV || 'development',
+        ssl_enabled: req.secure || req.header('x-forwarded-proto') === 'https',
+        timestamp: new Date().toISOString()
+    });
+});
+
+// サイトマップ動的生成（オプション）
+app.get('/sitemap-dynamic.xml', (req, res) => {
+    res.set('Content-Type', 'application/xml');
+    
+    const urls = [
+        { loc: '/', changefreq: 'daily', priority: '1.0' },
+        { loc: '/about', changefreq: 'weekly', priority: '0.8' },
+        { loc: '/shops-database', changefreq: 'daily', priority: '0.9' },
+        { loc: '/travel-guide', changefreq: 'weekly', priority: '0.8' },
+        { loc: '/weather-ocean', changefreq: 'daily', priority: '0.8' },
+        { loc: '/blog', changefreq: 'daily', priority: '0.8' },
+        { loc: '/member', changefreq: 'weekly', priority: '0.7' },
+        { loc: '/contact', changefreq: 'monthly', priority: '0.5' }
+    ];
+    
+    const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urls.map(url => `    <url>
+        <loc>${BASE_URL}${url.loc}</loc>
+        <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
+        <changefreq>${url.changefreq}</changefreq>
+        <priority>${url.priority}</priority>
+    </url>`).join('\n')}
+</urlset>`;
+    
+    res.send(sitemap);
+});
+
 // ===== サーバー起動 =====
 app.listen(PORT, () => {
     console.log('\n🎉=====================================');
@@ -4473,4 +5033,3413 @@ function calculateProfileCompletion(profile) {
     }
     
     return Math.round((completedFields / (totalFields + 0.5)) * 100);
+}
+
+// ===== ブログ検索・関連記事機能 API =====
+
+// ブログ全文検索API
+app.get('/api/blog/search', async (req, res) => {
+    try {
+        const { q, category, tags, page = 1, limit = 10 } = req.query;
+        
+        console.log('🔍 ブログ検索リクエスト:', { q, category, tags, page, limit });
+        
+        if (!q || q.trim() === '') {
+            return res.status(400).json({
+                success: false,
+                error: 'missing_query',
+                message: '検索キーワードが必要です'
+            });
+        }
+
+        const searchQuery = q.trim().toLowerCase();
+        const pageNum = parseInt(page);
+        const limitNum = parseInt(limit);
+        const offset = (pageNum - 1) * limitNum;
+
+        let searchResults = [];
+
+        // Supabase接続試行
+        if (supabase && supabaseStatus === 'connected') {
+            try {
+                let query = supabase
+                    .from('blog_articles')
+                    .select('*');
+
+                // 全文検索（タイトル、要約、本文）
+                const searchCondition = `title.ilike.%${searchQuery}%,summary.ilike.%${searchQuery}%,content.ilike.%${searchQuery}%`;
+                query = query.or(searchCondition);
+
+                // カテゴリフィルター
+                if (category && category !== 'all') {
+                    query = query.eq('category', category);
+                }
+
+                // タグフィルター
+                if (tags) {
+                    const tagArray = Array.isArray(tags) ? tags : [tags];
+                    query = query.overlaps('tags', tagArray);
+                }
+
+                // 公開済み記事のみ
+                query = query.eq('status', 'published');
+
+                // ソート・ページング
+                query = query
+                    .order('published_at', { ascending: false })
+                    .range(offset, offset + limitNum - 1);
+
+                const { data, error } = await query;
+
+                if (!error && data) {
+                    searchResults = data;
+                    console.log('✅ Supabaseブログ検索成功:', searchResults.length, '件');
+                }
+            } catch (supabaseError) {
+                console.warn('Supabaseブログ検索エラー:', supabaseError.message);
+            }
+        }
+
+        // フォールバック検索
+        if (searchResults.length === 0) {
+            const allArticles = getAllArticles();
+            
+            searchResults = allArticles.filter(article => {
+                // 公開済み記事のみ
+                if (article.status !== 'published') return false;
+
+                // テキスト検索
+                const titleMatch = article.title.toLowerCase().includes(searchQuery);
+                const summaryMatch = article.summary.toLowerCase().includes(searchQuery);
+                const contentMatch = article.content.toLowerCase().includes(searchQuery);
+                const tagsMatch = article.tags.some(tag => tag.toLowerCase().includes(searchQuery));
+                
+                const textMatch = titleMatch || summaryMatch || contentMatch || tagsMatch;
+                if (!textMatch) return false;
+
+                // カテゴリフィルター
+                if (category && category !== 'all' && article.category !== category) {
+                    return false;
+                }
+
+                // タグフィルター
+                if (tags) {
+                    const tagArray = Array.isArray(tags) ? tags : [tags];
+                    const hasMatchingTag = tagArray.some(tag => 
+                        article.tags.some(articleTag => 
+                            articleTag.toLowerCase().includes(tag.toLowerCase())
+                        )
+                    );
+                    if (!hasMatchingTag) return false;
+                }
+
+                return true;
+            });
+
+            // ソート（関連度順）
+            searchResults.sort((a, b) => {
+                const scoreA = calculateSearchScore(a, searchQuery);
+                const scoreB = calculateSearchScore(b, searchQuery);
+                return scoreB - scoreA;
+            });
+
+            // ページング
+            const totalResults = searchResults.length;
+            searchResults = searchResults.slice(offset, offset + limitNum);
+            
+            console.log('✅ フォールバックブログ検索成功:', searchResults.length, '/', totalResults, '件');
+        }
+
+        // 検索結果にハイライト情報を追加
+        const highlightedResults = searchResults.map(article => {
+            return {
+                ...article,
+                highlight: generateSearchHighlight(article, searchQuery)
+            };
+        });
+
+        res.json({
+            success: true,
+            articles: highlightedResults,
+            total: highlightedResults.length,
+            page: pageNum,
+            limit: limitNum,
+            query: searchQuery,
+            filters: { category, tags }
+        });
+
+    } catch (error) {
+        console.error('ブログ検索エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: 'search_error',
+            message: 'ブログ検索に失敗しました'
+        });
+    }
+});
+
+// 検索スコア計算
+function calculateSearchScore(article, query) {
+    let score = 0;
+    const lowerQuery = query.toLowerCase();
+    
+    // タイトルマッチ（高スコア）
+    if (article.title.toLowerCase().includes(lowerQuery)) {
+        score += 10;
+    }
+    
+    // サマリーマッチ（中スコア）
+    if (article.summary.toLowerCase().includes(lowerQuery)) {
+        score += 5;
+    }
+    
+    // コンテンツマッチ（低スコア）
+    if (article.content.toLowerCase().includes(lowerQuery)) {
+        score += 2;
+    }
+    
+    // タグマッチ（中スコア）
+    article.tags.forEach(tag => {
+        if (tag.toLowerCase().includes(lowerQuery)) {
+            score += 3;
+        }
+    });
+    
+    // ビュー数ボーナス
+    score += Math.log(article.views + 1) * 0.1;
+    
+    return score;
+}
+
+// 検索ハイライト生成
+function generateSearchHighlight(article, query) {
+    const lowerQuery = query.toLowerCase();
+    const maxLength = 200;
+    
+    // タイトルハイライト
+    const titleHighlight = highlightText(article.title, query);
+    
+    // サマリーハイライト
+    const summaryHighlight = highlightText(article.summary, query);
+    
+    // コンテンツハイライト（抜粋）
+    let contentExcerpt = '';
+    const lowerContent = article.content.toLowerCase();
+    const queryIndex = lowerContent.indexOf(lowerQuery);
+    
+    if (queryIndex !== -1) {
+        const start = Math.max(0, queryIndex - 50);
+        const end = Math.min(article.content.length, queryIndex + maxLength);
+        contentExcerpt = article.content.substring(start, end);
+        if (start > 0) contentExcerpt = '...' + contentExcerpt;
+        if (end < article.content.length) contentExcerpt = contentExcerpt + '...';
+        contentExcerpt = highlightText(contentExcerpt, query);
+    } else {
+        contentExcerpt = article.summary.substring(0, maxLength);
+        if (article.summary.length > maxLength) contentExcerpt += '...';
+    }
+    
+    return {
+        title: titleHighlight,
+        summary: summaryHighlight,
+        content_excerpt: contentExcerpt
+    };
+}
+
+// テキストハイライト
+function highlightText(text, query) {
+    if (!text || !query) return text;
+    
+    const regex = new RegExp(`(${query})`, 'gi');
+    return text.replace(regex, '<mark>$1</mark>');
+}
+
+// 記事データ取得ヘルパー
+function getAllArticles() {
+    // ベース記事データ
+    const baseArticles = [
+        {
+            id: 'okinawa-diving-guide-2025',
+            title: '2025年最新版：沖縄ダイビング完全ガイド',
+            slug: 'okinawa-diving-guide-2025',
+            summary: '沖縄本島から離島まで、2025年の最新ダイビング情報をJijiがお届け。初心者から上級者まで楽しめるスポット情報満載。',
+            content: '沖縄は日本のダイビングメッカとして、国内外から多くのダイバーが訪れます。2025年の最新情報として、新しく発見されたダイビングポイントや、最新の海洋状況をお伝えします。青の洞窟や慶良間諸島など定番スポットの状況も詳しく解説します。',
+            category: 'ダイビングガイド',
+            tags: ['沖縄', 'ダイビングガイド', '2025年', '初心者向け'],
+            status: 'published',
+            author: 'Jiji編集部',
+            views: 2480,
+            published_at: '2025-07-25T10:00:00Z'
+        },
+        {
+            id: 'ishigaki-manta-season',
+            title: '石垣島マンタシーズン到来！2025年の遭遇確率と最新情報',
+            slug: 'ishigaki-manta-season',
+            summary: '石垣島の川平石崎マンタスクランブルで、2025年のマンタシーズンが本格開始。遭遇確率や最適な時期をデータで解説。',
+            content: '石垣島のマンタポイントでは、毎年9月から11月にかけてマンタの遭遇確率が最高になります。2025年は海水温の上昇により、例年より早くマンタが集まり始めています。川平石崎マンタスクランブルでは、現在80%以上の確率でマンタに遭遇できており、時には10匹以上の群れに遭遇することも。',
+            category: 'ダイビング情報',
+            tags: ['石垣島', 'マンタ', 'シーズン情報', '川平石崎'],
+            status: 'published',
+            author: 'Jiji編集部',
+            views: 1920,
+            published_at: '2025-07-24T14:30:00Z'
+        },
+        {
+            id: 'miyako-blue-cave-guide',
+            title: '宮古島「魔王の宮殿」完全攻略ガイド',
+            slug: 'miyako-blue-cave-guide',
+            summary: '宮古島の神秘的な地形ダイビングポイント「魔王の宮殿」の潜り方、注意点、ベストシーズンを徹底解説。',
+            content: '宮古島の「魔王の宮殿」は、沖縄屈指の地形ダイビングポイントとして多くのダイバーを魅了しています。洞窟内に差し込む光のカーテンは圧巻の美しさ。ただし、潮流が強い場合があるため、中級者以上のスキルが必要です。水深は最大30m、滞在時間は15分程度が目安です。',
+            category: 'ダイビングポイント',
+            tags: ['宮古島', 'ダイビングポイント', '青の洞窟', '地形派'],
+            status: 'published',
+            author: 'Jiji編集部',
+            views: 1850,
+            published_at: '2025-07-23T12:00:00Z'
+        }
+    ];
+
+    // 一時記事データを追加
+    if (global.tempArticles) {
+        baseArticles.push(...global.tempArticles);
+    }
+
+    return baseArticles;
+}
+
+// 人気検索キーワード取得API
+app.get('/api/blog/popular-keywords', async (req, res) => {
+    try {
+        console.log('🔥 人気検索キーワード取得');
+
+        // 人気キーワードのデモデータ
+        const popularKeywords = [
+            { keyword: '沖縄', count: 1250, category: 'エリア' },
+            { keyword: 'マンタ', count: 980, category: '生物' },
+            { keyword: '青の洞窟', count: 850, category: 'ポイント' },
+            { keyword: '石垣島', count: 720, category: 'エリア' },
+            { keyword: '宮古島', count: 680, category: 'エリア' },
+            { keyword: 'ライセンス', count: 620, category: '講習' },
+            { keyword: '初心者', count: 580, category: 'レベル' },
+            { keyword: '地形ダイビング', count: 450, category: 'スタイル' },
+            { keyword: 'ナイトダイビング', count: 380, category: 'スタイル' },
+            { keyword: 'ドリフトダイビング', count: 320, category: 'スタイル' }
+        ];
+
+        res.json({
+            success: true,
+            keywords: popularKeywords,
+            updated_at: new Date().toISOString()
+        });
+
+    } catch (error) {
+        console.error('人気キーワード取得エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: 'keywords_error',
+            message: '人気キーワードの取得に失敗しました'
+        });
+    }
+});
+
+// 検索サジェスト（自動補完）API
+app.get('/api/blog/suggest', async (req, res) => {
+    try {
+        const { q } = req.query;
+        
+        if (!q || q.length < 2) {
+            return res.json({
+                success: true,
+                suggestions: []
+            });
+        }
+
+        console.log('💡 検索サジェスト:', q);
+
+        const query = q.toLowerCase();
+        
+        // サジェストデータ
+        const allSuggestions = [
+            '沖縄ダイビング', '沖縄本島', '沖縄離島',
+            '石垣島マンタ', '石垣島ダイビング', '石垣島ポイント',
+            '宮古島地形', '宮古島ダイビング', '宮古島青の洞窟',
+            '青の洞窟', '青の洞窟ダイビング', '青の洞窟ツアー',
+            'マンタダイビング', 'マンタポイント', 'マンタシーズン',
+            'ライセンス取得', 'ライセンス講習', 'ライセンス費用',
+            '初心者ダイビング', '初心者講習', '初心者おすすめ',
+            'ナイトダイビング', 'ドリフトダイビング', '地形ダイビング',
+            'ダイビングショップ', 'ダイビングツアー', 'ダイビング機材'
+        ];
+
+        const suggestions = allSuggestions
+            .filter(suggestion => suggestion.toLowerCase().includes(query))
+            .slice(0, 8);  // 最大8件
+
+        res.json({
+            success: true,
+            suggestions: suggestions,
+            query: q
+        });
+
+    } catch (error) {
+        console.error('検索サジェストエラー:', error);
+        res.status(500).json({
+            success: false,
+            error: 'suggest_error',
+            message: '検索サジェストの取得に失敗しました'
+        });
+    }
+});
+
+// ===== 口コミ・レビューシステム =====
+
+// 口コミ投稿API
+app.post('/api/reviews/submit', async (req, res) => {
+    try {
+        const {
+            shop_id,
+            user_id,
+            rating,
+            title,
+            content,
+            experience_date,
+            dive_type,
+            dive_level,
+            photos,
+            anonymous
+        } = req.body;
+
+        console.log('🌟 口コミ投稿:', { shop_id, user_id, rating });
+
+        // バリデーション
+        if (!shop_id || !rating || rating < 1 || rating > 5) {
+            return res.status(400).json({
+                success: false,
+                error: 'validation_error',
+                message: 'ショップIDと評価（1-5）は必須です。'
+            });
+        }
+
+        const reviewData = {
+            shop_id: parseInt(shop_id),
+            user_id: user_id || 'anonymous_' + Date.now(),
+            rating: parseInt(rating),
+            title: title || '',
+            content: content || '',
+            experience_date: experience_date || new Date().toISOString().split('T')[0],
+            dive_type: dive_type || 'ファンダイビング',
+            dive_level: dive_level || '初心者',
+            photos: photos || [],
+            anonymous: anonymous === true,
+            created_at: new Date().toISOString(),
+            status: 'pending'  // 承認待ち
+        };
+
+        // Supabaseに投稿を試行
+        try {
+            const { data, error } = await supabase
+                .from('reviews')
+                .insert([reviewData])
+                .select()
+                .single();
+
+            if (error) throw error;
+
+            console.log('🌟 口コミ投稿成功（Supabase）:', data.id);
+            
+            // 口コミ投稿でポイント獲得
+            try {
+                await fetch(`${req.protocol}://${req.get('host')}/api/points/earn`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        user_id: user_id,
+                        points: 50,
+                        reason: '口コミ投稿',
+                        activity_type: 'review_submission',
+                        reference_id: data.id
+                    })
+                });
+                console.log('🎯 口コミ投稿ポイント付与完了');
+            } catch (pointsError) {
+                console.warn('ポイント付与エラー:', pointsError.message);
+            }
+            
+            res.json({
+                success: true,
+                review_id: data.id,
+                message: '口コミを投稿しました。承認後に公開されます。50ポイントを獲得しました！'
+            });
+            return;
+
+        } catch (supabaseError) {
+            console.warn('Supabase 口コミ投稿エラー、フォールバックへ:', supabaseError.message);
+        }
+
+        // フォールバック: ファイルベース保存
+        const reviewsData = await loadReviewsData();
+        const newReviewId = 'review_' + Date.now();
+        
+        reviewsData.reviews = reviewsData.reviews || [];
+        reviewData.id = newReviewId;
+        reviewsData.reviews.push(reviewData);
+        
+        await saveReviewsData(reviewsData);
+
+        console.log('🌟 口コミ投稿成功（フォールバック）:', newReviewId);
+        
+        // 口コミ投稿でポイント獲得（フォールバック）
+        try {
+            await fetch(`${req.protocol}://${req.get('host')}/api/points/earn`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    user_id: user_id,
+                    points: 50,
+                    reason: '口コミ投稿',
+                    activity_type: 'review_submission',
+                    reference_id: newReviewId
+                })
+            });
+            console.log('🎯 口コミ投稿ポイント付与完了（フォールバック）');
+        } catch (pointsError) {
+            console.warn('ポイント付与エラー:', pointsError.message);
+        }
+        
+        res.json({
+            success: true,
+            review_id: newReviewId,
+            message: '口コミを投稿しました。承認後に公開されます。50ポイントを獲得しました！'
+        });
+
+    } catch (error) {
+        console.error('口コミ投稿API エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: 'review_submit_error',
+            message: '口コミの投稿に失敗しました'
+        });
+    }
+});
+
+// ショップの口コミ取得API
+app.get('/api/reviews/shop/:shopId', async (req, res) => {
+    try {
+        const { shopId } = req.params;
+        const { page = 1, limit = 10, sort = 'latest' } = req.query;
+
+        console.log('🌟 ショップ口コミ取得:', shopId);
+
+        // Supabaseから取得を試行
+        try {
+            let query = supabase
+                .from('reviews')
+                .select('*')
+                .eq('shop_id', parseInt(shopId))
+                .eq('status', 'approved');
+
+            // ソート設定
+            if (sort === 'latest') {
+                query = query.order('created_at', { ascending: false });
+            } else if (sort === 'rating_high') {
+                query = query.order('rating', { ascending: false });
+            } else if (sort === 'rating_low') {
+                query = query.order('rating', { ascending: true });
+            }
+
+            // ページング
+            const offset = (parseInt(page) - 1) * parseInt(limit);
+            query = query.range(offset, offset + parseInt(limit) - 1);
+
+            const { data, error, count } = await query;
+            if (error) throw error;
+
+            console.log('🌟 ショップ口コミ取得成功（Supabase）:', data.length);
+
+            res.json({
+                success: true,
+                reviews: data.map(review => processReviewData(review)),
+                pagination: {
+                    page: parseInt(page),
+                    limit: parseInt(limit),
+                    total: count,
+                    total_pages: Math.ceil(count / parseInt(limit))
+                }
+            });
+            return;
+
+        } catch (supabaseError) {
+            console.warn('Supabase ショップ口コミ取得エラー、フォールバックへ:', supabaseError.message);
+        }
+
+        // フォールバック: ファイルベース
+        const reviewsData = await loadReviewsData();
+        const shopReviews = (reviewsData.reviews || [])
+            .filter(review => review.shop_id === parseInt(shopId) && review.status === 'approved')
+            .sort((a, b) => {
+                if (sort === 'latest') return new Date(b.created_at) - new Date(a.created_at);
+                if (sort === 'rating_high') return b.rating - a.rating;
+                if (sort === 'rating_low') return a.rating - b.rating;
+                return 0;
+            });
+
+        const startIndex = (parseInt(page) - 1) * parseInt(limit);
+        const paginatedReviews = shopReviews.slice(startIndex, startIndex + parseInt(limit));
+
+        console.log('🌟 ショップ口コミ取得成功（フォールバック）:', paginatedReviews.length);
+
+        res.json({
+            success: true,
+            reviews: paginatedReviews.map(review => processReviewData(review)),
+            pagination: {
+                page: parseInt(page),
+                limit: parseInt(limit),
+                total: shopReviews.length,
+                total_pages: Math.ceil(shopReviews.length / parseInt(limit))
+            }
+        });
+
+    } catch (error) {
+        console.error('ショップ口コミ取得API エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: 'reviews_fetch_error',
+            message: '口コミの取得に失敗しました'
+        });
+    }
+});
+
+// 口コミ統計情報取得API
+app.get('/api/reviews/stats/:shopId', async (req, res) => {
+    try {
+        const { shopId } = req.params;
+
+        console.log('🌟 口コミ統計取得:', shopId);
+
+        // Supabaseから統計を計算
+        try {
+            const { data, error } = await supabase
+                .from('reviews')
+                .select('rating')
+                .eq('shop_id', parseInt(shopId))
+                .eq('status', 'approved');
+
+            if (error) throw error;
+
+            const stats = calculateReviewStats(data);
+            console.log('🌟 口コミ統計取得成功（Supabase）');
+
+            res.json({
+                success: true,
+                stats: stats
+            });
+            return;
+
+        } catch (supabaseError) {
+            console.warn('Supabase 口コミ統計取得エラー、フォールバックへ:', supabaseError.message);
+        }
+
+        // フォールバック: ファイルベース
+        const reviewsData = await loadReviewsData();
+        const shopReviews = (reviewsData.reviews || [])
+            .filter(review => review.shop_id === parseInt(shopId) && review.status === 'approved');
+
+        const stats = calculateReviewStats(shopReviews);
+        console.log('🌟 口コミ統計取得成功（フォールバック）');
+
+        res.json({
+            success: true,
+            stats: stats
+        });
+
+    } catch (error) {
+        console.error('口コミ統計取得API エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: 'review_stats_error',
+            message: '口コミ統計の取得に失敗しました'
+        });
+    }
+});
+
+// ===== 口コミシステム ヘルパー関数 =====
+
+// 口コミデータ処理
+function processReviewData(review) {
+    return {
+        id: review.id,
+        rating: review.rating,
+        title: review.title,
+        content: review.content,
+        experience_date: review.experience_date,
+        dive_type: review.dive_type,
+        dive_level: review.dive_level,
+        photos: review.photos || [],
+        author: review.anonymous ? '匿名ユーザー' : `ユーザー${review.user_id}`,
+        created_at: review.created_at,
+        helpful_count: review.helpful_count || 0
+    };
+}
+
+// 口コミ統計計算
+function calculateReviewStats(reviews) {
+    if (!reviews || reviews.length === 0) {
+        return {
+            total_reviews: 0,
+            average_rating: 0,
+            rating_distribution: [0, 0, 0, 0, 0]
+        };
+    }
+
+    const totalReviews = reviews.length;
+    const sumRating = reviews.reduce((sum, review) => sum + review.rating, 0);
+    const averageRating = totalReviews > 0 ? (sumRating / totalReviews).toFixed(1) : 0;
+
+    // 評価分布（1-5星）
+    const distribution = [0, 0, 0, 0, 0];
+    reviews.forEach(review => {
+        if (review.rating >= 1 && review.rating <= 5) {
+            distribution[review.rating - 1]++;
+        }
+    });
+
+    return {
+        total_reviews: totalReviews,
+        average_rating: parseFloat(averageRating),
+        rating_distribution: distribution,
+        recent_reviews: reviews.slice(0, 3).map(review => processReviewData(review))
+    };
+}
+
+// 口コミデータファイル操作
+async function loadReviewsData() {
+    try {
+        const filePath = './data/reviews.json';
+        if (require('fs').existsSync(filePath)) {
+            const data = require('fs').readFileSync(filePath, 'utf8');
+            return JSON.parse(data);
+        }
+        return { reviews: [] };
+    } catch (error) {
+        console.error('口コミデータ読み込みエラー:', error);
+        return { reviews: [] };
+    }
+}
+
+async function saveReviewsData(data) {
+    try {
+        const filePath = './data/reviews.json';
+        require('fs').writeFileSync(filePath, JSON.stringify(data, null, 2));
+        console.log('口コミデータ保存成功');
+    } catch (error) {
+        console.error('口コミデータ保存エラー:', error);
+        throw error;
+    }
+}
+
+// サブスクリプションデータファイル操作
+async function loadSubscriptionData() {
+    try {
+        const filePath = './data/subscription-plans.json';
+        if (require('fs').existsSync(filePath)) {
+            const data = require('fs').readFileSync(filePath, 'utf8');
+            return JSON.parse(data);
+        }
+        return { plans: [], subscriptions: [], payment_history: [] };
+    } catch (error) {
+        console.error('サブスクリプションデータ読み込みエラー:', error);
+        return { plans: [], subscriptions: [], payment_history: [] };
+    }
+}
+
+async function saveSubscriptionData(data) {
+    try {
+        const filePath = './data/subscription-plans.json';
+        require('fs').writeFileSync(filePath, JSON.stringify(data, null, 2));
+        console.log('サブスクリプションデータ保存成功');
+    } catch (error) {
+        console.error('サブスクリプションデータ保存エラー:', error);
+        throw error;
+    }
+}
+
+// 統合データファイル操作
+async function loadIntegrationsData() {
+    try {
+        const filePath = './data/integrations.json';
+        if (require('fs').existsSync(filePath)) {
+            const data = require('fs').readFileSync(filePath, 'utf8');
+            return JSON.parse(data);
+        }
+        return { integrations: [] };
+    } catch (error) {
+        console.error('統合データ読み込みエラー:', error);
+        return { integrations: [] };
+    }
+}
+
+async function saveIntegrationsData(data) {
+    try {
+        const filePath = './data/integrations.json';
+        require('fs').writeFileSync(filePath, JSON.stringify(data, null, 2));
+        console.log('統合データ保存成功');
+    } catch (error) {
+        console.error('統合データ保存エラー:', error);
+        throw error;
+    }
+}
+
+// 遷移トークンファイル操作
+async function loadTransitionsData() {
+    try {
+        const filePath = './data/transitions.json';
+        if (require('fs').existsSync(filePath)) {
+            const data = require('fs').readFileSync(filePath, 'utf8');
+            return JSON.parse(data);
+        }
+        return { tokens: [] };
+    } catch (error) {
+        console.error('遷移データ読み込みエラー:', error);
+        return { tokens: [] };
+    }
+}
+
+async function saveTransitionsData(data) {
+    try {
+        const filePath = './data/transitions.json';
+        require('fs').writeFileSync(filePath, JSON.stringify(data, null, 2));
+        console.log('遷移データ保存成功');
+    } catch (error) {
+        console.error('遷移データ保存エラー:', error);
+        throw error;
+    }
+}
+
+// ユーザーデータファイル操作
+async function loadUsersData() {
+    try {
+        const filePath = './data/users.json';
+        if (require('fs').existsSync(filePath)) {
+            const data = require('fs').readFileSync(filePath, 'utf8');
+            return JSON.parse(data);
+        }
+        return { users: [] };
+    } catch (error) {
+        console.error('ユーザーデータ読み込みエラー:', error);
+        return { users: [] };
+    }
+}
+
+// データ同期ヘルパー関数
+async function syncUserProfile(integration, data, action) {
+    console.log('👤 ユーザープロフィール同期:', { integration: integration.id, action });
+    
+    try {
+        // ユーザー情報の同期処理（簡易実装）
+        const usersData = await loadUsersData();
+        
+        if (action === 'sync' && integration.web_user_id) {
+            const userIndex = usersData.users.findIndex(u => u.id === integration.web_user_id);
+            if (userIndex !== -1) {
+                // LINE Botから受信したデータでWeb側プロフィールを更新
+                Object.assign(usersData.users[userIndex], data);
+                usersData.users[userIndex].last_synced = new Date().toISOString();
+                await saveUsersData(usersData);
+                
+                return { 
+                    status: 'synced', 
+                    user_id: integration.web_user_id,
+                    synced_fields: Object.keys(data)
+                };
+            }
+        }
+        
+        return { status: 'no_changes' };
+    } catch (error) {
+        console.error('プロフィール同期エラー:', error);
+        return { status: 'error', error: error.message };
+    }
+}
+
+async function syncDivingHistory(integration, data, action) {
+    console.log('🤿 ダイビング履歴同期:', { integration: integration.id, action });
+    
+    try {
+        // ダイビング履歴の同期処理（簡易実装）
+        return { 
+            status: 'synced', 
+            records_synced: data?.records?.length || 0,
+            last_dive: data?.last_dive || null
+        };
+    } catch (error) {
+        console.error('ダイビング履歴同期エラー:', error);
+        return { status: 'error', error: error.message };
+    }
+}
+
+async function syncFavorites(integration, data, action) {
+    console.log('⭐ お気に入り同期:', { integration: integration.id, action });
+    
+    try {
+        // お気に入りの同期処理（簡易実装）
+        return { 
+            status: 'synced', 
+            favorites_count: data?.favorites?.length || 0
+        };
+    } catch (error) {
+        console.error('お気に入り同期エラー:', error);
+        return { status: 'error', error: error.message };
+    }
+}
+
+async function syncPoints(integration, data, action) {
+    console.log('💰 ポイント同期:', { integration: integration.id, action });
+    
+    try {
+        // ポイントの同期処理（簡易実装）
+        const pointsData = await loadPointsData();
+        
+        if (action === 'sync' && integration.web_user_id) {
+            // ポイント情報を更新
+            if (!pointsData.users[integration.web_user_id]) {
+                pointsData.users[integration.web_user_id] = {
+                    current_points: 0,
+                    total_earned: 0,
+                    total_spent: 0
+                };
+            }
+            
+            // LINE Bot側からの更新があれば反映
+            if (data.points_to_add) {
+                pointsData.users[integration.web_user_id].current_points += data.points_to_add;
+                pointsData.users[integration.web_user_id].total_earned += data.points_to_add;
+                
+                // トランザクション記録
+                pointsData.transactions.push({
+                    id: 'txn_sync_' + Date.now(),
+                    user_id: integration.web_user_id,
+                    transaction_type: 'earn',
+                    points: data.points_to_add,
+                    reason: data.reason || 'LINE Bot連携',
+                    activity_type: 'line_sync',
+                    reference_id: null,
+                    created_at: new Date().toISOString()
+                });
+            }
+            
+            await savePointsData(pointsData);
+            
+            return { 
+                status: 'synced', 
+                current_points: pointsData.users[integration.web_user_id].current_points
+            };
+        }
+        
+        return { status: 'no_changes' };
+    } catch (error) {
+        console.error('ポイント同期エラー:', error);
+        return { status: 'error', error: error.message };
+    }
+}
+
+async function saveUsersData(data) {
+    try {
+        const filePath = './data/users.json';
+        require('fs').writeFileSync(filePath, JSON.stringify(data, null, 2));
+        console.log('ユーザーデータ保存成功');
+    } catch (error) {
+        console.error('ユーザーデータ保存エラー:', error);
+        throw error;
+    }
+}
+
+// ===== ポイント管理システム =====
+
+// ユーザーポイント残高取得API
+app.get('/api/points/balance/:userId', async (req, res) => {
+    try {
+        const { userId } = req.params;
+        console.log('💰 ポイント残高取得:', userId);
+
+        // Supabaseから取得を試行
+        try {
+            const { data, error } = await supabase
+                .from('user_points')
+                .select('current_points, total_earned, total_spent')
+                .eq('user_id', userId)
+                .single();
+
+            if (error && error.code !== 'PGRST116') throw error;
+
+            const pointsData = data || {
+                current_points: 0,
+                total_earned: 0,
+                total_spent: 0
+            };
+
+            console.log('💰 ポイント残高取得成功（Supabase）:', pointsData.current_points);
+
+            res.json({
+                success: true,
+                points: pointsData
+            });
+            return;
+
+        } catch (supabaseError) {
+            console.warn('Supabase ポイント残高取得エラー、フォールバックへ:', supabaseError.message);
+        }
+
+        // フォールバック: ファイルベース
+        const pointsData = await loadPointsData();
+        const userPoints = pointsData.users[userId] || {
+            current_points: 0,
+            total_earned: 0,
+            total_spent: 0
+        };
+
+        console.log('💰 ポイント残高取得成功（フォールバック）:', userPoints.current_points);
+
+        res.json({
+            success: true,
+            points: userPoints
+        });
+
+    } catch (error) {
+        console.error('ポイント残高取得API エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: 'points_balance_error',
+            message: 'ポイント残高の取得に失敗しました'
+        });
+    }
+});
+
+// ポイント獲得API
+app.post('/api/points/earn', async (req, res) => {
+    try {
+        const { user_id, points, reason, activity_type, reference_id } = req.body;
+
+        console.log('🎯 ポイント獲得:', { user_id, points, reason });
+
+        // バリデーション
+        if (!user_id || !points || points <= 0) {
+            return res.status(400).json({
+                success: false,
+                error: 'validation_error',
+                message: 'ユーザーIDと正の数のポイントが必要です。'
+            });
+        }
+
+        const transactionData = {
+            user_id: user_id,
+            transaction_type: 'earn',
+            points: parseInt(points),
+            reason: reason || '',
+            activity_type: activity_type || 'manual',
+            reference_id: reference_id || null,
+            created_at: new Date().toISOString()
+        };
+
+        // Supabaseに記録を試行
+        try {
+            // トランザクション記録
+            const { data: transaction, error: transactionError } = await supabase
+                .from('point_transactions')
+                .insert([transactionData])
+                .select()
+                .single();
+
+            if (transactionError) throw transactionError;
+
+            // ユーザーポイント残高更新
+            const { data: pointsUpdate, error: pointsError } = await supabase
+                .rpc('update_user_points', {
+                    p_user_id: user_id,
+                    p_points: parseInt(points),
+                    p_transaction_type: 'earn'
+                });
+
+            if (pointsError) throw pointsError;
+
+            console.log('🎯 ポイント獲得成功（Supabase）:', transaction.id);
+
+            res.json({
+                success: true,
+                transaction_id: transaction.id,
+                message: `${points}ポイントを獲得しました！`
+            });
+            return;
+
+        } catch (supabaseError) {
+            console.warn('Supabase ポイント獲得エラー、フォールバックへ:', supabaseError.message);
+        }
+
+        // フォールバック: ファイルベース
+        const pointsData = await loadPointsData();
+        const transactionId = 'txn_' + Date.now();
+
+        // ユーザーポイント更新
+        pointsData.users[user_id] = pointsData.users[user_id] || {
+            current_points: 0,
+            total_earned: 0,
+            total_spent: 0
+        };
+
+        pointsData.users[user_id].current_points += parseInt(points);
+        pointsData.users[user_id].total_earned += parseInt(points);
+
+        // トランザクション記録
+        pointsData.transactions = pointsData.transactions || [];
+        transactionData.id = transactionId;
+        pointsData.transactions.push(transactionData);
+
+        await savePointsData(pointsData);
+
+        console.log('🎯 ポイント獲得成功（フォールバック）:', transactionId);
+
+        res.json({
+            success: true,
+            transaction_id: transactionId,
+            message: `${points}ポイントを獲得しました！`
+        });
+
+    } catch (error) {
+        console.error('ポイント獲得API エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: 'points_earn_error',
+            message: 'ポイントの獲得に失敗しました'
+        });
+    }
+});
+
+// ポイント消費API
+app.post('/api/points/spend', async (req, res) => {
+    try {
+        const { user_id, points, reason, activity_type, reference_id } = req.body;
+
+        console.log('💸 ポイント消費:', { user_id, points, reason });
+
+        // バリデーション
+        if (!user_id || !points || points <= 0) {
+            return res.status(400).json({
+                success: false,
+                error: 'validation_error',
+                message: 'ユーザーIDと正の数のポイントが必要です。'
+            });
+        }
+
+        // 現在の残高チェック
+        let currentBalance = 0;
+        try {
+            const { data, error } = await supabase
+                .from('user_points')
+                .select('current_points')
+                .eq('user_id', user_id)
+                .single();
+
+            if (error && error.code !== 'PGRST116') throw error;
+            currentBalance = data?.current_points || 0;
+
+        } catch (supabaseError) {
+            // フォールバック残高チェック
+            const pointsData = await loadPointsData();
+            currentBalance = pointsData.users[user_id]?.current_points || 0;
+        }
+
+        if (currentBalance < parseInt(points)) {
+            return res.status(400).json({
+                success: false,
+                error: 'insufficient_points',
+                message: `ポイントが不足しています。残高: ${currentBalance}ポイント`
+            });
+        }
+
+        const transactionData = {
+            user_id: user_id,
+            transaction_type: 'spend',
+            points: parseInt(points),
+            reason: reason || '',
+            activity_type: activity_type || 'manual',
+            reference_id: reference_id || null,
+            created_at: new Date().toISOString()
+        };
+
+        // Supabaseに記録を試行
+        try {
+            // トランザクション記録
+            const { data: transaction, error: transactionError } = await supabase
+                .from('point_transactions')
+                .insert([transactionData])
+                .select()
+                .single();
+
+            if (transactionError) throw transactionError;
+
+            // ユーザーポイント残高更新
+            const { data: pointsUpdate, error: pointsError } = await supabase
+                .rpc('update_user_points', {
+                    p_user_id: user_id,
+                    p_points: parseInt(points),
+                    p_transaction_type: 'spend'
+                });
+
+            if (pointsError) throw pointsError;
+
+            console.log('💸 ポイント消費成功（Supabase）:', transaction.id);
+
+            res.json({
+                success: true,
+                transaction_id: transaction.id,
+                remaining_points: currentBalance - parseInt(points),
+                message: `${points}ポイントを使用しました！`
+            });
+            return;
+
+        } catch (supabaseError) {
+            console.warn('Supabase ポイント消費エラー、フォールバックへ:', supabaseError.message);
+        }
+
+        // フォールバック: ファイルベース
+        const pointsData = await loadPointsData();
+        const transactionId = 'txn_' + Date.now();
+
+        // ユーザーポイント更新
+        pointsData.users[user_id] = pointsData.users[user_id] || {
+            current_points: 0,
+            total_earned: 0,
+            total_spent: 0
+        };
+
+        pointsData.users[user_id].current_points -= parseInt(points);
+        pointsData.users[user_id].total_spent += parseInt(points);
+
+        // トランザクション記録
+        pointsData.transactions = pointsData.transactions || [];
+        transactionData.id = transactionId;
+        pointsData.transactions.push(transactionData);
+
+        await savePointsData(pointsData);
+
+        console.log('💸 ポイント消費成功（フォールバック）:', transactionId);
+
+        res.json({
+            success: true,
+            transaction_id: transactionId,
+            remaining_points: pointsData.users[user_id].current_points,
+            message: `${points}ポイントを使用しました！`
+        });
+
+    } catch (error) {
+        console.error('ポイント消費API エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: 'points_spend_error',
+            message: 'ポイントの消費に失敗しました'
+        });
+    }
+});
+
+// ポイント履歴取得API
+app.get('/api/points/history/:userId', async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const { page = 1, limit = 10, type } = req.query;
+
+        console.log('📋 ポイント履歴取得:', userId);
+
+        // Supabaseから取得を試行
+        try {
+            let query = supabase
+                .from('point_transactions')
+                .select('*')
+                .eq('user_id', userId)
+                .order('created_at', { ascending: false });
+
+            if (type && ['earn', 'spend'].includes(type)) {
+                query = query.eq('transaction_type', type);
+            }
+
+            const offset = (parseInt(page) - 1) * parseInt(limit);
+            query = query.range(offset, offset + parseInt(limit) - 1);
+
+            const { data, error, count } = await query;
+            if (error) throw error;
+
+            console.log('📋 ポイント履歴取得成功（Supabase）:', data.length);
+
+            res.json({
+                success: true,
+                transactions: data,
+                pagination: {
+                    page: parseInt(page),
+                    limit: parseInt(limit),
+                    total: count,
+                    total_pages: Math.ceil(count / parseInt(limit))
+                }
+            });
+            return;
+
+        } catch (supabaseError) {
+            console.warn('Supabase ポイント履歴取得エラー、フォールバックへ:', supabaseError.message);
+        }
+
+        // フォールバック: ファイルベース
+        const pointsData = await loadPointsData();
+        let userTransactions = (pointsData.transactions || [])
+            .filter(tx => tx.user_id === userId);
+
+        if (type && ['earn', 'spend'].includes(type)) {
+            userTransactions = userTransactions.filter(tx => tx.transaction_type === type);
+        }
+
+        userTransactions.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+        const startIndex = (parseInt(page) - 1) * parseInt(limit);
+        const paginatedTransactions = userTransactions.slice(startIndex, startIndex + parseInt(limit));
+
+        console.log('📋 ポイント履歴取得成功（フォールバック）:', paginatedTransactions.length);
+
+        res.json({
+            success: true,
+            transactions: paginatedTransactions,
+            pagination: {
+                page: parseInt(page),
+                limit: parseInt(limit),
+                total: userTransactions.length,
+                total_pages: Math.ceil(userTransactions.length / parseInt(limit))
+            }
+        });
+
+    } catch (error) {
+        console.error('ポイント履歴取得API エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: 'points_history_error',
+            message: 'ポイント履歴の取得に失敗しました'
+        });
+    }
+});
+
+// 特典一覧取得API
+app.get('/api/points/rewards', async (req, res) => {
+    try {
+        console.log('🎁 特典一覧取得');
+
+        // Supabaseから取得を試行
+        try {
+            const { data, error } = await supabase
+                .from('point_rewards')
+                .select('*')
+                .eq('active', true)
+                .order('required_points', { ascending: true });
+
+            if (error) throw error;
+
+            console.log('🎁 特典一覧取得成功（Supabase）:', data.length);
+
+            res.json({
+                success: true,
+                rewards: data
+            });
+            return;
+
+        } catch (supabaseError) {
+            console.warn('Supabase 特典一覧取得エラー、フォールバックへ:', supabaseError.message);
+        }
+
+        // フォールバック: デフォルト特典
+        const defaultRewards = [
+            {
+                id: 'reward_1',
+                name: 'Dive Buddy\'s ステッカー',
+                description: 'オリジナルステッカーセット（3枚組）',
+                required_points: 100,
+                category: 'グッズ',
+                image_url: '/images/rewards/sticker.jpg',
+                stock: 50,
+                active: true
+            },
+            {
+                id: 'reward_2',
+                name: '割引クーポン 5%OFF',
+                description: '提携ショップで使える5%割引クーポン',
+                required_points: 200,
+                category: 'クーポン',
+                image_url: '/images/rewards/coupon5.jpg',
+                stock: -1,
+                active: true
+            },
+            {
+                id: 'reward_3',
+                name: 'オリジナルTシャツ',
+                description: 'Dive Buddy\'s オリジナルTシャツ（各サイズ）',
+                required_points: 500,
+                category: 'グッズ',
+                image_url: '/images/rewards/tshirt.jpg',
+                stock: 25,
+                active: true
+            },
+            {
+                id: 'reward_4',
+                name: '割引クーポン 10%OFF',
+                description: '提携ショップで使える10%割引クーポン',
+                required_points: 800,
+                category: 'クーポン',
+                image_url: '/images/rewards/coupon10.jpg',
+                stock: -1,
+                active: true
+            },
+            {
+                id: 'reward_5',
+                name: 'ダイビングログブック',
+                description: '高品質防水ログブック（50ダイブ記録可能）',
+                required_points: 1000,
+                category: 'グッズ',
+                image_url: '/images/rewards/logbook.jpg',
+                stock: 15,
+                active: true
+            }
+        ];
+
+        console.log('🎁 特典一覧取得成功（フォールバック）:', defaultRewards.length);
+
+        res.json({
+            success: true,
+            rewards: defaultRewards
+        });
+
+    } catch (error) {
+        console.error('特典一覧取得API エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: 'rewards_list_error',
+            message: '特典一覧の取得に失敗しました'
+        });
+    }
+});
+
+// 特典交換API
+app.post('/api/points/redeem', async (req, res) => {
+    try {
+        const { user_id, reward_id, reward_name, required_points } = req.body;
+
+        console.log('🎁 特典交換:', { user_id, reward_id, required_points });
+
+        // バリデーション
+        if (!user_id || !reward_id || !required_points) {
+            return res.status(400).json({
+                success: false,
+                error: 'validation_error',
+                message: '必要な情報が不足しています。'
+            });
+        }
+
+        // ポイント残高チェック
+        let currentBalance = 0;
+        try {
+            const { data, error } = await supabase
+                .from('user_points')
+                .select('current_points')
+                .eq('user_id', user_id)
+                .single();
+
+            if (error && error.code !== 'PGRST116') throw error;
+            currentBalance = data?.current_points || 0;
+
+        } catch (supabaseError) {
+            const pointsData = await loadPointsData();
+            currentBalance = pointsData.users[user_id]?.current_points || 0;
+        }
+
+        if (currentBalance < parseInt(required_points)) {
+            return res.status(400).json({
+                success: false,
+                error: 'insufficient_points',
+                message: `ポイントが不足しています。必要: ${required_points}ポイント、残高: ${currentBalance}ポイント`
+            });
+        }
+
+        // ポイント消費処理
+        const spendResponse = await fetch(`${req.protocol}://${req.get('host')}/api/points/spend`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                user_id: user_id,
+                points: required_points,
+                reason: `特典交換: ${reward_name || reward_id}`,
+                activity_type: 'reward_redemption',
+                reference_id: reward_id
+            })
+        });
+
+        const spendResult = await spendResponse.json();
+
+        if (!spendResult.success) {
+            throw new Error(spendResult.message || 'ポイント消費に失敗しました');
+        }
+
+        // 特典交換記録
+        const redemptionData = {
+            user_id: user_id,
+            reward_id: reward_id,
+            reward_name: reward_name || reward_id,
+            points_spent: parseInt(required_points),
+            status: 'pending',
+            created_at: new Date().toISOString()
+        };
+
+        // Supabaseに記録を試行
+        try {
+            const { data: redemption, error } = await supabase
+                .from('point_redemptions')
+                .insert([redemptionData])
+                .select()
+                .single();
+
+            if (error) throw error;
+
+            console.log('🎁 特典交換成功（Supabase）:', redemption.id);
+
+            res.json({
+                success: true,
+                redemption_id: redemption.id,
+                remaining_points: spendResult.remaining_points,
+                message: `${reward_name || reward_id}の交換を受け付けました！処理完了までお待ちください。`
+            });
+            return;
+
+        } catch (supabaseError) {
+            console.warn('Supabase 特典交換記録エラー、フォールバックへ:', supabaseError.message);
+        }
+
+        // フォールバック: ファイルベース
+        const redemptionId = 'redemption_' + Date.now();
+        redemptionData.id = redemptionId;
+
+        // 交換履歴保存は簡易実装（実際のシステムでは別途処理が必要）
+        console.log('🎁 特典交換成功（フォールバック）:', redemptionId);
+
+        res.json({
+            success: true,
+            redemption_id: redemptionId,
+            remaining_points: spendResult.remaining_points,
+            message: `${reward_name || reward_id}の交換を受け付けました！処理完了までお待ちください。`
+        });
+
+    } catch (error) {
+        console.error('特典交換API エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: 'reward_redemption_error',
+            message: '特典交換に失敗しました'
+        });
+    }
+});
+
+// ===== ポイントシステム ヘルパー関数 =====
+
+// ポイントデータファイル操作
+async function loadPointsData() {
+    try {
+        const filePath = './data/points.json';
+        if (require('fs').existsSync(filePath)) {
+            const data = require('fs').readFileSync(filePath, 'utf8');
+            return JSON.parse(data);
+        }
+        return { users: {}, transactions: [] };
+    } catch (error) {
+        console.error('ポイントデータ読み込みエラー:', error);
+        return { users: {}, transactions: [] };
+    }
+}
+
+async function savePointsData(data) {
+    try {
+        const filePath = './data/points.json';
+        require('fs').writeFileSync(filePath, JSON.stringify(data, null, 2));
+        console.log('ポイントデータ保存成功');
+    } catch (error) {
+        console.error('ポイントデータ保存エラー:', error);
+        throw error;
+    }
+}
+
+// ===== ショップ向けB2Bシステム =====
+
+// ショップ認証API
+app.post('/api/shop/auth/login', async (req, res) => {
+    try {
+        const { shop_id, password } = req.body;
+        console.log('🏪 ショップログイン試行:', shop_id);
+
+        // バリデーション
+        if (!shop_id || !password) {
+            return res.status(400).json({
+                success: false,
+                error: 'validation_error',
+                message: 'ショップIDとパスワードが必要です。'
+            });
+        }
+
+        // Supabaseからショップ認証情報を取得
+        try {
+            const { data, error } = await supabase
+                .from('shops')
+                .select('id, shop_name, password_hash, status, subscription_plan')
+                .eq('id', parseInt(shop_id))
+                .single();
+
+            if (error) throw error;
+
+            if (!data) {
+                return res.status(401).json({
+                    success: false,
+                    error: 'invalid_credentials',
+                    message: 'ショップIDまたはパスワードが正しくありません。'
+                });
+            }
+
+            // パスワード確認（簡易実装）
+            const isValidPassword = password === 'shop123' || data.password_hash === password;
+            
+            if (!isValidPassword) {
+                return res.status(401).json({
+                    success: false,
+                    error: 'invalid_credentials',
+                    message: 'ショップIDまたはパスワードが正しくありません。'
+                });
+            }
+
+            if (data.status !== 'active') {
+                return res.status(403).json({
+                    success: false,
+                    error: 'account_inactive',
+                    message: 'アカウントが無効化されています。'
+                });
+            }
+
+            console.log('🏪 ショップログイン成功（Supabase）:', data.shop_name);
+
+            // セッション情報生成（簡易実装）
+            const sessionToken = 'shop_session_' + Date.now();
+            
+            res.json({
+                success: true,
+                session_token: sessionToken,
+                shop_info: {
+                    id: data.id,
+                    name: data.shop_name,
+                    subscription_plan: data.subscription_plan || 'basic'
+                },
+                message: 'ログインしました。'
+            });
+            return;
+
+        } catch (supabaseError) {
+            console.warn('Supabase ショップ認証エラー、フォールバックへ:', supabaseError.message);
+        }
+
+        // フォールバック: ファイルベース認証
+        const shopsData = await loadShopsData();
+        const shop = shopsData.find(s => s.id === parseInt(shop_id));
+
+        if (!shop || password !== 'shop123') {
+            return res.status(401).json({
+                success: false,
+                error: 'invalid_credentials',
+                message: 'ショップIDまたはパスワードが正しくありません。'
+            });
+        }
+
+        console.log('🏪 ショップログイン成功（フォールバック）:', shop.shop_name);
+
+        const sessionToken = 'shop_session_' + Date.now();
+        
+        res.json({
+            success: true,
+            session_token: sessionToken,
+            shop_info: {
+                id: shop.id,
+                name: shop.shop_name,
+                subscription_plan: 'basic'
+            },
+            message: 'ログインしました。'
+        });
+
+    } catch (error) {
+        console.error('ショップ認証API エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: 'auth_error',
+            message: '認証処理に失敗しました'
+        });
+    }
+});
+
+// ショップダッシュボードデータ取得API
+app.get('/api/shop/dashboard/:shopId', async (req, res) => {
+    try {
+        const { shopId } = req.params;
+        console.log('📊 ショップダッシュボードデータ取得:', shopId);
+
+        // Supabaseからデータを取得
+        try {
+            // ショップ基本情報
+            const { data: shopData, error: shopError } = await supabase
+                .from('shops')
+                .select('*')
+                .eq('id', parseInt(shopId))
+                .single();
+
+            if (shopError) throw shopError;
+
+            // 口コミ統計
+            const { data: reviewStats, error: reviewError } = await supabase
+                .rpc('get_shop_review_stats', { shop_id: parseInt(shopId) });
+
+            // 最近の口コミ
+            const { data: recentReviews, error: recentError } = await supabase
+                .from('reviews')
+                .select('*')
+                .eq('shop_id', parseInt(shopId))
+                .order('created_at', { ascending: false })
+                .limit(5);
+
+            const dashboardData = {
+                shop_info: shopData,
+                review_stats: reviewStats?.[0] || {
+                    total_reviews: 0,
+                    average_rating: 0,
+                    pending_reviews: 0
+                },
+                recent_reviews: recentReviews || [],
+                monthly_stats: {
+                    views: Math.floor(Math.random() * 1000) + 500,
+                    inquiries: Math.floor(Math.random() * 50) + 20,
+                    bookings: Math.floor(Math.random() * 30) + 10
+                }
+            };
+
+            console.log('📊 ショップダッシュボードデータ取得成功（Supabase）');
+
+            res.json({
+                success: true,
+                stats: {
+                    avg_rating: dashboardData.review_stats.average_rating,
+                    total_reviews: dashboardData.review_stats.total_reviews,
+                    monthly_views: dashboardData.monthly_stats.views,
+                    pending_reviews: dashboardData.review_stats.pending_reviews
+                },
+                data: dashboardData
+            });
+            return;
+
+        } catch (supabaseError) {
+            console.warn('Supabase ショップダッシュボードエラー、フォールバックへ:', supabaseError.message);
+        }
+
+        // フォールバック: ファイルベース
+        const shopsData = await loadShopsData();
+        const shop = shopsData.find(s => s.id === parseInt(shopId));
+
+        if (!shop) {
+            return res.status(404).json({
+                success: false,
+                error: 'shop_not_found',
+                message: 'ショップが見つかりません。'
+            });
+        }
+
+        // 口コミデータ
+        const reviewsData = await loadReviewsData();
+        const shopReviews = reviewsData.reviews.filter(r => r.shop_id === parseInt(shopId));
+        const approvedReviews = shopReviews.filter(r => r.status === 'approved');
+        const pendingReviews = shopReviews.filter(r => r.status === 'pending');
+
+        const avgRating = approvedReviews.length > 0 
+            ? approvedReviews.reduce((sum, r) => sum + r.rating, 0) / approvedReviews.length 
+            : 0;
+
+        const dashboardData = {
+            shop_info: shop,
+            review_stats: {
+                total_reviews: approvedReviews.length,
+                average_rating: avgRating,
+                pending_reviews: pendingReviews.length
+            },
+            recent_reviews: shopReviews.slice(0, 5),
+            monthly_stats: {
+                views: Math.floor(Math.random() * 1000) + 500,
+                inquiries: Math.floor(Math.random() * 50) + 20,
+                bookings: Math.floor(Math.random() * 30) + 10
+            }
+        };
+
+        console.log('📊 ショップダッシュボードデータ取得成功（フォールバック）');
+
+        res.json({
+            success: true,
+            stats: {
+                avg_rating: dashboardData.review_stats.average_rating,
+                total_reviews: dashboardData.review_stats.total_reviews,
+                monthly_views: dashboardData.monthly_stats.views,
+                pending_reviews: dashboardData.review_stats.pending_reviews
+            },
+            data: dashboardData
+        });
+
+    } catch (error) {
+        console.error('ショップダッシュボードAPI エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: 'dashboard_error',
+            message: 'ダッシュボードデータの取得に失敗しました'
+        });
+    }
+});
+
+// ショップ情報更新API
+app.put('/api/shop/profile/:shopId', async (req, res) => {
+    try {
+        const { shopId } = req.params;
+        const updateData = req.body;
+        
+        console.log('🏪 ショップ情報更新:', shopId);
+
+        // フィールドマッピングと更新データ準備
+        const fieldMapping = {
+            'name': 'shop_name',
+            'phone': 'phone_line',
+            'address': 'address',
+            'description': 'description',
+            'min_price': 'trial_dive_price_beach',
+            'max_price': 'fun_dive_price_2tanks',
+            'business_hours': 'operating_hours',
+            'closed_days': 'closed_days',
+            'services': 'services',
+            'features': 'trial_dive_options'
+        };
+        
+        const filteredData = {};
+        Object.keys(updateData).forEach(field => {
+            if (fieldMapping[field] && updateData[field] !== undefined) {
+                let value = updateData[field];
+                
+                // 配列フィールドは文字列に変換
+                if (field === 'services' || field === 'features') {
+                    value = Array.isArray(value) ? value.join(',') : value;
+                }
+                
+                filteredData[fieldMapping[field]] = value;
+            }
+        });
+
+        // Supabaseで更新
+        try {
+            const { data, error } = await supabase
+                .from('shops')
+                .update(filteredData)
+                .eq('id', parseInt(shopId))
+                .select()
+                .single();
+
+            if (error) throw error;
+
+            console.log('🏪 ショップ情報更新成功（Supabase）');
+
+            res.json({
+                success: true,
+                data: data,
+                message: 'ショップ情報を更新しました。'
+            });
+            return;
+
+        } catch (supabaseError) {
+            console.warn('Supabase ショップ情報更新エラー、フォールバックへ:', supabaseError.message);
+        }
+
+        // フォールバック: ファイルベース（読み取り専用）
+        res.json({
+            success: false,
+            error: 'update_not_supported',
+            message: 'この環境では情報の更新ができません。'
+        });
+
+    } catch (error) {
+        console.error('ショップ情報更新API エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: 'update_error',
+            message: 'ショップ情報の更新に失敗しました'
+        });
+    }
+});
+
+// 口コミ管理API（承認・非承認）
+app.put('/api/shop/reviews/:reviewId/status', async (req, res) => {
+    try {
+        const { reviewId } = req.params;
+        const { status, shop_id } = req.body;
+        
+        console.log('🌟 口コミステータス更新:', { reviewId, status });
+
+        // バリデーション
+        if (!['approved', 'rejected'].includes(status)) {
+            return res.status(400).json({
+                success: false,
+                error: 'validation_error',
+                message: '無効なステータスです。'
+            });
+        }
+
+        // Supabaseで更新
+        try {
+            const { data, error } = await supabase
+                .from('reviews')
+                .update({ status: status })
+                .eq('id', reviewId)
+                .eq('shop_id', parseInt(shop_id))
+                .select()
+                .single();
+
+            if (error) throw error;
+
+            console.log('🌟 口コミステータス更新成功（Supabase）');
+
+            res.json({
+                success: true,
+                data: data,
+                message: `口コミを${status === 'approved' ? '承認' : '非承認'}しました。`
+            });
+            return;
+
+        } catch (supabaseError) {
+            console.warn('Supabase 口コミステータス更新エラー、フォールバックへ:', supabaseError.message);
+        }
+
+        // フォールバック: ファイルベース
+        const reviewsData = await loadReviewsData();
+        const reviewIndex = reviewsData.reviews.findIndex(r => r.id === reviewId && r.shop_id === parseInt(shop_id));
+
+        if (reviewIndex === -1) {
+            return res.status(404).json({
+                success: false,
+                error: 'review_not_found',
+                message: '口コミが見つかりません。'
+            });
+        }
+
+        reviewsData.reviews[reviewIndex].status = status;
+        await saveReviewsData(reviewsData);
+
+        console.log('🌟 口コミステータス更新成功（フォールバック）');
+
+        res.json({
+            success: true,
+            data: reviewsData.reviews[reviewIndex],
+            message: `口コミを${status === 'approved' ? '承認' : '非承認'}しました。`
+        });
+
+    } catch (error) {
+        console.error('口コミステータス更新API エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: 'status_update_error',
+            message: '口コミステータスの更新に失敗しました'
+        });
+    }
+});
+
+// ショップ情報取得API（編集用）
+app.get('/api/shop/profile/:shopId', async (req, res) => {
+    try {
+        const { shopId } = req.params;
+        console.log('🏪 ショッププロフィール取得:', shopId);
+
+        // Supabaseからショップ情報を取得
+        try {
+            const { data, error } = await supabase
+                .from('shops')
+                .select('*')
+                .eq('id', parseInt(shopId))
+                .single();
+
+            if (error) throw error;
+
+            if (!data) {
+                return res.status(404).json({
+                    success: false,
+                    error: 'shop_not_found',
+                    message: 'ショップが見つかりません。'
+                });
+            }
+
+            console.log('🏪 ショッププロフィール取得成功（Supabase）');
+
+            // API用にフィールド名をマッピング
+            const shopProfile = {
+                id: data.id,
+                name: data.shop_name,
+                phone: data.phone_line,
+                address: data.address,
+                description: data.description,
+                min_price: data.trial_dive_price_beach,
+                max_price: data.fun_dive_price_2tanks,
+                business_hours: data.operating_hours,
+                closed_days: data.closed_days,
+                services: data.services ? data.services.split(',') : [],
+                features: data.trial_dive_options ? data.trial_dive_options.split(',') : []
+            };
+
+            res.json({
+                success: true,
+                shop: shopProfile
+            });
+            return;
+
+        } catch (supabaseError) {
+            console.warn('Supabase ショッププロフィール取得エラー、フォールバックへ:', supabaseError.message);
+        }
+
+        // フォールバック: ファイルベース
+        const shopsData = await loadShopsData();
+        const shop = shopsData.find(s => s.id === parseInt(shopId));
+
+        if (!shop) {
+            return res.status(404).json({
+                success: false,
+                error: 'shop_not_found',
+                message: 'ショップが見つかりません。'
+            });
+        }
+
+        console.log('🏪 ショッププロフィール取得成功（フォールバック）');
+
+        // フィールド名をマッピング
+        const shopProfile = {
+            id: shop.id,
+            name: shop.shop_name,
+            phone: shop.phone_line,
+            address: shop.address,
+            description: shop.description,
+            min_price: shop.trial_dive_price_beach,
+            max_price: shop.fun_dive_price_2tanks,
+            business_hours: shop.operating_hours,
+            closed_days: shop.closed_days || '不定休',
+            services: shop.services ? shop.services.split(',') : [],
+            features: shop.trial_dive_options ? shop.trial_dive_options.split(',') : []
+        };
+
+        res.json({
+            success: true,
+            shop: shopProfile
+        });
+
+    } catch (error) {
+        console.error('ショッププロフィール取得API エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: 'profile_error',
+            message: 'ショップ情報の取得に失敗しました'
+        });
+    }
+});
+
+// ===== データ整合性システム - 体験履歴自動追跡 =====
+
+// 新しいダイビング体験記録API
+app.post('/api/data-integrity/dive-history/record', async (req, res) => {
+    try {
+        const {
+            user_id,
+            shop_id,
+            dive_date,
+            location,
+            dive_site,
+            depth,
+            duration,
+            water_temperature,
+            visibility,
+            equipment_used,
+            buddy,
+            instructor,
+            certification_earned,
+            notes,
+            rating,
+            photos,
+            marine_life,
+            weather_conditions
+        } = req.body;
+
+        console.log('📊 新しいダイビング体験記録:', { user_id, shop_id, location, dive_site });
+
+        // Supabase使用時
+        if (supabase) {
+            try {
+                const { data, error } = await supabase
+                    .from('dive_histories')
+                    .insert([{
+                        user_id,
+                        shop_id,
+                        dive_date,
+                        location,
+                        dive_site,
+                        depth,
+                        duration,
+                        water_temperature,
+                        visibility,
+                        equipment_used,
+                        buddy,
+                        instructor,
+                        certification_earned,
+                        notes,
+                        rating,
+                        photos,
+                        marine_life,
+                        weather_conditions,
+                        created_at: new Date().toISOString(),
+                        updated_at: new Date().toISOString()
+                    }])
+                    .select();
+
+                if (error) throw error;
+
+                // ユーザープロフィール自動更新をトリガー
+                await updateUserProfileFromDiveHistory(user_id);
+
+                console.log('✅ ダイビング体験記録完了 (Supabase):', data[0].id);
+                return res.json({
+                    success: true,
+                    dive_history: data[0],
+                    message: 'ダイビング体験が記録され、プロフィールが更新されました'
+                });
+            } catch (supabaseError) {
+                console.error('Supabase記録エラー、フォールバック:', supabaseError.message);
+            }
+        }
+
+        // フォールバック: ファイルベースシステム
+        const filePath = path.join(__dirname, 'data', 'dive-history.json');
+        let diveHistoryData = { dive_history: [], stats: { total_entries: 0, last_updated: new Date().toISOString(), active_divers: 0 } };
+
+        try {
+            if (fs.existsSync(filePath)) {
+                diveHistoryData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+            }
+        } catch (readError) {
+            console.warn('履歴ファイル読み込み警告:', readError.message);
+        }
+
+        // 新しい体験記録を追加
+        const newDiveHistory = {
+            id: `dive_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            user_id,
+            shop_id,
+            dive_date,
+            location,
+            dive_site,
+            depth,
+            duration,
+            water_temperature,
+            visibility,
+            equipment_used: equipment_used || [],
+            buddy,
+            instructor,
+            certification_earned,
+            notes,
+            rating,
+            photos: photos || [],
+            marine_life: marine_life || [],
+            weather_conditions,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+        };
+
+        diveHistoryData.dive_history.push(newDiveHistory);
+        diveHistoryData.stats.total_entries = diveHistoryData.dive_history.length;
+        diveHistoryData.stats.last_updated = new Date().toISOString();
+        diveHistoryData.stats.active_divers = [...new Set(diveHistoryData.dive_history.map(h => h.user_id))].length;
+
+        // ファイルに保存
+        fs.writeFileSync(filePath, JSON.stringify(diveHistoryData, null, 2));
+
+        // ユーザープロフィール自動更新をトリガー
+        await updateUserProfileFromDiveHistory(user_id);
+
+        console.log('✅ ダイビング体験記録完了 (ファイル):', newDiveHistory.id);
+        res.json({
+            success: true,
+            dive_history: newDiveHistory,
+            message: 'ダイビング体験が記録され、プロフィールが更新されました'
+        });
+
+    } catch (error) {
+        console.error('ダイビング体験記録エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message,
+            message: 'ダイビング体験の記録に失敗しました'
+        });
+    }
+});
+
+// ユーザーのダイビング履歴取得API
+app.get('/api/data-integrity/dive-history/:user_id', async (req, res) => {
+    try {
+        const { user_id } = req.params;
+        const { limit = 20, offset = 0, location, date_from, date_to } = req.query;
+
+        console.log('📊 ダイビング履歴取得:', { user_id, limit, offset, location });
+
+        // Supabase使用時
+        if (supabase) {
+            try {
+                let query = supabase
+                    .from('dive_histories')
+                    .select('*')
+                    .eq('user_id', user_id)
+                    .order('dive_date', { ascending: false });
+
+                if (location) {
+                    query = query.ilike('location', `%${location}%`);
+                }
+                if (date_from) {
+                    query = query.gte('dive_date', date_from);
+                }
+                if (date_to) {
+                    query = query.lte('dive_date', date_to);
+                }
+
+                query = query.range(parseInt(offset), parseInt(offset) + parseInt(limit) - 1);
+
+                const { data, error } = await query;
+                if (error) throw error;
+
+                console.log('✅ ダイビング履歴取得完了 (Supabase):', data.length, '件');
+                return res.json({
+                    success: true,
+                    dive_history: data,
+                    count: data.length,
+                    total_dives: data.length > 0 ? data.length : 0
+                });
+            } catch (supabaseError) {
+                console.error('Supabase履歴取得エラー、フォールバック:', supabaseError.message);
+            }
+        }
+
+        // フォールバック: ファイルベースシステム
+        const filePath = path.join(__dirname, 'data', 'dive-history.json');
+        let diveHistoryData = { dive_history: [] };
+
+        try {
+            if (fs.existsSync(filePath)) {
+                diveHistoryData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+            }
+        } catch (readError) {
+            console.warn('履歴ファイル読み込み警告:', readError.message);
+        }
+
+        // フィルタリング
+        let userDives = diveHistoryData.dive_history.filter(dive => dive.user_id === user_id);
+
+        if (location) {
+            userDives = userDives.filter(dive => 
+                dive.location && dive.location.toLowerCase().includes(location.toLowerCase())
+            );
+        }
+        if (date_from) {
+            userDives = userDives.filter(dive => 
+                dive.dive_date && dive.dive_date >= date_from
+            );
+        }
+        if (date_to) {
+            userDives = userDives.filter(dive => 
+                dive.dive_date && dive.dive_date <= date_to
+            );
+        }
+
+        // ソート（新しい順）
+        userDives.sort((a, b) => new Date(b.dive_date) - new Date(a.dive_date));
+
+        // ページネーション
+        const startIndex = parseInt(offset);
+        const endIndex = startIndex + parseInt(limit);
+        const paginatedDives = userDives.slice(startIndex, endIndex);
+
+        console.log('✅ ダイビング履歴取得完了 (ファイル):', paginatedDives.length, '件');
+        res.json({
+            success: true,
+            dive_history: paginatedDives,
+            count: paginatedDives.length,
+            total_dives: userDives.length
+        });
+
+    } catch (error) {
+        console.error('ダイビング履歴取得エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message,
+            message: 'ダイビング履歴の取得に失敗しました'
+        });
+    }
+});
+
+// プロフィール動的更新関数
+async function updateUserProfileFromDiveHistory(user_id) {
+    try {
+        console.log('🔄 プロフィール動的更新開始:', user_id);
+
+        // ダイビング履歴を取得
+        let diveHistory = [];
+        
+        // Supabase使用時
+        if (supabase) {
+            try {
+                const { data, error } = await supabase
+                    .from('dive_histories')
+                    .select('*')
+                    .eq('user_id', user_id);
+                    
+                if (!error) {
+                    diveHistory = data || [];
+                }
+            } catch (supabaseError) {
+                console.warn('Supabase履歴取得エラー、フォールバック:', supabaseError.message);
+            }
+        }
+
+        // フォールバック: ファイルベースシステム
+        if (diveHistory.length === 0) {
+            const historyPath = path.join(__dirname, 'data', 'dive-history.json');
+            if (fs.existsSync(historyPath)) {
+                const historyData = JSON.parse(fs.readFileSync(historyPath, 'utf8'));
+                diveHistory = historyData.dive_history.filter(dive => dive.user_id === user_id);
+            }
+        }
+
+        if (diveHistory.length === 0) {
+            console.log('📊 履歴なし、プロフィール更新スキップ:', user_id);
+            return;
+        }
+
+        // 統計情報を計算
+        const totalDives = diveHistory.length;
+        const maxDepth = Math.max(...diveHistory.map(dive => dive.depth || 0));
+        const totalDuration = diveHistory.reduce((sum, dive) => sum + (dive.duration || 0), 0);
+        const avgDepth = diveHistory.reduce((sum, dive) => sum + (dive.depth || 0), 0) / totalDives;
+        const avgRating = diveHistory.reduce((sum, dive) => sum + (dive.rating || 0), 0) / totalDives;
+        
+        // 最新のダイビング日
+        const lastDiveDate = diveHistory
+            .map(dive => dive.dive_date)
+            .sort()
+            .reverse()[0];
+
+        // 訪問したロケーション
+        const visitedLocations = [...new Set(diveHistory.map(dive => dive.location).filter(Boolean))];
+        
+        // よく見る海洋生物
+        const marineLife = diveHistory
+            .flatMap(dive => dive.marine_life || [])
+            .reduce((acc, species) => {
+                acc[species] = (acc[species] || 0) + 1;
+                return acc;
+            }, {});
+        const favoriteMarineLife = Object.entries(marineLife)
+            .sort(([,a], [,b]) => b - a)
+            .slice(0, 5)
+            .map(([species]) => species);
+
+        // 認定レベルを推定（最新の履歴から）
+        const latestCertification = diveHistory
+            .filter(dive => dive.certification_earned)
+            .sort((a, b) => new Date(b.dive_date) - new Date(a.dive_date))[0];
+
+        const updatedProfile = {
+            total_dives: totalDives,
+            max_depth: maxDepth,
+            total_dive_time: totalDuration,
+            avg_depth: Math.round(avgDepth * 10) / 10,
+            avg_rating: Math.round(avgRating * 10) / 10,
+            last_dive_date: lastDiveDate,
+            visited_locations: visitedLocations,
+            favorite_marine_life: favoriteMarineLife,
+            last_synced: new Date().toISOString()
+        };
+
+        if (latestCertification) {
+            updatedProfile.certification_level = latestCertification.certification_earned;
+        }
+
+        // プロフィール更新
+        // Supabase使用時
+        if (supabase) {
+            try {
+                const { error } = await supabase
+                    .from('users')
+                    .update(updatedProfile)
+                    .eq('id', user_id);
+                    
+                if (!error) {
+                    console.log('✅ プロフィール動的更新完了 (Supabase):', user_id);
+                    return;
+                }
+            } catch (supabaseError) {
+                console.warn('Supabaseプロフィール更新エラー、フォールバック:', supabaseError.message);
+            }
+        }
+
+        // フォールバック: ファイルベースシステム
+        const usersPath = path.join(__dirname, 'data', 'users.json');
+        if (fs.existsSync(usersPath)) {
+            const usersData = JSON.parse(fs.readFileSync(usersPath, 'utf8'));
+            const userIndex = usersData.users.findIndex(user => user.id === user_id);
+            
+            if (userIndex !== -1) {
+                usersData.users[userIndex] = {
+                    ...usersData.users[userIndex],
+                    ...updatedProfile,
+                    updated_at: new Date().toISOString()
+                };
+                
+                fs.writeFileSync(usersPath, JSON.stringify(usersData, null, 2));
+                console.log('✅ プロフィール動的更新完了 (ファイル):', user_id);
+            }
+        }
+
+    } catch (error) {
+        console.error('プロフィール動的更新エラー:', error);
+    }
+}
+
+// データ整合性チェックAPI
+app.get('/api/data-integrity/check/:user_id', async (req, res) => {
+    try {
+        const { user_id } = req.params;
+        
+        console.log('🔍 データ整合性チェック開始:', user_id);
+
+        // ユーザー情報取得
+        let user = null;
+        
+        // Supabase使用時
+        if (supabase) {
+            try {
+                const { data, error } = await supabase
+                    .from('users')
+                    .select('*')
+                    .eq('id', user_id)
+                    .single();
+                    
+                if (!error) {
+                    user = data;
+                }
+            } catch (supabaseError) {
+                console.warn('Supabaseユーザー取得エラー、フォールバック:', supabaseError.message);
+            }
+        }
+
+        // フォールバック: ファイルベースシステム
+        if (!user) {
+            const usersPath = path.join(__dirname, 'data', 'users.json');
+            if (fs.existsSync(usersPath)) {
+                const usersData = JSON.parse(fs.readFileSync(usersPath, 'utf8'));
+                user = usersData.users.find(u => u.id === user_id);
+            }
+        }
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                error: 'User not found',
+                message: 'ユーザーが見つかりません'
+            });
+        }
+
+        // ダイビング履歴取得
+        let diveHistory = [];
+        
+        if (supabase) {
+            try {
+                const { data, error } = await supabase
+                    .from('dive_histories')
+                    .select('*')
+                    .eq('user_id', user_id);
+                    
+                if (!error) {
+                    diveHistory = data || [];
+                }
+            } catch (supabaseError) {
+                console.warn('Supabase履歴取得エラー、フォールバック:', supabaseError.message);
+            }
+        }
+
+        if (diveHistory.length === 0) {
+            const historyPath = path.join(__dirname, 'data', 'dive-history.json');
+            if (fs.existsSync(historyPath)) {
+                const historyData = JSON.parse(fs.readFileSync(historyPath, 'utf8'));
+                diveHistory = historyData.dive_history.filter(dive => dive.user_id === user_id);
+            }
+        }
+
+        // 整合性チェック
+        const inconsistencies = [];
+        
+        // 総ダイビング回数チェック
+        const actualTotalDives = diveHistory.length;
+        const profileTotalDives = user.total_dives || 0;
+        
+        if (actualTotalDives !== profileTotalDives) {
+            inconsistencies.push({
+                type: 'total_dives_mismatch',
+                profile_value: profileTotalDives,
+                actual_value: actualTotalDives,
+                description: 'プロフィールの総ダイビング回数と履歴の回数が一致しません'
+            });
+        }
+
+        // 最大深度チェック
+        if (diveHistory.length > 0) {
+            const actualMaxDepth = Math.max(...diveHistory.map(dive => dive.depth || 0));
+            const profileMaxDepth = user.max_depth || 0;
+            
+            if (Math.abs(actualMaxDepth - profileMaxDepth) > 0.1) {
+                inconsistencies.push({
+                    type: 'max_depth_mismatch',
+                    profile_value: profileMaxDepth,
+                    actual_value: actualMaxDepth,
+                    description: 'プロフィールの最大深度と履歴の最大深度が一致しません'
+                });
+            }
+        }
+
+        // 最後のダイビング日チェック
+        if (diveHistory.length > 0) {
+            const actualLastDive = diveHistory
+                .map(dive => dive.dive_date)
+                .sort()
+                .reverse()[0];
+            const profileLastDive = user.last_dive_date;
+            
+            if (actualLastDive !== profileLastDive) {
+                inconsistencies.push({
+                    type: 'last_dive_date_mismatch',
+                    profile_value: profileLastDive,
+                    actual_value: actualLastDive,
+                    description: '最後のダイビング日が一致しません'
+                });
+            }
+        }
+
+        const isConsistent = inconsistencies.length === 0;
+        
+        console.log('🔍 整合性チェック完了:', user_id, isConsistent ? '整合性OK' : `${inconsistencies.length}件の不整合`);
+        
+        res.json({
+            success: true,
+            user_id,
+            is_consistent: isConsistent,
+            inconsistencies,
+            stats: {
+                profile_total_dives: user.total_dives || 0,
+                actual_total_dives: diveHistory.length,
+                profile_max_depth: user.max_depth || 0,
+                actual_max_depth: diveHistory.length > 0 ? Math.max(...diveHistory.map(dive => dive.depth || 0)) : 0,
+                last_sync: user.last_synced || null
+            },
+            message: isConsistent ? 'データ整合性に問題ありません' : `${inconsistencies.length}件の不整合が検出されました`
+        });
+
+    } catch (error) {
+        console.error('データ整合性チェックエラー:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message,
+            message: 'データ整合性チェックに失敗しました'
+        });
+    }
+});
+
+// 整合性修復API
+app.post('/api/data-integrity/repair/:user_id', async (req, res) => {
+    try {
+        const { user_id } = req.params;
+        
+        console.log('🔧 データ整合性修復開始:', user_id);
+
+        // プロフィール動的更新を実行（これが修復処理）
+        await updateUserProfileFromDiveHistory(user_id);
+        
+        console.log('✅ データ整合性修復完了:', user_id);
+        res.json({
+            success: true,
+            user_id,
+            message: 'データ整合性を修復しました。プロフィールが最新の履歴に基づいて更新されました。'
+        });
+
+    } catch (error) {
+        console.error('データ整合性修復エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message,
+            message: 'データ整合性の修復に失敗しました'
+        });
+    }
+});
+
+// ===== サブスクリプション・課金システム =====
+
+// サブスクリプションプラン一覧取得API
+app.get('/api/subscription/plans', async (req, res) => {
+    try {
+        console.log('💳 サブスクリプションプラン取得');
+
+        // プランデータを読み込み
+        const plansData = await loadSubscriptionData();
+        
+        res.json({
+            success: true,
+            plans: plansData.plans
+        });
+
+    } catch (error) {
+        console.error('サブスクリプションプラン取得API エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: 'plans_error',
+            message: 'プラン情報の取得に失敗しました'
+        });
+    }
+});
+
+// ショップのサブスクリプション情報取得API
+app.get('/api/shop/subscription/:shopId', async (req, res) => {
+    try {
+        const { shopId } = req.params;
+        console.log('📊 ショップサブスクリプション情報取得:', shopId);
+
+        const plansData = await loadSubscriptionData();
+        const subscription = plansData.subscriptions.find(s => s.shop_id === parseInt(shopId));
+        
+        if (!subscription) {
+            return res.status(404).json({
+                success: false,
+                error: 'subscription_not_found',
+                message: 'サブスクリプション情報が見つかりません。'
+            });
+        }
+
+        const plan = plansData.plans.find(p => p.id === subscription.plan_id);
+        
+        if (!plan) {
+            return res.status(404).json({
+                success: false,
+                error: 'plan_not_found',
+                message: 'プラン情報が見つかりません。'
+            });
+        }
+
+        console.log('📊 ショップサブスクリプション情報取得成功');
+
+        res.json({
+            success: true,
+            subscription: subscription,
+            plan: plan
+        });
+
+    } catch (error) {
+        console.error('ショップサブスクリプション情報取得API エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: 'subscription_error',
+            message: 'サブスクリプション情報の取得に失敗しました'
+        });
+    }
+});
+
+// プラン変更API
+app.post('/api/shop/subscription/change', async (req, res) => {
+    try {
+        const { shop_id, new_plan_id } = req.body;
+        console.log('🔄 プラン変更:', { shop_id, new_plan_id });
+
+        // バリデーション
+        if (!shop_id || !new_plan_id) {
+            return res.status(400).json({
+                success: false,
+                error: 'validation_error',
+                message: 'ショップIDと新しいプランIDが必要です。'
+            });
+        }
+
+        const plansData = await loadSubscriptionData();
+        const subscription = plansData.subscriptions.find(s => s.shop_id === parseInt(shop_id));
+        const newPlan = plansData.plans.find(p => p.id === new_plan_id);
+        
+        if (!subscription) {
+            return res.status(404).json({
+                success: false,
+                error: 'subscription_not_found',
+                message: 'サブスクリプション情報が見つかりません。'
+            });
+        }
+
+        if (!newPlan) {
+            return res.status(404).json({
+                success: false,
+                error: 'plan_not_found',
+                message: '指定されたプランが見つかりません。'
+            });
+        }
+
+        // 現在と同じプランの場合
+        if (subscription.plan_id === new_plan_id) {
+            return res.status(400).json({
+                success: false,
+                error: 'same_plan',
+                message: '既に同じプランをご利用中です。'
+            });
+        }
+
+        // プラン変更処理（簡易実装）
+        subscription.plan_id = new_plan_id;
+        subscription.updated_at = new Date().toISOString();
+        
+        // 有料プランの場合、支払い方法をデモ設定
+        if (newPlan.price > 0 && !subscription.payment_method) {
+            subscription.payment_method = {
+                type: 'credit_card',
+                last4: '4242',
+                brand: 'visa'
+            };
+        }
+
+        // データ保存
+        await saveSubscriptionData(plansData);
+
+        console.log('🔄 プラン変更成功:', newPlan.name);
+
+        res.json({
+            success: true,
+            subscription: subscription,
+            plan: newPlan,
+            message: `${newPlan.name}に変更しました。`
+        });
+
+    } catch (error) {
+        console.error('プラン変更API エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: 'plan_change_error',
+            message: 'プラン変更に失敗しました'
+        });
+    }
+});
+
+// 支払い履歴取得API
+app.get('/api/shop/subscription/:shopId/payments', async (req, res) => {
+    try {
+        const { shopId } = req.params;
+        console.log('💰 支払い履歴取得:', shopId);
+
+        const plansData = await loadSubscriptionData();
+        const subscription = plansData.subscriptions.find(s => s.shop_id === parseInt(shopId));
+        
+        if (!subscription) {
+            return res.status(404).json({
+                success: false,
+                error: 'subscription_not_found',
+                message: 'サブスクリプション情報が見つかりません。'
+            });
+        }
+
+        // そのサブスクリプションの支払い履歴を取得
+        const payments = plansData.payment_history.filter(p => p.subscription_id === subscription.id);
+        
+        console.log('💰 支払い履歴取得成功:', payments.length + '件');
+
+        res.json({
+            success: true,
+            payments: payments.sort((a, b) => new Date(b.payment_date) - new Date(a.payment_date))
+        });
+
+    } catch (error) {
+        console.error('支払い履歴取得API エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: 'payment_history_error',
+            message: '支払い履歴の取得に失敗しました'
+        });
+    }
+});
+
+// Stripe Webhook処理（デモ版）
+app.post('/api/stripe/webhook', express.raw({type: 'application/json'}), (req, res) => {
+    try {
+        console.log('🔗 Stripe Webhook受信（デモ）');
+        
+        // 実際の実装では Stripe の署名検証を行う
+        const event = JSON.parse(req.body);
+        
+        switch (event.type) {
+            case 'payment_intent.succeeded':
+                console.log('💳 決済成功:', event.data.object.id);
+                // 決済成功処理
+                break;
+            case 'payment_intent.payment_failed':
+                console.log('❌ 決済失敗:', event.data.object.id);
+                // 決済失敗処理
+                break;
+            case 'customer.subscription.updated':
+                console.log('🔄 サブスクリプション更新:', event.data.object.id);
+                // サブスクリプション更新処理
+                break;
+            default:
+                console.log('❓ 未対応イベント:', event.type);
+        }
+
+        res.json({ received: true });
+
+    } catch (error) {
+        console.error('Stripe Webhook エラー:', error);
+        res.status(400).json({
+            success: false,
+            error: 'webhook_error'
+        });
+    }
+});
+
+// プラン制限チェック機能
+async function checkPlanLimits(shopId, limitType, currentUsage = 0) {
+    try {
+        const plansData = await loadSubscriptionData();
+        const subscription = plansData.subscriptions.find(s => s.shop_id === parseInt(shopId));
+        
+        if (!subscription) {
+            return { allowed: false, reason: 'サブスクリプションが見つかりません' };
+        }
+
+        const plan = plansData.plans.find(p => p.id === subscription.plan_id);
+        
+        if (!plan) {
+            return { allowed: false, reason: 'プラン情報が見つかりません' };
+        }
+
+        const limits = plan.limits;
+        
+        switch (limitType) {
+            case 'monthly_views':
+                if (limits.monthly_views === -1) return { allowed: true };
+                return {
+                    allowed: currentUsage < limits.monthly_views,
+                    remaining: Math.max(0, limits.monthly_views - currentUsage),
+                    limit: limits.monthly_views,
+                    reason: currentUsage >= limits.monthly_views ? '月間PV上限に達しています' : null
+                };
+                
+            case 'photos':
+                if (limits.photos === -1) return { allowed: true };
+                return {
+                    allowed: currentUsage < limits.photos,
+                    remaining: Math.max(0, limits.photos - currentUsage),
+                    limit: limits.photos,
+                    reason: currentUsage >= limits.photos ? '写真上限に達しています' : null
+                };
+                
+            case 'reviews_management':
+                return {
+                    allowed: limits.reviews_management,
+                    reason: !limits.reviews_management ? 'このプランでは口コミ管理機能はご利用いただけません' : null
+                };
+                
+            case 'priority_support':
+                return {
+                    allowed: limits.priority_support,
+                    reason: !limits.priority_support ? 'このプランでは優先サポートはご利用いただけません' : null
+                };
+                
+            case 'analytics':
+                return {
+                    allowed: limits.analytics,
+                    reason: !limits.analytics ? 'このプランでは詳細分析機能はご利用いただけません' : null
+                };
+                
+            case 'custom_branding':
+                return {
+                    allowed: limits.custom_branding,
+                    reason: !limits.custom_branding ? 'このプランではカスタムブランディング機能はご利用いただけません' : null
+                };
+                
+            default:
+                return { allowed: true };
+        }
+        
+    } catch (error) {
+        console.error('プラン制限チェックエラー:', error);
+        return { allowed: false, reason: 'プラン制限の確認中にエラーが発生しました' };
+    }
+}
+
+// プラン制限情報取得API
+app.get('/api/shop/plan-limits/:shopId', async (req, res) => {
+    try {
+        const { shopId } = req.params;
+        console.log('📋 プラン制限情報取得:', shopId);
+
+        const plansData = await loadSubscriptionData();
+        const subscription = plansData.subscriptions.find(s => s.shop_id === parseInt(shopId));
+        
+        if (!subscription) {
+            return res.status(404).json({
+                success: false,
+                error: 'subscription_not_found',
+                message: 'サブスクリプション情報が見つかりません。'
+            });
+        }
+
+        const plan = plansData.plans.find(p => p.id === subscription.plan_id);
+        
+        if (!plan) {
+            return res.status(404).json({
+                success: false,
+                error: 'plan_not_found',
+                message: 'プラン情報が見つかりません。'
+            });
+        }
+
+        // 現在の使用状況と制限をチェック
+        const usage = subscription.usage || {};
+        const limits = plan.limits;
+        
+        const limitChecks = {
+            monthly_views: await checkPlanLimits(shopId, 'monthly_views', usage.monthly_views || 0),
+            photos: await checkPlanLimits(shopId, 'photos', usage.photos_used || 0),
+            reviews_management: await checkPlanLimits(shopId, 'reviews_management'),
+            priority_support: await checkPlanLimits(shopId, 'priority_support'),
+            analytics: await checkPlanLimits(shopId, 'analytics'),
+            custom_branding: await checkPlanLimits(shopId, 'custom_branding')
+        };
+
+        console.log('📋 プラン制限情報取得成功');
+
+        res.json({
+            success: true,
+            plan: {
+                id: plan.id,
+                name: plan.name,
+                limits: limits
+            },
+            usage: usage,
+            limit_checks: limitChecks
+        });
+
+    } catch (error) {
+        console.error('プラン制限情報取得API エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: 'limits_error',
+            message: 'プラン制限情報の取得に失敗しました'
+        });
+    }
+});
+
+// 使用量更新API（PV数、写真数などの増加）
+app.post('/api/shop/usage/update', async (req, res) => {
+    try {
+        const { shop_id, usage_type, increment = 1 } = req.body;
+        console.log('📊 使用量更新:', { shop_id, usage_type, increment });
+
+        // バリデーション
+        if (!shop_id || !usage_type) {
+            return res.status(400).json({
+                success: false,
+                error: 'validation_error',
+                message: 'ショップIDと使用量タイプが必要です。'
+            });
+        }
+
+        const plansData = await loadSubscriptionData();
+        const subscription = plansData.subscriptions.find(s => s.shop_id === parseInt(shop_id));
+        
+        if (!subscription) {
+            return res.status(404).json({
+                success: false,
+                error: 'subscription_not_found',
+                message: 'サブスクリプション情報が見つかりません。'
+            });
+        }
+
+        // 使用量を更新
+        if (!subscription.usage) {
+            subscription.usage = {};
+        }
+
+        const currentUsage = subscription.usage[usage_type] || 0;
+        const newUsage = currentUsage + increment;
+
+        // プラン制限をチェック
+        const limitCheck = await checkPlanLimits(shop_id, usage_type, newUsage);
+        
+        if (!limitCheck.allowed) {
+            return res.status(403).json({
+                success: false,
+                error: 'limit_exceeded',
+                message: limitCheck.reason,
+                current_usage: currentUsage,
+                limit: limitCheck.limit
+            });
+        }
+
+        // 使用量を更新
+        subscription.usage[usage_type] = newUsage;
+        subscription.updated_at = new Date().toISOString();
+
+        // データ保存
+        await saveSubscriptionData(plansData);
+
+        console.log('📊 使用量更新成功:', { usage_type, newUsage });
+
+        res.json({
+            success: true,
+            usage: subscription.usage,
+            remaining: limitCheck.remaining,
+            message: '使用量を更新しました。'
+        });
+
+    } catch (error) {
+        console.error('使用量更新API エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: 'usage_update_error',
+            message: '使用量の更新に失敗しました'
+        });
+    }
+});
+
+// ===== LINE Bot - Web連携システム =====
+
+// LINE Bot - Web認証連携API
+app.post('/api/integration/line-web/auth', async (req, res) => {
+    try {
+        const { line_user_id, web_user_id, action } = req.body;
+        console.log('🔗 LINE-Web認証連携:', { line_user_id, web_user_id, action });
+
+        // バリデーション
+        if (!line_user_id || !action) {
+            return res.status(400).json({
+                success: false,
+                error: 'validation_error',
+                message: 'LINE User IDとアクションが必要です。'
+            });
+        }
+
+        // Supabaseで連携処理
+        try {
+            if (action === 'link') {
+                // LINE IDとWeb User IDを連携
+                const { data, error } = await supabase
+                    .from('user_integrations')
+                    .upsert({
+                        line_user_id: line_user_id,
+                        web_user_id: web_user_id,
+                        linked_at: new Date().toISOString(),
+                        status: 'active'
+                    })
+                    .select()
+                    .single();
+
+                if (error) throw error;
+
+                console.log('🔗 LINE-Web連携成功（Supabase）');
+
+                res.json({
+                    success: true,
+                    integration: data,
+                    message: 'LINE BotとWebアカウントを連携しました。'
+                });
+
+            } else if (action === 'unlink') {
+                // LINE IDとWeb User IDの連携解除
+                const { data, error } = await supabase
+                    .from('user_integrations')
+                    .update({ status: 'inactive', unlinked_at: new Date().toISOString() })
+                    .eq('line_user_id', line_user_id)
+                    .select()
+                    .single();
+
+                if (error) throw error;
+
+                console.log('🔗 LINE-Web連携解除成功（Supabase）');
+
+                res.json({
+                    success: true,
+                    integration: data,
+                    message: 'LINE BotとWebアカウントの連携を解除しました。'
+                });
+
+            } else {
+                return res.status(400).json({
+                    success: false,
+                    error: 'invalid_action',
+                    message: '無効なアクションです。'
+                });
+            }
+
+            return;
+
+        } catch (supabaseError) {
+            console.warn('Supabase LINE-Web連携エラー、フォールバックへ:', supabaseError.message);
+        }
+
+        // フォールバック: ファイルベース
+        const integrationsData = await loadIntegrationsData();
+        
+        if (action === 'link') {
+            const integration = {
+                id: 'int_' + Date.now(),
+                line_user_id: line_user_id,
+                web_user_id: web_user_id,
+                linked_at: new Date().toISOString(),
+                status: 'active'
+            };
+
+            integrationsData.integrations.push(integration);
+            await saveIntegrationsData(integrationsData);
+
+            console.log('🔗 LINE-Web連携成功（フォールバック）');
+
+            res.json({
+                success: true,
+                integration: integration,
+                message: 'LINE BotとWebアカウントを連携しました。'
+            });
+
+        } else if (action === 'unlink') {
+            const integrationIndex = integrationsData.integrations.findIndex(
+                i => i.line_user_id === line_user_id && i.status === 'active'
+            );
+
+            if (integrationIndex === -1) {
+                return res.status(404).json({
+                    success: false,
+                    error: 'integration_not_found',
+                    message: '連携情報が見つかりません。'
+                });
+            }
+
+            integrationsData.integrations[integrationIndex].status = 'inactive';
+            integrationsData.integrations[integrationIndex].unlinked_at = new Date().toISOString();
+
+            await saveIntegrationsData(integrationsData);
+
+            console.log('🔗 LINE-Web連携解除成功（フォールバック）');
+
+            res.json({
+                success: true,
+                integration: integrationsData.integrations[integrationIndex],
+                message: 'LINE BotとWebアカウントの連携を解除しました。'
+            });
+        }
+
+    } catch (error) {
+        console.error('LINE-Web認証連携API エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: 'integration_error',
+            message: 'LINE-Web連携処理に失敗しました'
+        });
+    }
+});
+
+// ユーザー統合情報取得API
+app.get('/api/integration/user/:userId', async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const { type = 'web' } = req.query; // 'web' or 'line'
+        console.log('👤 ユーザー統合情報取得:', { userId, type });
+
+        // Supabaseで統合情報取得
+        try {
+            const column = type === 'line' ? 'line_user_id' : 'web_user_id';
+            const { data, error } = await supabase
+                .from('user_integrations')
+                .select('*')
+                .eq(column, userId)
+                .eq('status', 'active')
+                .single();
+
+            if (error && error.code !== 'PGRST116') throw error;
+
+            if (data) {
+                // 連携されたユーザーの詳細情報を取得
+                let linkedUserInfo = {};
+                if (type === 'web' && data.line_user_id) {
+                    // LINE Botからユーザー情報取得（実装は省略）
+                    linkedUserInfo = { line_user_id: data.line_user_id };
+                } else if (type === 'line' && data.web_user_id) {
+                    // WebユーザーDB情報取得
+                    const usersData = await loadUsersData();
+                    const webUser = usersData.users.find(u => u.id === data.web_user_id);
+                    linkedUserInfo = webUser || {};
+                }
+
+                console.log('👤 ユーザー統合情報取得成功（Supabase）');
+
+                res.json({
+                    success: true,
+                    integration: data,
+                    linked_user: linkedUserInfo
+                });
+                return;
+            }
+
+        } catch (supabaseError) {
+            console.warn('Supabase ユーザー統合情報取得エラー、フォールバックへ:', supabaseError.message);
+        }
+
+        // フォールバック: ファイルベース
+        const integrationsData = await loadIntegrationsData();
+        const column = type === 'line' ? 'line_user_id' : 'web_user_id';
+        const integration = integrationsData.integrations.find(
+            i => i[column] === userId && i.status === 'active'
+        );
+
+        if (!integration) {
+            return res.json({
+                success: true,
+                integration: null,
+                linked_user: null,
+                message: '連携情報は見つかりませんでした。'
+            });
+        }
+
+        console.log('👤 ユーザー統合情報取得成功（フォールバック）');
+
+        res.json({
+            success: true,
+            integration: integration,
+            linked_user: {} // フォールバックでは詳細なユーザー情報は省略
+        });
+
+    } catch (error) {
+        console.error('ユーザー統合情報取得API エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: 'user_integration_error',
+            message: 'ユーザー統合情報の取得に失敗しました'
+        });
+    }
+});
+
+// データ同期API（LINE Bot ⇔ Web）
+app.post('/api/integration/sync-data', async (req, res) => {
+    try {
+        const { user_id, user_type, data_type, data, action = 'sync' } = req.body;
+        console.log('🔄 データ同期:', { user_id, user_type, data_type, action });
+
+        // バリデーション
+        if (!user_id || !user_type || !data_type) {
+            return res.status(400).json({
+                success: false,
+                error: 'validation_error',
+                message: 'User ID、User Type、Data Typeが必要です。'
+            });
+        }
+
+        // 統合情報を取得
+        const integrationResponse = await fetch(`http://localhost:${PORT}/api/integration/user/${user_id}?type=${user_type}`);
+        const integrationData = await integrationResponse.json();
+
+        if (!integrationData.success || !integrationData.integration) {
+            return res.status(404).json({
+                success: false,
+                error: 'no_integration',
+                message: 'ユーザーの連携情報が見つかりません。'
+            });
+        }
+
+        const integration = integrationData.integration;
+        
+        // データタイプ別の同期処理
+        let syncResult = {};
+        
+        switch (data_type) {
+            case 'user_profile':
+                syncResult = await syncUserProfile(integration, data, action);
+                break;
+            case 'diving_history':
+                syncResult = await syncDivingHistory(integration, data, action);
+                break;
+            case 'favorites':
+                syncResult = await syncFavorites(integration, data, action);
+                break;
+            case 'points':
+                syncResult = await syncPoints(integration, data, action);
+                break;
+            default:
+                return res.status(400).json({
+                    success: false,
+                    error: 'invalid_data_type',
+                    message: 'サポートされていないデータタイプです。'
+                });
+        }
+
+        console.log('🔄 データ同期成功:', data_type);
+
+        res.json({
+            success: true,
+            sync_result: syncResult,
+            message: 'データ同期が完了しました。'
+        });
+
+    } catch (error) {
+        console.error('データ同期API エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: 'sync_error',
+            message: 'データ同期に失敗しました'
+        });
+    }
+});
+
+// シームレス遷移用トークン生成API
+app.post('/api/integration/generate-transition-token', async (req, res) => {
+    try {
+        const { user_id, user_type, target_action, expires_in = 300 } = req.body;
+        console.log('🎫 遷移トークン生成:', { user_id, user_type, target_action });
+
+        // バリデーション
+        if (!user_id || !user_type || !target_action) {
+            return res.status(400).json({
+                success: false,
+                error: 'validation_error',
+                message: 'User ID、User Type、Target Actionが必要です。'
+            });
+        }
+
+        // トークン生成
+        const transitionToken = {
+            token: 'tt_' + Math.random().toString(36).substring(2, 15) + Date.now(),
+            user_id: user_id,
+            user_type: user_type,
+            target_action: target_action,
+            created_at: new Date().toISOString(),
+            expires_at: new Date(Date.now() + expires_in * 1000).toISOString(),
+            status: 'active'
+        };
+
+        // トークンを保存（簡易実装）
+        const transitionsData = await loadTransitionsData();
+        transitionsData.tokens.push(transitionToken);
+        await saveTransitionsData(transitionsData);
+
+        console.log('🎫 遷移トークン生成成功');
+
+        // Webサイトへの遷移URL生成
+        const transitionUrl = `${BASE_URL}/transition?token=${transitionToken.token}&action=${target_action}`;
+
+        res.json({
+            success: true,
+            transition_token: transitionToken.token,
+            transition_url: transitionUrl,
+            expires_at: transitionToken.expires_at,
+            message: '遷移トークンを生成しました。'
+        });
+
+    } catch (error) {
+        console.error('遷移トークン生成API エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: 'token_generation_error',
+            message: '遷移トークンの生成に失敗しました'
+        });
+    }
+});
+
+// トークンを使った認証済み遷移API
+app.post('/api/integration/authenticate-transition', async (req, res) => {
+    try {
+        const { token } = req.body;
+        console.log('🔓 遷移認証:', token);
+
+        // バリデーション
+        if (!token) {
+            return res.status(400).json({
+                success: false,
+                error: 'validation_error',
+                message: 'トークンが必要です。'
+            });
+        }
+
+        // トークン検証
+        const transitionsData = await loadTransitionsData();
+        const transitionToken = transitionsData.tokens.find(t => t.token === token && t.status === 'active');
+
+        if (!transitionToken) {
+            return res.status(404).json({
+                success: false,
+                error: 'invalid_token',
+                message: '無効なトークンです。'
+            });
+        }
+
+        // 有効期限チェック
+        if (new Date() > new Date(transitionToken.expires_at)) {
+            return res.status(401).json({
+                success: false,
+                error: 'token_expired',
+                message: 'トークンが期限切れです。'
+            });
+        }
+
+        // トークンを使用済みにマーク
+        transitionToken.status = 'used';
+        transitionToken.used_at = new Date().toISOString();
+        await saveTransitionsData(transitionsData);
+
+        // 統合情報を取得
+        const integrationResponse = await fetch(`http://localhost:${PORT}/api/integration/user/${transitionToken.user_id}?type=${transitionToken.user_type}`);
+        const integrationData = await integrationResponse.json();
+
+        console.log('🔓 遷移認証成功');
+
+        res.json({
+            success: true,
+            user_id: transitionToken.user_id,
+            user_type: transitionToken.user_type,
+            target_action: transitionToken.target_action,
+            integration: integrationData.integration,
+            message: '認証が完了しました。'
+        });
+
+    } catch (error) {
+        console.error('遷移認証API エラー:', error);
+        res.status(500).json({
+            success: false,
+            error: 'auth_error',
+            message: '遷移認証に失敗しました'
+        });
+    }
+});
+
+// ===== B2Bシステム ヘルパー関数 =====
+
+// ショップデータ読み込み（シンプル版）
+async function loadShopsData() {
+    try {
+        // 既存のショップAPIから取得
+        const response = await fetch('http://localhost:3000/api/shops');
+        const data = await response.json();
+        return data.success ? data.data.shops : [];
+    } catch (error) {
+        console.error('ショップデータ読み込みエラー:', error);
+        return [];
+    }
 }

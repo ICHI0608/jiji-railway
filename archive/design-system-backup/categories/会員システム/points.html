@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ポイント管理 | Dive Buddy's</title>
+    <meta name="description" content="Dive Buddy'sポイントの確認、履歴、特典交換ができます。ダイビング体験や口コミ投稿でポイントを貯めよう！">
+    
+    <!-- 統一デザインシステム -->
+    <link rel="stylesheet" href="/css/design-system.css">
+    <link rel="stylesheet" href="/app/v28-styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        .points-page {
+            background: #f8f9ff;
+            min-height: 100vh;
+            padding-top: 100px;
+        }
+
+        .points-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        .points-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .points-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 1rem;
+        }
+
+        .points-subtitle {
+            font-size: 1.2rem;
+            color: #6b7280;
+        }
+
+        .points-dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .points-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .points-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .points-balance {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .points-balance::before {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+        }
+
+        .points-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .points-number {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .points-label {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .content-tabs {
+            display: flex;
+            background: white;
+            border-radius: 12px;
+            padding: 0.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 1rem 1.5rem;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #6b7280;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab-button.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .section-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .rewards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .reward-item {
+            border: 2px solid #e5e7eb;
+            border-radius: 15px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .reward-item:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .reward-item.affordable {
+            border-color: #10b981;
+            background: #f0fdf4;
+        }
+
+        .reward-item.unavailable {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .reward-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 1rem;
+        }
+
+        .reward-image {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+        }
+
+        .reward-points {
+            background: #667eea;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .reward-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+
+        .reward-description {
+            color: #6b7280;
+            line-height: 1.5;
+            margin-bottom: 1rem;
+        }
+
+        .reward-category {
+            display: inline-block;
+            background: #f3f4f6;
+            color: #6b7280;
+            padding: 0.3rem 0.8rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .reward-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .redeem-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .redeem-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .redeem-button:disabled {
+            background: #d1d5db;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .stock-info {
+            font-size: 0.8rem;
+            color: #6b7280;
+        }
+
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .history-item {
+            display: flex;
+            align-items: center;
+            padding: 1.5rem;
+            background: #f8f9ff;
+            border-radius: 12px;
+            border-left: 4px solid transparent;
+        }
+
+        .history-item.earn {
+            border-left-color: #10b981;
+        }
+
+        .history-item.spend {
+            border-left-color: #ef4444;
+        }
+
+        .history-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            margin-right: 1rem;
+        }
+
+        .history-icon.earn {
+            background: #10b981;
+        }
+
+        .history-icon.spend {
+            background: #ef4444;
+        }
+
+        .history-content {
+            flex: 1;
+        }
+
+        .history-reason {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 0.3rem;
+        }
+
+        .history-date {
+            font-size: 0.9rem;
+            color: #6b7280;
+        }
+
+        .history-points {
+            font-size: 1.2rem;
+            font-weight: 700;
+            text-align: right;
+        }
+
+        .history-points.earn {
+            color: #10b981;
+        }
+
+        .history-points.spend {
+            color: #ef4444;
+        }
+
+        .load-more-button {
+            width: 100%;
+            padding: 1rem;
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-weight: 600;
+            color: #6b7280;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .load-more-button:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .loading-spinner {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .success-message,
+        .error-message {
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .success-message {
+            background: #dcfce7;
+            color: #166534;
+            border: 2px solid #22c55e;
+        }
+
+        .error-message {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 2px solid #ef4444;
+        }
+
+        @media (max-width: 768px) {
+            .points-dashboard {
+                grid-template-columns: 1fr;
+            }
+
+            .rewards-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .content-tabs {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .history-item {
+                flex-direction: column;
+                text-align: center;
+                gap: 1rem;
+            }
+
+            .history-points {
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ヘッダー -->
+    <header class="main-header">
+        <nav class="main-nav">
+            <a href="/" class="main-logo">
+                <h1>🌺 Dive Buddy's</h1>
+                <span>ダイビング情報</span>
+            </a>
+            
+            <ul class="main-nav-menu">
+                <li><a href="/">ホーム</a></li>
+                <li><a href="/about">サービス</a></li>
+                <li><a href="/member" class="active">会員システム</a></li>
+                <li><a href="/shops-database">ショップDB</a></li>
+                <li><a href="/travel-guide">旅行ガイド</a></li>
+                <li><a href="/weather-ocean">海況・天気</a></li>
+                <li><a href="/blog">ブログ</a></li>
+                <li><a href="/contact">お問い合わせ</a></li>
+            </ul>
+            
+            <div class="main-nav-buttons">
+                <a href="https://line.me/ti/p/@2007331165" class="btn btn-primary btn-line-connect" target="_blank">
+                    <i class="fab fa-line"></i> Jijiに相談
+                </a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- メインコンテンツ -->
+    <main class="points-page">
+        <div class="points-container">
+            <!-- ページヘッダー -->
+            <div class="points-header">
+                <h1 class="points-title">
+                    <i class="fas fa-coins"></i> ポイント管理
+                </h1>
+                <p class="points-subtitle">
+                    ダイビング体験や口コミ投稿でポイントを貯めて、お得な特典と交換しよう！
+                </p>
+            </div>
+
+            <!-- ポイントダッシュボード -->
+            <div class="points-dashboard">
+                <!-- 現在のポイント残高 -->
+                <div class="points-card points-balance">
+                    <div class="points-icon">💰</div>
+                    <div class="points-number" id="currentPoints">---</div>
+                    <div class="points-label">現在のポイント</div>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-number" id="totalEarned">---</div>
+                            <div class="stat-label">獲得総数</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="totalSpent">---</div>
+                            <div class="stat-label">使用総数</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ポイント獲得方法 -->
+                <div class="points-card">
+                    <div class="points-icon">🎯</div>
+                    <h3 style="margin-bottom: 1rem;">ポイントの貯め方</h3>
+                    <div style="text-align: left;">
+                        <div style="margin-bottom: 0.8rem;">
+                            <i class="fas fa-user-plus" style="color: #10b981; margin-right: 0.5rem;"></i>
+                            <strong>初回登録:</strong> 100ポイント
+                        </div>
+                        <div style="margin-bottom: 0.8rem;">
+                            <i class="fas fa-star" style="color: #f59e0b; margin-right: 0.5rem;"></i>
+                            <strong>口コミ投稿:</strong> 50ポイント
+                        </div>
+                        <div style="margin-bottom: 0.8rem;">
+                            <i class="fas fa-swimmer" style="color: #3b82f6; margin-right: 0.5rem;"></i>
+                            <strong>ダイビング完了:</strong> 200-500ポイント
+                        </div>
+                        <div>
+                            <i class="fas fa-calendar-check" style="color: #8b5cf6; margin-right: 0.5rem;"></i>
+                            <strong>ログイン継続:</strong> 毎日10ポイント
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- メッセージエリア -->
+            <div id="messageArea"></div>
+
+            <!-- コンテンツタブ -->
+            <div class="content-tabs">
+                <button class="tab-button active" data-tab="rewards">
+                    <i class="fas fa-gift"></i> 特典交換
+                </button>
+                <button class="tab-button" data-tab="history">
+                    <i class="fas fa-history"></i> ポイント履歴
+                </button>
+            </div>
+
+            <!-- 特典交換タブ -->
+            <div id="rewards-tab" class="tab-content active">
+                <div class="section-card">
+                    <h2 class="section-title">
+                        <i class="fas fa-gift"></i> 交換可能な特典
+                    </h2>
+                    
+                    <div id="rewardsLoading" class="loading-spinner">
+                        <div class="spinner"></div>
+                        <p>特典を読み込み中...</p>
+                    </div>
+                    
+                    <div id="rewardsGrid" class="rewards-grid">
+                        <!-- 特典アイテムは動的に生成 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- ポイント履歴タブ -->
+            <div id="history-tab" class="tab-content">
+                <div class="section-card">
+                    <h2 class="section-title">
+                        <i class="fas fa-history"></i> ポイント履歴
+                    </h2>
+                    
+                    <div id="historyLoading" class="loading-spinner">
+                        <div class="spinner"></div>
+                        <p>履歴を読み込み中...</p>
+                    </div>
+                    
+                    <div id="historyList" class="history-list">
+                        <!-- 履歴アイテムは動的に生成 -->
+                    </div>
+                    
+                    <button id="loadMoreHistory" class="load-more-button" style="display: none;">
+                        <i class="fas fa-chevron-down"></i> もっと見る
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- フッター -->
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>🌺 Dive Buddy's</h3>
+                    <p>沖縄・離島のダイビング情報をお届け</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>人気のカテゴリ</h3>
+                    <ul>
+                        <li><a href="/shops-database">ショップ検索</a></li>
+                        <li><a href="/weather-ocean">海況情報</a></li>
+                        <li><a href="/travel-guide">旅行ガイド</a></li>
+                        <li><a href="/blog">ブログ</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>会員機能</h3>
+                    <ul>
+                        <li><a href="/member">マイページ</a></li>
+                        <li><a href="/member/points">ポイント管理</a></li>
+                        <li><a href="/reviews/submit">口コミ投稿</a></li>
+                        <li><a href="/member/profile">プロフィール</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>サポート</h3>
+                    <ul>
+                        <li><a href="https://line.me/ti/p/@2007331165" target="_blank">LINE Bot相談</a></li>
+                        <li><a href="/contact">お問い合わせ</a></li>
+                        <li><a href="/help">ヘルプ</a></li>
+                        <li><a href="/legal">利用規約</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 Dive Buddy's - あなた専属のダイビング情報</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        class PointsManager {
+            constructor() {
+                this.currentUserId = 'user_demo_1'; // デモ用
+                this.currentPoints = 0;
+                this.rewards = [];
+                this.historyPage = 1;
+                this.hasMoreHistory = true;
+                this.init();
+            }
+
+            init() {
+                this.setupTabs();
+                this.loadPointsBalance();
+                this.loadRewards();
+                this.loadPointsHistory();
+            }
+
+            setupTabs() {
+                const tabButtons = document.querySelectorAll('.tab-button');
+                const tabContents = document.querySelectorAll('.tab-content');
+
+                tabButtons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        const targetTab = button.dataset.tab;
+                        
+                        // タブボタンのアクティブ状態更新
+                        tabButtons.forEach(btn => btn.classList.remove('active'));
+                        button.classList.add('active');
+                        
+                        // タブコンテンツの表示切り替え
+                        tabContents.forEach(content => {
+                            content.classList.remove('active');
+                        });
+                        document.getElementById(`${targetTab}-tab`).classList.add('active');
+                        
+                        // 履歴タブが選択された場合、データを再読み込み
+                        if (targetTab === 'history' && this.historyPage === 1) {
+                            this.loadPointsHistory(1);
+                        }
+                    });
+                });
+            }
+
+            async loadPointsBalance() {
+                try {
+                    const response = await fetch(`/api/points/balance/${this.currentUserId}`);
+                    const data = await response.json();
+
+                    if (data.success) {
+                        this.currentPoints = data.points.current_points;
+                        document.getElementById('currentPoints').textContent = this.currentPoints.toLocaleString();
+                        document.getElementById('totalEarned').textContent = data.points.total_earned.toLocaleString();
+                        document.getElementById('totalSpent').textContent = data.points.total_spent.toLocaleString();
+                    } else {
+                        this.showError('ポイント残高の取得に失敗しました。');
+                    }
+                } catch (error) {
+                    console.error('ポイント残高取得エラー:', error);
+                    this.showError('ポイント残高の読み込み中にエラーが発生しました。');
+                }
+            }
+
+            async loadRewards() {
+                try {
+                    document.getElementById('rewardsLoading').style.display = 'block';
+                    
+                    const response = await fetch('/api/points/rewards');
+                    const data = await response.json();
+
+                    if (data.success) {
+                        this.rewards = data.rewards;
+                        this.renderRewards();
+                    } else {
+                        this.showError('特典の取得に失敗しました。');
+                    }
+                } catch (error) {
+                    console.error('特典取得エラー:', error);
+                    this.showError('特典の読み込み中にエラーが発生しました。');
+                } finally {
+                    document.getElementById('rewardsLoading').style.display = 'none';
+                }
+            }
+
+            renderRewards() {
+                const container = document.getElementById('rewardsGrid');
+                
+                container.innerHTML = this.rewards.map(reward => {
+                    const canAfford = this.currentPoints >= reward.required_points;
+                    const hasStock = reward.stock === -1 || reward.stock > 0;
+                    const available = canAfford && hasStock;
+                    
+                    return `
+                        <div class="reward-item ${canAfford ? 'affordable' : ''} ${!available ? 'unavailable' : ''}">
+                            <div class="reward-header">
+                                <div class="reward-image">
+                                    ${this.getRewardIcon(reward.category)}
+                                </div>
+                                <div class="reward-points">${reward.required_points.toLocaleString()}P</div>
+                            </div>
+                            
+                            <div class="reward-name">${reward.name}</div>
+                            <div class="reward-description">${reward.description}</div>
+                            <div class="reward-category">${reward.category}</div>
+                            
+                            <div class="reward-actions">
+                                <button class="redeem-button" 
+                                        ${!available ? 'disabled' : ''}
+                                        onclick="window.pointsManager.redeemReward('${reward.id}', '${reward.name}', ${reward.required_points})">
+                                    ${!canAfford ? 'ポイント不足' : !hasStock ? '在庫なし' : '交換する'}
+                                </button>
+                                ${reward.stock !== -1 ? `<div class="stock-info">残り ${reward.stock}個</div>` : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            getRewardIcon(category) {
+                const icons = {
+                    'グッズ': '🎁',
+                    'クーポン': '🎟️',
+                    'サービス': '⭐',
+                    'その他': '💝'
+                };
+                return icons[category] || '🎁';
+            }
+
+            async loadPointsHistory(page = 1) {
+                try {
+                    document.getElementById('historyLoading').style.display = page === 1 ? 'block' : 'none';
+                    
+                    const response = await fetch(`/api/points/history/${this.currentUserId}?page=${page}&limit=10`);
+                    const data = await response.json();
+
+                    if (data.success) {
+                        if (page === 1) {
+                            this.renderHistory(data.transactions);
+                        } else {
+                            this.appendHistory(data.transactions);
+                        }
+                        
+                        this.hasMoreHistory = data.pagination.page < data.pagination.total_pages;
+                        this.updateLoadMoreButton();
+                    } else {
+                        this.showError('ポイント履歴の取得に失敗しました。');
+                    }
+                } catch (error) {
+                    console.error('ポイント履歴取得エラー:', error);
+                    this.showError('ポイント履歴の読み込み中にエラーが発生しました。');
+                } finally {
+                    document.getElementById('historyLoading').style.display = 'none';
+                }
+            }
+
+            renderHistory(transactions) {
+                const container = document.getElementById('historyList');
+                container.innerHTML = transactions.map(tx => this.createHistoryItem(tx)).join('');
+            }
+
+            appendHistory(transactions) {
+                const container = document.getElementById('historyList');
+                container.innerHTML += transactions.map(tx => this.createHistoryItem(tx)).join('');
+            }
+
+            createHistoryItem(transaction) {
+                const isEarn = transaction.transaction_type === 'earn';
+                const icon = isEarn ? '📈' : '📉';
+                const pointsText = isEarn ? `+${transaction.points}` : `-${transaction.points}`;
+                const date = new Date(transaction.created_at).toLocaleDateString('ja-JP');
+
+                return `
+                    <div class="history-item ${transaction.transaction_type}">
+                        <div class="history-icon ${transaction.transaction_type}">
+                            ${icon}
+                        </div>
+                        <div class="history-content">
+                            <div class="history-reason">${transaction.reason}</div>
+                            <div class="history-date">${date}</div>
+                        </div>
+                        <div class="history-points ${transaction.transaction_type}">
+                            ${pointsText}P
+                        </div>
+                    </div>
+                `;
+            }
+
+            updateLoadMoreButton() {
+                const button = document.getElementById('loadMoreHistory');
+                if (this.hasMoreHistory) {
+                    button.style.display = 'block';
+                    button.onclick = () => {
+                        this.historyPage++;
+                        this.loadPointsHistory(this.historyPage);
+                    };
+                } else {
+                    button.style.display = 'none';
+                }
+            }
+
+            async redeemReward(rewardId, rewardName, requiredPoints) {
+                if (this.currentPoints < requiredPoints) {
+                    this.showError('ポイントが不足しています。');
+                    return;
+                }
+
+                if (!confirm(`${rewardName}を${requiredPoints}ポイントで交換しますか？`)) {
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/api/points/redeem', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            user_id: this.currentUserId,
+                            reward_id: rewardId,
+                            reward_name: rewardName,
+                            required_points: requiredPoints
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        this.showSuccess(data.message);
+                        this.currentPoints = data.remaining_points;
+                        document.getElementById('currentPoints').textContent = this.currentPoints.toLocaleString();
+                        this.renderRewards(); // 交換ボタンの状態を更新
+                        this.loadPointsHistory(1); // 履歴を更新
+                    } else {
+                        this.showError(data.message || '特典交換に失敗しました。');
+                    }
+                } catch (error) {
+                    console.error('特典交換エラー:', error);
+                    this.showError('特典交換中にエラーが発生しました。');
+                }
+            }
+
+            showSuccess(message) {
+                const messageArea = document.getElementById('messageArea');
+                messageArea.innerHTML = `
+                    <div class="success-message">
+                        <i class="fas fa-check-circle"></i> ${message}
+                    </div>
+                `;
+                setTimeout(() => {
+                    messageArea.innerHTML = '';
+                }, 5000);
+            }
+
+            showError(message) {
+                const messageArea = document.getElementById('messageArea');
+                messageArea.innerHTML = `
+                    <div class="error-message">
+                        <i class="fas fa-exclamation-triangle"></i> ${message}
+                    </div>
+                `;
+                setTimeout(() => {
+                    messageArea.innerHTML = '';
+                }, 5000);
+            }
+        }
+
+        // 初期化
+        document.addEventListener('DOMContentLoaded', () => {
+            window.pointsManager = new PointsManager();
+        });
+    </script>
+</body>
+</html>

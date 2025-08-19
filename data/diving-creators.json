@@ -1,0 +1,175 @@
+{
+  "creators": [
+    {
+      "id": "creator_001",
+      "name": "熱烈ダイビングチャンネル",
+      "channelId": "UCW8TXV8hY177uVSFuVOGg1A",
+      "channelHandle": "@shu1316",
+      "subscriberCount": 18500,
+      "videoCount": 747,
+      "description": "ダイビングの楽しさと安全を第一に考えた熱烈なダイビング愛好家のチャンネル。技術解説から海中撮影まで幅広くカバー。",
+      "specialties": ["技術解説", "安全ダイビング", "海中撮影", "器材レビュー"],
+      "targetAudience": "初心者〜中級者",
+      "region": "日本全国",
+      "languages": ["日本語"],
+      "socialMedia": {
+        "youtube": "@shu1316"
+      },
+      "verificationStatus": "verified",
+      "addedDate": "2025-08-10"
+    },
+    {
+      "id": "creator_002", 
+      "name": "ダイビングの専門学校　クラウンクラウン",
+      "channelId": "UCpl_Zy-zsxpG7JJzQAir6SQ",
+      "channelHandle": "@clowncrown",
+      "subscriberCount": 12200,
+      "videoCount": 283,
+      "description": "ダイビング専門学校が運営する教育的チャンネル。プロ養成から初心者指導まで、体系的なダイビング教育を提供。",
+      "specialties": ["プロ養成", "初心者指導", "技術教育", "資格取得"],
+      "targetAudience": "初心者〜プロ志向",
+      "region": "関東・沖縄",
+      "languages": ["日本語"],
+      "socialMedia": {
+        "youtube": "@clowncrown",
+        "website": "https://crown-crown.com"
+      },
+      "verificationStatus": "verified",
+      "addedDate": "2025-08-10"
+    },
+    {
+      "id": "creator_003",
+      "name": "Totty Films / scuba diving",
+      "channelId": "UCLkxf99MZbfUTr7D7UCW58Q",
+      "channelHandle": "@TottyFilms",
+      "subscriberCount": 10600,
+      "videoCount": 341,
+      "description": "映画的な美しさでダイビングの世界を表現。水中撮影技術と編集スキルで魅せる芸術的なダイビング動画。",
+      "specialties": ["水中撮影", "動画編集", "海中生物", "地形ダイビング"],
+      "targetAudience": "撮影志向ダイバー",
+      "region": "日本・海外",
+      "languages": ["日本語", "英語"],
+      "socialMedia": {
+        "youtube": "@TottyFilms"
+      },
+      "verificationStatus": "verified",
+      "addedDate": "2025-08-10"
+    },
+    {
+      "id": "creator_004",
+      "name": "パパラギ先生のまるごとダイビングTV",
+      "channelId": "UCQ3An_PhdPwo7vLqtev1yBw",
+      "channelHandle": "@papalagi_sensei_diving",
+      "subscriberCount": 4810,
+      "videoCount": 560,
+      "description": "ダイビングショップ「パパラギ」のベテランインストラクターによる総合ダイビング情報番組。豊富な経験に基づく実践的指導。",
+      "specialties": ["実践指導", "安全管理", "海中生物", "器材解説"],
+      "targetAudience": "全レベル",
+      "region": "伊豆・沖縄",
+      "languages": ["日本語"],
+      "socialMedia": {
+        "youtube": "@papalagi_sensei_diving",
+        "website": "https://www.papalagi.co.jp"
+      },
+      "verificationStatus": "verified",
+      "addedDate": "2025-08-10"
+    },
+    {
+      "id": "creator_005",
+      "name": "沖縄離島案内 Yuki Ando",
+      "channelId": "UCyuki_ando",
+      "channelHandle": "@yuki.ando.37",
+      "platform": "instagram",
+      "subscriberCount": 5200,
+      "postCount": 420,
+      "description": "沖縄の離島を専門に紹介するインスタグラマー。宮古島、石垣島、久米島など離島の魅力とダイビングスポットを発信。",
+      "specialties": ["離島紹介", "沖縄観光", "ダイビングスポット", "地域情報"],
+      "targetAudience": "沖縄・離島志向ダイバー",
+      "region": "沖縄離島専門",
+      "languages": ["日本語"],
+      "socialMedia": {
+        "instagram": "@yuki.ando.37",
+        "website": "https://www.instagram.com/yuki.ando.37/"
+      },
+      "verificationStatus": "verified",
+      "addedDate": "2025-08-10"
+    },
+    {
+      "id": "creator_006",
+      "name": "halohalo travel",
+      "channelId": "UChalohalo_travel",
+      "channelHandle": "@halohalo_travel",
+      "platform": "instagram",
+      "subscriberCount": 8900,
+      "postCount": 650,
+      "description": "航空機チケットセール情報や旅行情報を随時配信。沖縄ダイビング旅行に役立つ格安航空券・宿泊情報をタイムリーにお届け。",
+      "specialties": ["航空券セール情報", "旅行情報", "宿泊情報", "格安旅行"],
+      "targetAudience": "旅行・ダイビング旅行志向",
+      "region": "日本・沖縄旅行専門",
+      "languages": ["日本語"],
+      "socialMedia": {
+        "instagram": "@halohalo_travel",
+        "website": "https://www.instagram.com/halohalo_travel/"
+      },
+      "verificationStatus": "verified",
+      "addedDate": "2025-08-10"
+    }
+  ],
+  "categories": [
+    {
+      "id": "beginner_friendly",
+      "name": "初心者向け",
+      "description": "ダイビングを始めたい方向けの基礎知識・安全情報"
+    },
+    {
+      "id": "technical_diving", 
+      "name": "テクニカルダイビング",
+      "description": "上級者向けの技術解説・地形ダイビング"
+    },
+    {
+      "id": "marine_life",
+      "name": "海中生物",
+      "description": "海中生物の生態・観察方法"
+    },
+    {
+      "id": "equipment_review",
+      "name": "器材レビュー",
+      "description": "ダイビング器材の使用感・比較レビュー"
+    },
+    {
+      "id": "underwater_photography",
+      "name": "水中撮影",
+      "description": "水中撮影技術・編集方法"
+    },
+    {
+      "id": "professional_training",
+      "name": "プロ養成",
+      "description": "インストラクター・ダイブマスター養成"
+    },
+    {
+      "id": "regional_guide",
+      "name": "地域ガイド",
+      "description": "特定地域のダイビングスポット・観光情報"
+    },
+    {
+      "id": "travel_deals",
+      "name": "旅行・セール情報",
+      "description": "航空券・宿泊セール情報、旅行計画サポート"
+    }
+  ],
+  "platforms": [
+    {
+      "name": "YouTube",
+      "description": "動画コンテンツプラットフォーム",
+      "metrics": ["subscriberCount", "videoCount"]
+    },
+    {
+      "name": "Instagram", 
+      "description": "写真・ショート動画プラットフォーム",
+      "metrics": ["subscriberCount", "postCount"]
+    }
+  ],
+  "lastUpdated": "2025-08-10T15:45:00Z",
+  "updateFrequency": "weekly",
+  "totalCreators": 6
+}

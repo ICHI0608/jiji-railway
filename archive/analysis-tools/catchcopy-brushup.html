@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dive Buddy's キャッチコピー ブラッシュアップ提案</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Hiragino Sans', 'Yu Gothic', sans-serif;
+            background: #f8fafb;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #77C9D4 0%, #A2DED0 100%);
+            color: white;
+            padding: 40px 20px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(119, 201, 212, 0.3);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .proposal-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-icon {
+            font-size: 2rem;
+            color: #77C9D4;
+        }
+
+        .copy-option {
+            background: #f0f9ff;
+            border: 2px solid #bae6fd;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 15px 0;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .copy-option:hover {
+            border-color: #77C9D4;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(119, 201, 212, 0.2);
+        }
+
+        .copy-text {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #0c4a6e;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+
+        .copy-analysis {
+            font-size: 0.95rem;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .copy-rating {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .rating-label {
+            font-size: 0.85rem;
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .stars {
+            color: #fbbf24;
+            font-size: 1.1rem;
+        }
+
+        .recommended {
+            border-color: #10b981;
+            background: #ecfdf5;
+        }
+
+        .recommended::before {
+            content: '🏆 推奨';
+            position: absolute;
+            top: -10px;
+            right: 15px;
+            background: #10b981;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .original-copies {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .original-copy {
+            background: #fef3c7;
+            border: 2px solid #f59e0b;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .original-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #92400e;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .original-text {
+            font-size: 1.1rem;
+            color: #374151;
+            font-weight: 500;
+        }
+
+        .cta-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .cta-option {
+            background: #f8fafb;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .cta-option:hover {
+            border-color: #77C9D4;
+            background: #f0f9ff;
+        }
+
+        .cta-button {
+            background: linear-gradient(135deg, #77C9D4 0%, #A2DED0 100%);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-bottom: 10px;
+            display: block;
+            width: 100%;
+        }
+
+        .cta-desc {
+            font-size: 0.9rem;
+            color: #6b7280;
+            margin-top: 10px;
+        }
+
+        .shop-desc-option {
+            background: #f8fafc;
+            border-left: 4px solid #77C9D4;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 8px;
+        }
+
+        .shop-desc-text {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .shop-desc-note {
+            font-size: 0.9rem;
+            color: #6b7280;
+        }
+
+        .final-summary {
+            background: linear-gradient(135deg, #77C9D4 0%, #A2DED0 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-top: 30px;
+        }
+
+        .summary-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .summary-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+
+        .summary-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+
+        .summary-text {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .original-copies {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .copy-text {
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>✨ Dive Buddy's キャッチコピー ブラッシュアップ</h1>
+            <p>既存コピーと決定コピーの融合で最強のメッセージを</p>
+        </div>
+
+        <!-- 元となるコピー -->
+        <div class="proposal-section">
+            <div class="section-title">
+                <span class="section-icon">📝</span>
+                元となるキャッチコピー
+            </div>
+            
+            <div class="original-copies">
+                <div class="original-copy">
+                    <div class="original-title">現在のコピー</div>
+                    <div class="original-text">「『どうしよう...』が『楽しみ！』に変わる瞬間」</div>
+                </div>
+                <div class="original-copy">
+                    <div class="original-title">決定したコピー</div>
+                    <div class="original-text">「沖縄の海で、新しい自分に出会う」</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ブラッシュアップ提案 -->
+        <div class="proposal-section">
+            <div class="section-title">
+                <span class="section-icon">🎨</span>
+                キャッチコピー ブラッシュアップ提案
+            </div>
+
+            <div class="copy-option recommended">
+                <div class="copy-text">「沖縄の海で、『どうしよう...』が『楽しみ！』に変わる」</div>
+                <div class="copy-analysis">
+                    <strong>✅ 最強の融合案</strong><br>
+                    場所（沖縄の海）→ 感情変化（不安→楽しみ）の流れが自然。
+                    地名で具体性を出し、感情変化で共感を誘う。20代後半〜30代前半女性に最も刺さる。
+                </div>
+                <div class="copy-rating">
+                    <span class="rating-label">魅力度:</span>
+                    <span class="stars">★★★★★</span>
+                    <span class="rating-label">わかりやすさ:</span>
+                    <span class="stars">★★★★☆</span>
+                </div>
+            </div>
+
+            <div class="copy-option">
+                <div class="copy-text">「沖縄の海で出会う、新しい自分と『楽しみ！』な瞬間」</div>
+                <div class="copy-analysis">
+                    <strong>⭐ 体験重視案</strong><br>
+                    「新しい自分」「楽しみな瞬間」両方を含む。やや長いが、体験価値を強調。
+                    憧れ感と期待感を同時に演出。
+                </div>
+                <div class="copy-rating">
+                    <span class="rating-label">魅力度:</span>
+                    <span class="stars">★★★★☆</span>
+                    <span class="rating-label">わかりやすさ:</span>
+                    <span class="stars">★★★☆☆</span>
+                </div>
+            </div>
+
+            <div class="copy-option">
+                <div class="copy-text">「『どうしよう...』から始まる、沖縄の海での新しい自分との出会い」</div>
+                <div class="copy-analysis">
+                    <strong>📖 ストーリー重視案</strong><br>
+                    不安から始まって成長への物語性を演出。文章として自然で読みやすい。
+                    やや長めだが、サービスの本質を表現。
+                </div>
+                <div class="copy-rating">
+                    <span class="rating-label">魅力度:</span>
+                    <span class="stars">★★★☆☆</span>
+                    <span class="rating-label">わかりやすさ:</span>
+                    <span class="stars">★★★★☆</span>
+                </div>
+            </div>
+
+            <div class="copy-option">
+                <div class="copy-text">「沖縄の海が教えてくれる、新しい『楽しみ！』の瞬間」</div>
+                <div class="copy-analysis">
+                    <strong>🌊 海中心案</strong><br>
+                    「海が教えてくれる」で擬人化。自然と人の関係性を演出。
+                    シンプルで覚えやすく、ポエティック。
+                </div>
+                <div class="copy-rating">
+                    <span class="rating-label">魅力度:</span>
+                    <span class="stars">★★★★☆</span>
+                    <span class="rating-label">わかりやすさ:</span>
+                    <span class="stars">★★★★☆</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- CTAボタン提案 -->
+        <div class="proposal-section">
+            <div class="section-title">
+                <span class="section-icon">🔥</span>
+                CTAボタン わかりやすさ重視提案
+            </div>
+
+            <div class="cta-grid">
+                <div class="cta-option">
+                    <button class="cta-button">Jijiに無料で相談する</button>
+                    <div class="cta-desc">
+                        <strong>推奨案</strong><br>
+                        「無料」で安心感、「相談」で気軽さを演出。
+                        親しみやすさとわかりやすさを両立。
+                    </div>
+                </div>
+
+                <div class="cta-option">
+                    <button class="cta-button">LINEで沖縄ダイビング相談</button>
+                    <div class="cta-desc">
+                        機能と目的を明確化。
+                        「沖縄ダイビング」で具体性UP。
+                    </div>
+                </div>
+
+                <div class="cta-option">
+                    <button class="cta-button">AIアシスタントJijiと話す</button>
+                    <div class="cta-desc">
+                        AIの価値を前面に。
+                        技術感と親しみやすさのバランス。
+                    </div>
+                </div>
+
+                <div class="cta-option">
+                    <button class="cta-button">今すぐ無料相談を始める</button>
+                    <div class="cta-desc">
+                        「今すぐ」で緊急性、「無料」で安心感。
+                        一般的だが確実に伝わる。
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 店舗紹介文言提案 -->
+        <div class="proposal-section">
+            <div class="section-title">
+                <span class="section-icon">🏪</span>
+                店舗紹介文言 センスの良い提案
+            </div>
+
+            <div class="shop-desc-option">
+                <div class="shop-desc-text">「沖縄で一番あなたに合ったショップをご紹介」</div>
+                <div class="shop-desc-note">
+                    <strong>🏆 推奨:</strong> 「一番合った」で個別最適化を強調。数字に頼らず価値で訴求。
+                </div>
+            </div>
+
+            <div class="shop-desc-option">
+                <div class="shop-desc-text">「沖縄全域から、あなただけの最適ショップを発見」</div>
+                <div class="shop-desc-note">
+                    「発見」で特別感演出。「あなただけ」で専用感。
+                </div>
+            </div>
+
+            <div class="shop-desc-option">
+                <div class="shop-desc-text">「石垣島から本島まで、理想のショップと出会えます」</div>
+                <div class="shop-desc-note">
+                    具体的なエリア名で信頼性。「出会える」で確実性を表現。
+                </div>
+            </div>
+
+            <div class="shop-desc-option">
+                <div class="shop-desc-text">「沖縄ダイビング、完全オーダーメイドでご案内」</div>
+                <div class="shop-desc-note">
+                    「オーダーメイド」で高級感・特別感。コンシェルジュサービスを強調。
+                </div>
+            </div>
+
+            <div class="shop-desc-option">
+                <div class="shop-desc-text">「あなたの『理想』を叶える沖縄ショップがここに」</div>
+                <div class="shop-desc-note">
+                    「理想を叶える」で夢の実現感。「ここに」で到達感。
+                </div>
+            </div>
+        </div>
+
+        <!-- 最終推奨案 -->
+        <div class="final-summary">
+            <div class="summary-title">🎯 最終推奨コンビネーション</div>
+            
+            <div class="summary-item">
+                <div class="summary-label">メインキャッチコピー</div>
+                <div class="summary-text">「沖縄の海で、『どうしよう...』が『楽しみ！』に変わる」</div>
+            </div>
+
+            <div class="summary-item">
+                <div class="summary-label">サービス説明（現在のまま使用）</div>
+                <div class="summary-text">「AIチャットで気軽に相談。AIチャット（Jiji）があなたの希望を聞いて、ベストなショップをマッチング！初めての沖縄ダイビングも、もう一人で悩まなくて大丈夫。」</div>
+            </div>
+
+            <div class="summary-item">
+                <div class="summary-label">CTAボタン</div>
+                <div class="summary-text">「Jijiに無料で相談する」</div>
+            </div>
+
+            <div class="summary-item">
+                <div class="summary-label">店舗紹介文言</div>
+                <div class="summary-text">「沖縄で一番あなたに合ったショップをご紹介」</div>
+            </div>
+
+            <div style="margin-top: 20px; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 8px;">
+                <strong>💡 この組み合わせの強み</strong><br>
+                ✅ 場所の具体性（沖縄の海）と感情変化の共感<br>
+                ✅ 不安解消から楽しみへの明確な価値提案<br>
+                ✅ 20代後半〜30代前半女性に最適化<br>
+                ✅ わかりやすさと魅力の両立
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Dive Buddy\'s キャッチコピー ブラッシュアップ提案初期化完了');
+        });
+    </script>
+</body>
+</html>

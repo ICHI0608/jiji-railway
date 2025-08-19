@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>初めての方へ - Dive Buddy's | 沖縄ダイビング初心者完全サポート</title>
+    <meta name="description" content="ダイビング初心者の不安を解消。AIチャット（Jiji）があなたの疑問に24時間答え、79店舗から最適なショップをマッチング。一人でも安心の沖縄ダイビングデビューをサポートします。">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- 統一デザインシステム -->
+    <link rel="stylesheet" href="/css/design-system.css">
+    <!-- Common CSS -->
+    <link rel="stylesheet" href="/css/common.css">
+    
+    <style>
+        /* ページ固有スタイル */
+        /* 統一デザインシステムの変数を使用 */
+
+        .hero-beginner {
+            background: linear-gradient(135deg, var(--color-accent-1) 0%, var(--color-accent-1-dark) 100%);
+            color: var(--color-base-bg);
+            padding: 120px 0 80px;
+            text-align: center;
+        }
+
+        .hero-beginner h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .hero-beginner p {
+            font-size: 1.3rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto 40px;
+            line-height: 1.6;
+        }
+
+        .hero-highlight {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 30px;
+            border-radius: 15px;
+            margin: 40px auto;
+            max-width: 800px;
+        }
+
+        .concern-section {
+            padding: 80px 0;
+            background: #f8fafc;
+        }
+
+        .concerns-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 60px;
+        }
+
+        .concern-card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            text-align: center;
+            border-left: 4px solid var(--red-warning);
+        }
+
+        .concern-card p {
+            text-align: center;
+        }
+
+        .concern-icon {
+            font-size: 3rem;
+            color: var(--red-warning);
+            margin-bottom: 20px;
+        }
+
+        .concern-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--text-dark);
+        }
+
+        .jiji-solution {
+            padding: 80px 0;
+            background: white;
+        }
+
+        .solution-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 40px;
+            margin-top: 60px;
+        }
+
+        .solution-card {
+            background: var(--light-blue);
+            padding: 40px;
+            border-radius: 20px;
+            position: relative;
+            border-left: 4px solid var(--green-success);
+            text-align: center;
+        }
+
+        .solution-card p {
+            text-align: center;
+        }
+
+        /* セクションタイトル・サブタイトルの中央揃え */
+        .section-title {
+            text-align: center;
+        }
+        
+        .section-subtitle {
+            text-align: center;
+        }
+
+        .solution-icon {
+            font-size: 3rem;
+            color: var(--green-success);
+            margin-bottom: 20px;
+        }
+
+        .solution-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--text-dark);
+        }
+
+        .jiji-intro {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 80px 0;
+            text-align: center;
+        }
+
+        .jiji-character {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .steps-section {
+            padding: 80px 0;
+            background: #f8fafc;
+        }
+
+        .steps-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 60px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .step-item {
+            flex: 1;
+            min-width: 200px;
+            text-align: center;
+            padding: 30px 20px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            position: relative;
+        }
+
+        .step-number {
+            background: var(--ocean-blue);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 0 auto 20px;
+        }
+
+        .step-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--text-dark);
+        }
+
+        .step-arrow {
+            position: absolute;
+            right: -25px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 2rem;
+            color: var(--ocean-blue);
+        }
+
+        .step-item:last-child .step-arrow {
+            display: none;
+        }
+
+        .faq-section {
+            padding: 80px 0;
+            background: white;
+        }
+
+        .faq-item {
+            background: #f8fafc;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .faq-question {
+            background: var(--ocean-blue);
+            color: white;
+            padding: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .faq-answer {
+            padding: 20px;
+            background: white;
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        .cta-section-beginner {
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+            color: white;
+            padding: 80px 0;
+            text-align: center;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 40px;
+        }
+
+        .btn-large-cta {
+            padding: 20px 40px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            border-radius: 50px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-line-large {
+            background: #00c300;
+            color: white;
+        }
+
+        .btn-line-large:hover {
+            background: #00b300;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary-large {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+
+        .btn-secondary-large:hover {
+            background: white;
+            color: var(--coral-accent);
+        }
+
+        /* レスポンシブ */
+        @media (max-width: 768px) {
+            .hero-beginner h1 {
+                font-size: 2.2rem;
+            }
+
+            .steps-container {
+                flex-direction: column;
+            }
+
+            .step-arrow {
+                display: none;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn-large-cta {
+                width: 100%;
+                max-width: 300px;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ナビゲーション -->
+    <nav class="main-nav">
+        <div class="nav-container">
+            <a href="/" class="logo">Dive Buddy's</a>
+            <ul class="nav-links">
+                <li><a href="/beginner" class="active">初めての方へ</a></li>
+                <li><a href="/shops-database">ショップ検索</a></li>
+                <li><a href="/weather-ocean">海況情報</a></li>
+                <li><a href="/travel-guide">旅行ガイド</a></li>
+                <li><a href="/blog">ダイビング情報</a></li>
+                <li><a href="/member">会員登録</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- ヒーローセクション -->
+    <section class="hero-beginner">
+        <div class="container">
+            <h1>初めての沖縄ダイビング、不安ですよね？</h1>
+            <p>「どのショップを選べばいいの？」「一人参加で大丈夫？」「必要な準備は？」そんな初心者ダイバーの不安を、Dive Buddy'sが全て解決します。</p>
+            
+            <div class="hero-highlight">
+                <h3 style="margin-bottom: 15px; font-size: 1.4rem;">🤖 AIチャット「Jiji」があなた専属のダイビングバディに</h3>
+                <p style="margin: 0;">24時間いつでも相談OK。感情分析であなたの気持ちを理解し、79店舗から最適なショップをマッチングします。</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 不安・心配事セクション -->
+    <section class="concern-section">
+        <div class="container">
+            <h2 class="section-title">こんな不安や疑問、ありませんか？</h2>
+            <p class="section-subtitle">初心者ダイバーが抱える代表的な悩みです。あなたも同じ気持ちですよね？</p>
+            
+            <div class="concerns-grid">
+                <div class="concern-card">
+                    <div class="concern-icon">
+                        <i class="fas fa-question-circle"></i>
+                    </div>
+                    <h3 class="concern-title">ショップ選びが分からない</h3>
+                    <p>沖縄には数百のダイビングショップが...どこが初心者向け？安全？信頼できる？選び方が全然分からない。</p>
+                </div>
+                
+                <div class="concern-card">
+                    <div class="concern-icon">
+                        <i class="fas fa-user-slash"></i>
+                    </div>
+                    <h3 class="concern-title">一人参加で不安</h3>
+                    <p>友達はダイビングに興味なし...一人で参加して浮かない？他の参加者とうまくやれる？孤立しない？</p>
+                </div>
+                
+                <div class="concern-card">
+                    <div class="concern-icon">
+                        <i class="fas fa-swimming-pool"></i>
+                    </div>
+                    <h3 class="concern-title">スキル・体力に不安</h3>
+                    <p>泳ぎに自信がない...体力もない...インストラクターに迷惑かけない？ついていける？安全に楽しめる？</p>
+                </div>
+                
+                <div class="concern-card">
+                    <div class="concern-icon">
+                        <i class="fas fa-yen-sign"></i>
+                    </div>
+                    <h3 class="concern-title">費用が読めない</h3>
+                    <p>ダイビング料金以外に何が必要？器材レンタル？追加料金？旅行費用も含めて予算がわからない。</p>
+                </div>
+                
+                <div class="concern-card">
+                    <div class="concern-icon">
+                        <i class="fas fa-map-marked-alt"></i>
+                    </div>
+                    <h3 class="concern-title">旅行計画が複雑</h3>
+                    <p>航空券、宿泊、移動、ダイビング予約...全部バラバラで計画が大変。どの順番で予約すればいい？</p>
+                </div>
+                
+                <div class="concern-card">
+                    <div class="concern-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <h3 class="concern-title">安全性への心配</h3>
+                    <p>海の事故って怖い...このショップ大丈夫？インストラクターの技術は？緊急時の対応は？</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Jiji紹介セクション -->
+    <section class="jiji-intro">
+        <div class="container">
+            <div class="jiji-character">🤖</div>
+            <h2 style="font-size: 2.5rem; margin-bottom: 20px;">AIチャット「Jiji」が全て解決します</h2>
+            <p style="font-size: 1.3rem; max-width: 800px; margin: 0 auto 40px; opacity: 0.9;">
+                まるで親しいダイバー友達ができたみたい。あなたの不安に24時間寄り添い、最適な沖縄ダイビング体験へ導きます。
+            </p>
+            
+            <div style="background: rgba(255,255,255,0.1); padding: 30px; border-radius: 15px; max-width: 600px; margin: 0 auto;">
+                <h3 style="font-size: 1.2rem; margin-bottom: 15px;">🌟 Jijiの3つの顔</h3>
+                <p style="margin: 0; opacity: 0.9;">💬 相談相手・🏨 コンシェルジュ・❤️ 理解者として、あなたのダイビングライフを完全サポート</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 解決方法セクション -->
+    <section class="jiji-solution">
+        <div class="container">
+            <h2 class="section-title">Jijiがあなたの不安を安心に変える方法</h2>
+            <p class="section-subtitle">AI感情分析と79店舗データベースで、完璧なダイビング体験をお約束します</p>
+            
+            <div class="solution-grid">
+                <div class="solution-card">
+                    <div class="solution-icon">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <h3 class="solution-title">AI感情分析でしっかり理解</h3>
+                    <p>6カテゴリの感情分析で、あなたの本当の気持ちや不安を深く理解。一人一人に最適化されたサポートを提供します。</p>
+                </div>
+                
+                <div class="solution-card">
+                    <div class="solution-icon">
+                        <i class="fas fa-store"></i>
+                    </div>
+                    <h3 class="solution-title">79店舗から完璧マッチング</h3>
+                    <p>S/A/B/C級認定システムで品質保証済み。34項目の詳細分析から、あなたのレベルと希望にピッタリのショップを厳選。</p>
+                </div>
+                
+                <div class="solution-card">
+                    <div class="solution-icon">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <h3 class="solution-title">24時間いつでも相談</h3>
+                    <p>LINE Botで気軽にチャット。夜中でも早朝でも、不安になったその瞬間にJijiが答えます。一人じゃないから安心。</p>
+                </div>
+                
+                <div class="solution-card">
+                    <div class="solution-icon">
+                        <i class="fas fa-plane"></i>
+                    </div>
+                    <h3 class="solution-title">旅行計画のアドバイス</h3>
+                    <p>航空券・宿泊・移動についてのご相談とアドバイス。おすすめの宿泊エリアや移動方法をご提案し、ダイビング旅行の計画をサポートします。</p>
+                </div>
+                
+                <div class="solution-card">
+                    <div class="solution-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3 class="solution-title">安全性を最優先で選定</h3>
+                    <p>初心者対応力・安全管理・インストラクター品質を厳格審査。安心してダイビングデビューできる環境を保証。</p>
+                </div>
+                
+                <div class="solution-card">
+                    <div class="solution-icon">
+                        <i class="fas fa-calculator"></i>
+                    </div>
+                    <h3 class="solution-title">透明な費用計算</h3>
+                    <p>隠れた費用なし。ダイビング代・器材・交通費・宿泊費まで事前に明確化。予算オーバーの心配もありません。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 利用の流れセクション -->
+    <section class="steps-section">
+        <div class="container">
+            <h2 class="section-title">Jijiを使った簡単4ステップ</h2>
+            <p class="section-subtitle">面倒な手続きは一切なし。今すぐ始められます</p>
+            
+            <div class="steps-container">
+                <div class="step-item">
+                    <div class="step-number">1</div>
+                    <h3 class="step-title">LINE登録</h3>
+                    <p>公式LINEを友達追加するだけ。面倒な会員登録は不要です。</p>
+                    <div class="step-arrow">→</div>
+                </div>
+                
+                <div class="step-item">
+                    <div class="step-number">2</div>
+                    <h3 class="step-title">気軽に相談</h3>
+                    <p>「初めてで不安」「一人参加OK？」何でもJijiにチャットで相談してください。</p>
+                    <div class="step-arrow">→</div>
+                </div>
+                
+                <div class="step-item">
+                    <div class="step-number">3</div>
+                    <h3 class="step-title">最適マッチング</h3>
+                    <p>あなたの希望と不安を分析し、79店舗から最適なショップを厳選してご提案。</p>
+                    <div class="step-arrow">→</div>
+                </div>
+                
+                <div class="step-item">
+                    <div class="step-number">4</div>
+                    <h3 class="step-title">安心してダイビング</h3>
+                    <p>旅行計画からアフターケアまで完全サポート。最高の沖縄ダイビングを体験！</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ セクション -->
+    <section class="faq-section">
+        <div class="container">
+            <h2 class="section-title">よくある質問</h2>
+            <p class="section-subtitle">初心者ダイバーからよく寄せられる質問にお答えします</p>
+            
+            <div class="faq-list" style="margin-top: 60px; max-width: 800px; margin-left: auto; margin-right: auto;">
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>Q. 本当に無料で利用できるの？</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        A. はい、完全無料です。Jijiへの相談、ショップマッチング、旅行計画サポートまで全て無料。ダイビング料金も直接ショップとの契約なので、追加費用は一切ありません。
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>Q. ダイビング経験が全くないけど大丈夫？</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        A. 全く問題ありません！Dive Buddy'sは初心者専門サービス。体験ダイビングから丁寧にサポートします。泳げない方でも安心してご利用ください。
+                    </div>
+                </div>
+                
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>Q. 一人参加でも浮かない？</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        A. 一人参加歓迎のショップを優先的にご紹介します。同じく一人参加の方も多く、インストラクターもしっかりサポート。自然と仲間ができる環境です。
+                    </div>
+                </div>
+                
+                
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>Q. 器材は全てレンタルできる？</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        A. はい、水着だけご用意ください。ウェットスーツ、マスク、フィン、タンクなど必要な器材は全てレンタル可能。料金も事前に明確化します。
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA セクション -->
+    <section class="cta-section-beginner">
+        <div class="container">
+            <h2 style="font-size: 2.5rem; margin-bottom: 20px;">さあ、あなたも沖縄ダイビングデビュー</h2>
+            <p style="font-size: 1.3rem; margin-bottom: 40px; opacity: 0.9;">
+                「どうしよう...」から「楽しみ！」に変わる瞬間を、Jijiと一緒に体験しませんか？
+            </p>
+            
+            <div class="cta-buttons">
+                <a href="https://line.me/ti/p/@2007331165" class="btn-large-cta btn-line-large" target="_blank">
+                    <i class="fab fa-line"></i> 今すぐJijiに相談する
+                </a>
+                <a href="/shops-database" class="btn-large-cta btn-secondary-large">
+                    <i class="fas fa-search"></i> まずはショップを見てみる
+                </a>
+            </div>
+            
+            <div style="margin-top: 40px; opacity: 0.8;">
+                <p>✓ 完全無料　✓ 24時間対応　✓ 初心者専門　✓ 安心サポート</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- フッター -->
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>🌊 Dive Buddy's</h3>
+                    <p>初心者ダイバーの『できない』を『できる』に変える魔法の存在。AIチャット（Jiji）があなたの沖縄ダイビングデビューを完全サポートします。</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>サービス</h3>
+                    <ul>
+                        <li><a href="/beginner">初めての方へ</a></li>
+                        <li><a href="/shops-database">ショップ検索</a></li>
+                        <li><a href="/weather-ocean">海況情報</a></li>
+                        <li><a href="/travel-guide">旅行プランニング</a></li>
+                        <li><a href="/member">会員サービス</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>サポート</h3>
+                    <ul>
+                        <li><a href="https://line.me/ti/p/@2007331165" target="_blank">LINE Bot相談</a></li>
+                        <li><a href="/contact">お問い合わせ</a></li>
+                        <li><a href="/legal">利用規約</a></li>
+                        <li><a href="/legal">プライバシーポリシー</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 Dive Buddy's. All rights reserved. | 初心者ダイバー専門の沖縄ダイビングサポート</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="/js/common.js"></script>
+    
+    <script>
+        // FAQ アコーディオン
+        document.querySelectorAll('.faq-question').forEach(question => {
+            question.addEventListener('click', function() {
+                const faqItem = this.parentNode;
+                const answer = faqItem.querySelector('.faq-answer');
+                const icon = this.querySelector('i');
+                
+                // 他のFAQを閉じる
+                document.querySelectorAll('.faq-item').forEach(item => {
+                    if (item !== faqItem) {
+                        item.querySelector('.faq-answer').style.display = 'none';
+                        item.querySelector('.faq-question i').classList.remove('fa-chevron-up');
+                        item.querySelector('.faq-question i').classList.add('fa-chevron-down');
+                    }
+                });
+                
+                // 現在のFAQを切り替え
+                if (answer.style.display === 'block') {
+                    answer.style.display = 'none';
+                    icon.classList.remove('fa-chevron-up');
+                    icon.classList.add('fa-chevron-down');
+                } else {
+                    answer.style.display = 'block';
+                    icon.classList.remove('fa-chevron-down');
+                    icon.classList.add('fa-chevron-up');
+                }
+            });
+        });
+
+        // スムーススクロール
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

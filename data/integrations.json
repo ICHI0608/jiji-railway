@@ -1,0 +1,26 @@
+{
+  "integrations": [
+    {
+      "id": "int_demo_1",
+      "line_user_id": "U1234567890abcdef1234567890abcdef",
+      "web_user_id": "user_demo_1",
+      "linked_at": "2025-07-25T10:00:00Z",
+      "status": "active"
+    },
+    {
+      "id": "int_demo_2", 
+      "line_user_id": "U2345678901bcdef12345678901bcdef1",
+      "web_user_id": "user_demo_2",
+      "linked_at": "2025-07-26T14:30:00Z",
+      "status": "active"
+    },
+    {
+      "id": "int_demo_3",
+      "line_user_id": "U3456789012cdef123456789012cdef12",
+      "web_user_id": "user_demo_3",
+      "linked_at": "2025-07-20T09:15:00Z",
+      "status": "inactive",
+      "unlinked_at": "2025-07-28T16:45:00Z"
+    }
+  ]
+}

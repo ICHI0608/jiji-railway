@@ -118,13 +118,12 @@ class JijiOpenAIEmotionAnalyzer {
             const userPrompt = this.buildUserPrompt(message, context);
             
             const completion = await this.openai.chat.completions.create({
-                model: "gpt-4o",
+                model: "gpt-5",
                 messages: [
                     { role: "system", content: systemPrompt },
                     { role: "user", content: userPrompt }
                 ],
-                temperature: 0.3, // Lower temperature for more consistent analysis
-                max_tokens: 1000,
+                max_completion_tokens: 1000,
                 response_format: { type: "json_object" }
             });
 
@@ -256,13 +255,12 @@ JSON形式で以下の構造で回答してください:
             const userPrompt = this.buildJijiUserPrompt(emotionAnalysis, recommendedShops, userProfile);
             
             const completion = await this.openai.chat.completions.create({
-                model: "gpt-4o",
+                model: "gpt-5",
                 messages: [
                     { role: "system", content: systemPrompt },
                     { role: "user", content: userPrompt }
                 ],
-                temperature: 0.7, // Higher temperature for more natural personality
-                max_tokens: 800
+                max_completion_tokens: 800
             });
 
             const jijiResponse = completion.choices[0].message.content;
@@ -451,9 +449,9 @@ JSON形式で以下の構造で回答してください:
         
         try {
             const testCompletion = await this.openai.chat.completions.create({
-                model: "gpt-4o",
+                model: "gpt-5",
                 messages: [{ role: "user", content: "Hello, this is a connection test." }],
-                max_tokens: 10
+                max_completion_tokens: 10
             });
             
             return !!testCompletion.choices[0].message.content;

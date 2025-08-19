@@ -4,17 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>沖縄ダイビング旅行ガイド | Dive Buddy's</title>
-    <meta name="description" content="沖縄ダイビング旅行の完全ガイド。石垣島・宮古島・氖縄本島の旅行計画、予算プラン、交通・宿泊情報をDive Buddy'sのJijiがサポート。">
+    <meta name="description" content="沖縄ダイビング旅行の完全ガイド。リアルタイム航空券検索・予算計算ツール・宿泊手配まで一括サポート。石垣島・宮古島・沖縄本島の旅行計画をJijiがお手伝い。">
     
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/design-system.css">
     <link rel="stylesheet" href="../app/v28-styles.css">
     
     <style>
         .travel-header {
-            background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
-            color: white;
-            padding: 80px 0 60px;
+            background: linear-gradient(135deg, var(--color-accent-1) 0%, var(--color-accent-2) 100%);
+            color: var(--color-base-bg);
+            padding: var(--section-gap) 0 var(--space-16);
             text-align: center;
         }
         
@@ -259,7 +260,8 @@
         <div class="container">
             <h1 class="database-title">✈️ 沖縄ダイビング旅行ガイド</h1>
             <p class="database-subtitle">
-                旅行計画から予算管理まで。Jijiの知識ベースで完璧な沖縄ダイビング旅行を実現しよう。
+                旅行計画から予算管理まで。リアルタイム航空券検索・ホテル予約・チケット手配をJijiの知識ベースで一括サポート。<br>
+                <strong>NEW:</strong> 航空券API統合でリアルタイム最安値検索が可能
             </p>
         </div>
     </section>
@@ -372,11 +374,11 @@
                 
                 <div class="tool-card">
                     <div class="tool-icon">✈️</div>
-                    <h3 class="tool-title">航空券検索・料金比較</h3>
+                    <h3 class="tool-title">航空券検索・料金比較 <span style="color: #e74c3c; font-size: 0.7em;">🆕NEW</span></h3>
                     <p class="tool-description">
-                        JAL・ANA・LCC各社の料金を一括比較。リアルタイムで最安値を検索できます。
+                        JAL・ANA・LCC各社の料金を一括比較。リアルタイムAPI連携で最安値を自動検索。予約まで一括完了。
                     </p>
-                    <a href="/travel-guide/flights.html" class="btn-guide">航空券を検索</a>
+                    <a href="/travel-guide/flights.html" class="btn-guide">リアルタイム検索開始</a>
                 </div>
                 
                 <div class="tool-card">
@@ -562,9 +564,9 @@
     </footer>
 
     <script>
-        // 予算計算ロジック
+        // 予算計算ロジック（リアルタイムAPI統合対応）
         const budgetCalculator = {
-            // 料金データ（簡易版）
+            // 料金データ（ベース価格・API取得失敗時のフォールバック）
             prices: {
                 flights: {
                     tokyo: { ishigaki: 35000, miyako: 38000, okinawa: 25000, other: 40000 },
@@ -599,15 +601,45 @@
                 other: 8000 // 1日あたりの食事・観光費
             },
 
-            calculate: function() {
+            // リアルタイム航空券API連携
+            async fetchRealTimeFlight: function(departure, destination) {
+                try {
+                    console.log(`🛫 リアルタイム航空券検索: ${departure} → ${destination}`);
+                    
+                    const response = await fetch(`/api/flights/search?from=${departure}&to=${destination}&date=${this.getDefaultDate()}`);
+                    const data = await response.json();
+                    
+                    if (data.success && data.flights && data.flights.length > 0) {
+                        const cheapestFlight = data.flights.sort((a, b) => a.price - b.price)[0];
+                        console.log(`✅ リアルタイム価格取得: ¥${cheapestFlight.price}`);
+                        return cheapestFlight.price;
+                    } else {
+                        console.warn('API取得失敗、ベース価格使用');
+                        return this.prices.flights[departure][destination];
+                    }
+                } catch (error) {
+                    console.error('航空券API エラー:', error);
+                    return this.prices.flights[departure][destination];
+                }
+            },
+
+            // デフォルト検索日（1週間後）
+            getDefaultDate: function() {
+                const date = new Date();
+                date.setDate(date.getDate() + 7);
+                return date.toISOString().split('T')[0];
+            },
+
+            // 非同期計算
+            async calculate() {
                 const departure = document.getElementById('departure').value;
                 const destination = document.getElementById('destination').value;
                 const duration = parseInt(document.getElementById('duration').value);
                 const dives = parseInt(document.getElementById('dives').value);
                 const accommodation = document.getElementById('accommodation').value;
                 
-                // 航空券
-                const flightCost = this.prices.flights[departure][destination];
+                // 航空券（リアルタイムAPI連携）
+                const flightCost = await this.fetchRealTimeFlight(departure, destination);
                 
                 // 宿泊費
                 const hotelCost = this.prices.accommodation[accommodation] * (duration - 1);
@@ -634,32 +666,122 @@
                 };
             },
 
-            display: function() {
-                const result = this.calculate();
+            // 非同期表示（リアルタイムAPI対応）
+            async display() {
+                // ローディング表示
+                this.showLoading();
                 
-                document.getElementById('flight-cost').textContent = `¥${result.flight.toLocaleString()}`;
-                document.getElementById('hotel-cost').textContent = `¥${result.hotel.toLocaleString()}`;
-                document.getElementById('diving-cost').textContent = `¥${result.diving.toLocaleString()}`;
-                document.getElementById('transport-cost').textContent = `¥${result.transport.toLocaleString()}`;
-                document.getElementById('other-cost').textContent = `¥${result.other.toLocaleString()}`;
-                document.getElementById('total-cost').textContent = `合計: ¥${result.total.toLocaleString()}`;
-                
-                document.getElementById('budget-result').style.display = 'block';
+                try {
+                    const result = await this.calculate();
+                    
+                    document.getElementById('flight-cost').textContent = `¥${result.flight.toLocaleString()}`;
+                    document.getElementById('hotel-cost').textContent = `¥${result.hotel.toLocaleString()}`;
+                    document.getElementById('diving-cost').textContent = `¥${result.diving.toLocaleString()}`;
+                    document.getElementById('transport-cost').textContent = `¥${result.transport.toLocaleString()}`;
+                    document.getElementById('other-cost').textContent = `¥${result.other.toLocaleString()}`;
+                    document.getElementById('total-cost').textContent = `合計: ¥${result.total.toLocaleString()}`;
+                    
+                    document.getElementById('budget-result').style.display = 'block';
+                    this.hideLoading();
+                } catch (error) {
+                    console.error('予算計算エラー:', error);
+                    this.hideLoading();
+                }
+            },
+
+            // ローディング表示
+            showLoading: function() {
+                const resultDiv = document.getElementById('budget-result');
+                resultDiv.style.display = 'block';
+                resultDiv.innerHTML = `
+                    <div class="result-title">💫 リアルタイム航空券価格を取得中...</div>
+                    <div style="text-align: center; padding: 20px;">
+                        <div style="animation: spin 1s linear infinite; font-size: 2rem;">🛫</div>
+                        <p style="margin-top: 10px; color: #666;">最新価格を検索しています</p>
+                    </div>
+                `;
+            },
+
+            // ローディング非表示
+            hideLoading: function() {
+                // 元の結果表示に戻す
+                const resultDiv = document.getElementById('budget-result');
+                resultDiv.innerHTML = `
+                    <div class="result-title">💡 予算概算結果（1名あたり）</div>
+                    <div class="result-breakdown">
+                        <div class="result-item">
+                            <span>航空券</span>
+                            <span id="flight-cost">¥0</span>
+                        </div>
+                        <div class="result-item">
+                            <span>宿泊費</span>
+                            <span id="hotel-cost">¥0</span>
+                        </div>
+                        <div class="result-item">
+                            <span>ダイビング代</span>
+                            <span id="diving-cost">¥0</span>
+                        </div>
+                        <div class="result-item">
+                            <span>現地交通費</span>
+                            <span id="transport-cost">¥0</span>
+                        </div>
+                        <div class="result-item">
+                            <span>食事・その他</span>
+                            <span id="other-cost">¥0</span>
+                        </div>
+                    </div>
+                    <div class="result-total" id="total-cost">
+                        合計: ¥0
+                    </div>
+                `;
             }
         };
 
-        // イベントリスナー
+        // CSS アニメーション追加
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // イベントリスナー（非同期対応）
         document.addEventListener('DOMContentLoaded', function() {
             const formElements = document.querySelectorAll('#budget-form select');
             
             formElements.forEach(element => {
                 element.addEventListener('change', function() {
+                    // リアルタイム価格検索
                     budgetCalculator.display();
                 });
             });
             
-            // 初回計算
+            // 初回計算（ページ読み込み時）
             budgetCalculator.display();
+            
+            // 価格更新ボタン追加
+            const resultDiv = document.getElementById('budget-result');
+            const updateButton = document.createElement('button');
+            updateButton.textContent = '🔄 最新価格で再計算';
+            updateButton.style.cssText = `
+                background: #2563eb; 
+                color: white; 
+                border: none; 
+                padding: 10px 20px; 
+                border-radius: 8px; 
+                margin-top: 15px; 
+                cursor: pointer;
+                font-weight: 600;
+            `;
+            updateButton.addEventListener('click', () => budgetCalculator.display());
+            
+            setTimeout(() => {
+                if (resultDiv.style.display === 'block') {
+                    resultDiv.appendChild(updateButton);
+                }
+            }, 2000);
         });
     </script>
 </body>

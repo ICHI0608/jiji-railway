@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dive Buddy's ページ関係性フレームワーク</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Hiragino Sans', 'Yu Gothic', sans-serif;
+            background: #f8fafb;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #77C9D4 0%, #A2DED0 100%);
+            color: white;
+            padding: 40px 20px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(119, 201, 212, 0.3);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .framework-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .category-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            border: 1px solid #e5e7eb;
+            transition: all 0.3s ease;
+        }
+
+        .category-section:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+        }
+
+        .category-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f3f4f6;
+        }
+
+        .category-icon {
+            font-size: 2.5rem;
+            margin-right: 15px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #77C9D4 0%, #A2DED0 100%);
+            color: white;
+        }
+
+        .category-info h3 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 5px;
+        }
+
+        .category-meta {
+            font-size: 0.9rem;
+            color: #6b7280;
+        }
+
+        .page-list {
+            list-style: none;
+        }
+
+        .page-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f3f4f6;
+            transition: all 0.2s ease;
+        }
+
+        .page-item:hover {
+            background: #f8f9ff;
+            margin: 0 -10px;
+            padding: 12px 10px;
+            border-radius: 8px;
+        }
+
+        .page-item:last-child {
+            border-bottom: none;
+        }
+
+        .page-role {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-right: 12px;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .role-entry { background: #dbeafe; color: #1e40af; }
+        .role-main { background: #dcfce7; color: #166534; }
+        .role-detail { background: #fef3c7; color: #92400e; }
+        .role-form { background: #fce7f3; color: #be185d; }
+        .role-admin { background: #f3e8ff; color: #7c3aed; }
+        .role-support { background: #e0f2fe; color: #0c4a6e; }
+        .role-api { background: #f1f5f9; color: #475569; }
+
+        .page-name {
+            flex: 1;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .page-connections {
+            font-size: 0.8rem;
+            color: #6b7280;
+            margin-left: 10px;
+        }
+
+        .relationship-map {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        .relationship-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 30px;
+            color: #1f2937;
+        }
+
+        .flow-diagram {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .flow-level {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .flow-box {
+            background: linear-gradient(135deg, #77C9D4 0%, #A2DED0 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            text-align: center;
+            min-width: 150px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .flow-box:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(119, 201, 212, 0.4);
+        }
+
+        .flow-arrow {
+            font-size: 1.5rem;
+            color: #77C9D4;
+            margin: 0 10px;
+        }
+
+        .statistics {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 20px;
+            background: #f8fafb;
+            border-radius: 10px;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #77C9D4;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .connection-matrix {
+            margin-top: 30px;
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        .matrix-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #1f2937;
+        }
+
+        .matrix-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        .matrix-table th,
+        .matrix-table td {
+            padding: 12px 8px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .matrix-table th {
+            background: #f8fafb;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .connection-strength {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+
+        .strong { background: #22c55e; }
+        .medium { background: #fbbf24; }
+        .weak { background: #ef4444; }
+
+        @media (max-width: 768px) {
+            .framework-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .flow-level {
+                flex-direction: column;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌊 Dive Buddy's ページ関係性フレームワーク</h1>
+            <p>サイト全体の構造・導線・機能関係を可視化</p>
+        </div>
+
+        <!-- カテゴリ別ページ構成 -->
+        <div class="framework-grid">
+            <!-- メインページ -->
+            <div class="category-section">
+                <div class="category-header">
+                    <div class="category-icon">🏠</div>
+                    <div class="category-info">
+                        <h3>メインページ</h3>
+                        <div class="category-meta">7ページ | エントリーポイント</div>
+                    </div>
+                </div>
+                <ul class="page-list">
+                    <li class="page-item">
+                        <span class="page-role role-entry">入口</span>
+                        <span class="page-name">トップページ (index_ui_check.html)</span>
+                        <span class="page-connections">→全機能</span>
+                    </li>
+                    <li class="page-item">
+                        <span class="page-role role-main">概要</span>
+                        <span class="page-name">サービス概要 (about.html)</span>
+                        <span class="page-connections">←トップ</span>
+                    </li>
+                    <li class="page-item">
+                        <span class="page-role role-support">初心者</span>
+                        <span class="page-name">初心者向け (beginner.html)</span>
+                        <span class="page-connections">→ショップ検索</span>
+                    </li>
+                    <li class="page-item">
+                        <span class="page-role role-support">問合せ</span>
+                        <span class="page-name">お問い合わせ (contact.html)</span>
+                        <span class="page-connections">←全ページ</span>
+                    </li>
+                    <li class="page-item">
+                        <span class="page-role role-support">規約</span>
+                        <span class="page-name">利用規約 (legal.html)</span>
+                        <span class="page-connections">←会員登録</span>
+                    </li>
+                    <li class="page-item">
+                        <span class="page-role role-support">料金</span>
+                        <span class="page-name">料金プラン (pricing.html)</span>
+                        <span class="page-connections">←サービス</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- 会員システム -->
+            <div class="category-section">
+                <div class="category-header">
+                    <div class="category-icon">👤</div>
+                    <div class="category-info">
+                        <h3>会員システム</h3>
+                        <div class="category-meta">8ページ | ユーザー管理</div>
+                    </div>
+                </div>
+                <ul class="page-list">
+                    <li class="page-item">
+                        <span class="page-role role-form">登録</span>
+                        <span class="page-name">会員登録 (register.html)</span>
+                        <span class="page-connections">→ダッシュボード</span>
+                    </li>
+                    <li class="page-item">
+                        <span class="page-role role-form">認証</span>
+                        <span class="page-name">ログイン (login.html)</span>
+                        <span class="page-connections">→ダッシュボード</span>
+                    </li>
+                    <li class="page-item">
+                        <span class="page-role role-main">中核</span>
+                        <span class="page-name">ダッシュボード (dashboard.html)</span>
+                        <span class="page-connections">→全機能</span>
+                    </li>
+                    <li class="page-item">
+                        <span class="page-role role-detail">設定</span>
+                        <span class="page-name">プロフィール (profile.html)</span>
+                        <span class="page-connections">←ダッシュボード</span>
+                    </li>
+                    <li class="page-item">
+                        <span class="page-role role-support">特典</span>
+                        <span class="page-name">ポイント管理 (points.html)</span>
+                        <span class="page-connections">←ダッシュボード</span>
+                    </li>
+                    <li class="page-item">
+                        <span class="page-role role-form">投稿</span>
+                        <span class="page-name">口コミ投稿 (review-post.html)</span>
+                        <span class="page-connections">←ショップ詳細</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- ショップデータベース -->
+            <div class="category-section">
+                <div class="category-header">
+                    <div class="category-icon">🏪</div>
+                    <div class="category-info">
+                        <h3>ショップデータベース</h3>
+                        <div class="category-meta">3ページ | 79店舗情報</div>
+                    </div>
+                </div>
+                <ul class="page-list">
+                    <li class="page-item">
+                        <span class="page-role role-main">検索</span>
+                        <span class="page-name">ショップ検索 (index.html)</span>
+                        <span class="page-connections">→詳細</span>
+                    </li>
+                    <li class="page-item">
+                        <span class="page-role role-detail">詳細</span>
+                        <span class="page-name">ショップ詳細 (details.html)</span>
+                        <span class="page-connections">→口コミ投稿</span>
+                    </li>
+                    <li class="page-item">
+                        <span class="page-role role-main">一覧</span>
+                        <span class="page-name">ショップ一覧 (shops.html)</span>
+                        <span class="page-connections">→詳細</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- 旅行ガイド -->
+            <div class="category-section">
+                <div class="category-header">
+                    <div class="category-icon">✈️</div>
+                    <div class="category-info">
+                        <h3>旅行ガイド</h3>
+                        <div class="category-meta">7ページ | 旅行サポート</div>
+                    </div>
+                </div>
+                <ul class="page-list">
+                    <li class="page-item">
+                        <span class="page-role role-main">総合</span>
+                        <span class="page-name">旅行ガイドTOP (index.html)</span>
+                        <span class="page-connections">→各サービス</span>
+                    </li>
+                    <li class="page-item">
+                        <span class="page-role role-detail">航空</span>
+                        <span class="page-name">航空券検索 (flights.html)</span>
+                        <span class="page-connections">→宿泊</span>
+                    </li>
+                    <li class="page-item">
+                        <span class="page-role role-detail">宿泊</span>
+                        <span class="page-name">宿泊ガイド (accommodation.html)</span>
+                        <span class="page-connections">→交通</span>
+                    </li>
+                    <li class="page-item">
+                        <span class="page-role role-detail">移動</span>
+                        <span class="page-name">交通情報 (transport.html)</span>
+                        <span class="page-connections">→費用計算</span>
+                    </li>
+                    <li class="page-item">
+                        <span class="page-role role-form">計算</span>
+                        <span class="page-name">費用シミュレーター (cost-simulator.html)</span>
+                        <span class="page-connections">→島ガイド</span>
+                    </li>
+                    <li class="page-item">
+                        <span class="page-role role-detail">地域</span>
+                        <span class="page-name">石垣島ガイド (ishigaki.html)</span>
+                        <span class="page-connections">→ショップ検索</span>
+                    </li>
+                    <li class="page-item">
+                        <span class="page-role role-detail">地域</span>
+                        <span class="page-name">宮古島ガイド (miyako.html)</span>
+                        <span class="page-connections">→ショップ検索</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- 海況天気 -->
+            <div class="category-section">
+                <div class="category-header">
+                    <div class="category-icon">🌊</div>
+                    <div class="category-info">
+                        <h3>海況天気</h3>
+                        <div class="category-meta">1ページ | リアルタイム情報</div>
+                    </div>
+                </div>
+                <ul class="page-list">
+                    <li class="page-item">
+                        <span class="page-role role-main">情報</span>
+                        <span class="page-name">海況・天気情報 (index.html)</span>
+                        <span class="page-connections">→ショップ選択</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- ブログ -->
+            <div class="category-section">
+                <div class="category-header">
+                    <div class="category-icon">📝</div>
+                    <div class="category-info">
+                        <h3>ブログ・情報</h3>
+                        <div class="category-meta">4ページ | コンテンツ配信</div>
+                    </div>
+                </div>
+                <ul class="page-list">
+                    <li class="page-item">
+                        <span class="page-role role-main">入口</span>
+                        <span class="page-name">ブログTOP (blog.html)</span>
+                        <span class="page-connections">→記事一覧</span>
+                    </li>
+                    <li class="page-item">
+                        <span class="page-role role-main">一覧</span>
+                        <span class="page-name">記事一覧 (index.html)</span>
+                        <span class="page-connections">→記事詳細</span>
+                    </li>
+                    <li class="page-item">
+                        <span class="page-role role-detail">記事</span>
+                        <span class="page-name">記事詳細 (article.html)</span>
+                        <span class="page-connections">→関連サービス</span>
+                    </li>
+                    <li class="page-item">
+                        <span class="page-role role-form">検索</span>
+                        <span class="page-name">記事検索 (search.html)</span>
+                        <span class="page-connections">→記事詳細</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- 管理画面 -->
+            <div class="category-section">
+                <div class="category-header">
+                    <div class="category-icon">🎯</div>
+                    <div class="category-info">
+                        <h3>管理画面</h3>
+                        <div class="category-meta">6ページ | システム管理</div>
+                    </div>
+                </div>
+                <ul class="page-list">
+                    <li class="page-item">
+                        <span class="page-role role-admin">中核</span>
+                        <span class="page-name">管理ダッシュボード (dashboard.html)</span>
+                        <span class="page-connections">→全管理機能</span>
+                    </li>
+                    <li class="page-item">
+                        <span class="page-role role-admin">編集</span>
+                        <span class="page-name">記事作成 (blog-editor.html)</span>
+                        <span class="page-connections">→記事管理</span>
+                    </li>
+                    <li class="page-item">
+                        <span class="page-role role-admin">管理</span>
+                        <span class="page-name">記事管理 (blog-list.html)</span>
+                        <span class="page-connections">→記事編集</span>
+                    </li>
+                    <li class="page-item">
+                        <span class="page-role role-admin">分析</span>
+                        <span class="page-name">アナリティクス (analytics.html)</span>
+                        <span class="page-connections">←ダッシュボード</span>
+                    </li>
+                    <li class="page-item">
+                        <span class="page-role role-admin">監視</span>
+                        <span class="page-name">システム監視 (monitoring.html)</span>
+                        <span class="page-connections">←ダッシュボード</span>
+                    </li>
+                    <li class="page-item">
+                        <span class="page-role role-api">API</span>
+                        <span class="page-name">YouTube監視 (youtube-monitoring.html)</span>
+                        <span class="page-connections">←監視</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- パートナー -->
+            <div class="category-section">
+                <div class="category-header">
+                    <div class="category-icon">🤝</div>
+                    <div class="category-info">
+                        <h3>パートナー・ショップ</h3>
+                        <div class="category-meta">5ページ | ビジネス向け</div>
+                    </div>
+                </div>
+                <ul class="page-list">
+                    <li class="page-item">
+                        <span class="page-role role-main">入口</span>
+                        <span class="page-name">パートナーTOP (partners.html)</span>
+                        <span class="page-connections">→掲載案内</span>
+                    </li>
+                    <li class="page-item">
+                        <span class="page-role role-detail">案内</span>
+                        <span class="page-name">掲載案内 (advertising.html)</span>
+                        <span class="page-connections">→ショップログイン</span>
+                    </li>
+                    <li class="page-item">
+                        <span class="page-role role-form">認証</span>
+                        <span class="page-name">ショップログイン (login.html)</span>
+                        <span class="page-connections">→ショップDB</span>
+                    </li>
+                    <li class="page-item">
+                        <span class="page-role role-admin">管理</span>
+                        <span class="page-name">ショップ管理 (dashboard.html)</span>
+                        <span class="page-connections">→プロフィール編集</span>
+                    </li>
+                    <li class="page-item">
+                        <span class="page-role role-form">編集</span>
+                        <span class="page-name">プロフィール編集 (edit-profile.html)</span>
+                        <span class="page-connections">←ショップ管理</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- ユーザージャーニー フロー図 -->
+        <div class="relationship-map">
+            <h2 class="relationship-title">🌊 ユーザージャーニー フロー</h2>
+            <div class="flow-diagram">
+                <!-- レベル1: エントリーポイント -->
+                <div class="flow-level">
+                    <div class="flow-box">🏠 トップページ</div>
+                </div>
+                <div class="flow-level">
+                    <span class="flow-arrow">↓</span>
+                </div>
+
+                <!-- レベル2: 主要機能選択 -->
+                <div class="flow-level">
+                    <div class="flow-box">🏪 ショップ検索</div>
+                    <div class="flow-box">✈️ 旅行プランニング</div>
+                    <div class="flow-box">👤 会員登録</div>
+                    <div class="flow-box">🌊 海況確認</div>
+                </div>
+                <div class="flow-level">
+                    <span class="flow-arrow">↓</span>
+                </div>
+
+                <!-- レベル3: 詳細機能 -->
+                <div class="flow-level">
+                    <div class="flow-box">📍 ショップ詳細</div>
+                    <div class="flow-box">💰 費用計算</div>
+                    <div class="flow-box">🏠 ダッシュボード</div>
+                    <div class="flow-box">🏝️ 島別ガイド</div>
+                </div>
+                <div class="flow-level">
+                    <span class="flow-arrow">↓</span>
+                </div>
+
+                <!-- レベル4: アクション -->
+                <div class="flow-level">
+                    <div class="flow-box">⭐ 口コミ投稿</div>
+                    <div class="flow-box">📞 お問い合わせ</div>
+                    <div class="flow-box">📚 ブログ閲覧</div>
+                    <div class="flow-box">💼 パートナー申込</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 統計情報 -->
+        <div class="statistics">
+            <h2 class="relationship-title">📊 サイト構造統計</h2>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number">47</div>
+                    <div class="stat-label">総ページ数</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">10</div>
+                    <div class="stat-label">機能カテゴリ</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">4</div>
+                    <div class="stat-label">ユーザー層</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">8</div>
+                    <div class="stat-label">主要導線</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">79</div>
+                    <div class="stat-label">連携ショップ数</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">95%</div>
+                    <div class="stat-label">実装完了率</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ページ間接続強度マトリックス -->
+        <div class="connection-matrix">
+            <h3 class="matrix-title">🔗 ページ間接続強度マトリックス</h3>
+            <table class="matrix-table">
+                <thead>
+                    <tr>
+                        <th>起点ページ</th>
+                        <th>接続先</th>
+                        <th>接続強度</th>
+                        <th>導線の役割</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>トップページ</td>
+                        <td>ショップ検索</td>
+                        <td><span class="connection-strength strong"></span>強</td>
+                        <td>メイン導線（AIチャット誘導）</td>
+                    </tr>
+                    <tr>
+                        <td>トップページ</td>
+                        <td>会員登録</td>
+                        <td><span class="connection-strength strong"></span>強</td>
+                        <td>ユーザー獲得導線</td>
+                    </tr>
+                    <tr>
+                        <td>ショップ詳細</td>
+                        <td>口コミ投稿</td>
+                        <td><span class="connection-strength strong"></span>強</td>
+                        <td>UGC生成導線</td>
+                    </tr>
+                    <tr>
+                        <td>旅行ガイド</td>
+                        <td>ショップ検索</td>
+                        <td><span class="connection-strength strong"></span>強</td>
+                        <td>計画→予約導線</td>
+                    </tr>
+                    <tr>
+                        <td>会員ダッシュボード</td>
+                        <td>全機能</td>
+                        <td><span class="connection-strength strong"></span>強</td>
+                        <td>会員専用ハブ</td>
+                    </tr>
+                    <tr>
+                        <td>海況情報</td>
+                        <td>ショップ選択</td>
+                        <td><span class="connection-strength medium"></span>中</td>
+                        <td>情報→アクション導線</td>
+                    </tr>
+                    <tr>
+                        <td>ブログ記事</td>
+                        <td>関連サービス</td>
+                        <td><span class="connection-strength medium"></span>中</td>
+                        <td>コンテンツマーケティング</td>
+                    </tr>
+                    <tr>
+                        <td>島別ガイド</td>
+                        <td>地域ショップ</td>
+                        <td><span class="connection-strength medium"></span>中</td>
+                        <td>地域特化導線</td>
+                    </tr>
+                    <tr>
+                        <td>パートナー案内</td>
+                        <td>ショップ登録</td>
+                        <td><span class="connection-strength weak"></span>弱</td>
+                        <td>B2B導線</td>
+                    </tr>
+                    <tr>
+                        <td>管理画面</td>
+                        <td>各機能</td>
+                        <td><span class="connection-strength weak"></span>弱</td>
+                        <td>内部運用導線</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // ページ間の関係性を動的に表示する機能
+        document.addEventListener('DOMContentLoaded', function() {
+            // カテゴリセクションのホバー効果
+            const sections = document.querySelectorAll('.category-section');
+            sections.forEach(section => {
+                section.addEventListener('mouseenter', function() {
+                    this.style.borderColor = '#77C9D4';
+                });
+                section.addEventListener('mouseleave', function() {
+                    this.style.borderColor = '#e5e7eb';
+                });
+            });
+
+            // フローボックスクリック時の詳細表示
+            const flowBoxes = document.querySelectorAll('.flow-box');
+            flowBoxes.forEach(box => {
+                box.addEventListener('click', function() {
+                    const text = this.textContent.trim();
+                    alert(`${text} の詳細ページに遷移します`);
+                });
+            });
+
+            // 統計データの動的更新（将来の機能拡張用）
+            console.log('Dive Buddy\'s ページ関係性フレームワーク初期化完了');
+        });
+    </script>
+</body>
+</html>

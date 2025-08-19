@@ -1,0 +1,411 @@
+/**
+ * Dive Buddy's 統一デザインシステム
+ * 全ページ共通スタイル
+ */
+
+/* ========== Google Fonts ========== */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Noto+Sans+JP:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* ========== CSS変数（デザイントークン） ========== */
+:root {
+    /* カラーパレット */
+    --color-base-bg: #FFFFFF;
+    --color-accent-1: #77C9D4;
+    --color-accent-2: #A2DED0;
+    --color-text-main: #333333;
+    --color-text-sub: #666666;
+    
+    /* カラー派生 */
+    --color-accent-1-light: #8DD3DE;
+    --color-accent-1-dark: #66B8C4;
+    --color-accent-2-light: #B5E6DA;
+    --color-accent-2-dark: #91D5C0;
+    
+    /* 背景・ボーダー */
+    --color-bg-light: #F8FAFB;
+    --color-border-light: #E5E7EB;
+    --color-shadow: rgba(0, 0, 0, 0.1);
+    --color-shadow-hover: rgba(0, 0, 0, 0.15);
+    
+    /* フォント */
+    --font-heading-en: 'Playfair Display', serif;
+    --font-heading-modern: 'Poppins', sans-serif;
+    --font-body-jp: 'Noto Sans JP', sans-serif;
+    --font-body-en: 'Inter', sans-serif;
+    
+    /* フォントサイズ */
+    --text-xs: 0.75rem;    /* 12px */
+    --text-sm: 0.875rem;   /* 14px */
+    --text-base: 1rem;     /* 16px */
+    --text-lg: 1.125rem;   /* 18px */
+    --text-xl: 1.25rem;    /* 20px */
+    --text-2xl: 1.5rem;    /* 24px */
+    --text-3xl: 1.875rem;  /* 30px */
+    --text-4xl: 2.25rem;   /* 36px */
+    --text-5xl: 3rem;      /* 48px */
+    
+    /* スペーシング */
+    --space-1: 0.25rem;    /* 4px */
+    --space-2: 0.5rem;     /* 8px */
+    --space-3: 0.75rem;    /* 12px */
+    --space-4: 1rem;       /* 16px */
+    --space-6: 1.5rem;     /* 24px */
+    --space-8: 2rem;       /* 32px */
+    --space-12: 3rem;      /* 48px */
+    --space-16: 4rem;      /* 64px */
+    --space-20: 5rem;      /* 80px */
+    
+    /* セクション間隔 */
+    --section-gap: 5rem;   /* 80px */
+    --card-gap: 1.5rem;    /* 24px */
+    
+    /* ボーダーRadius */
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+    --radius-full: 20px;
+    
+    /* シャドウ */
+    --shadow-sm: 0 1px 3px var(--color-shadow);
+    --shadow-md: 0 4px 6px var(--color-shadow);
+    --shadow-lg: 0 8px 15px var(--color-shadow);
+    --shadow-hover: 0 10px 20px var(--color-shadow-hover);
+    
+    /* トランジション */
+    --transition-fast: 0.15s ease;
+    --transition-base: 0.3s ease;
+    --transition-slow: 0.5s ease;
+}
+
+/* ========== リセット・ベーススタイル ========== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: var(--font-body-jp);
+    font-size: var(--text-base);
+    line-height: 1.6;
+    color: var(--color-text-main);
+    background-color: var(--color-base-bg);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* ========== タイポグラフィ ========== */
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading-en);
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--color-text-main);
+    margin-bottom: var(--space-4);
+}
+
+h1 {
+    font-size: var(--text-4xl);
+    font-weight: 700;
+}
+
+h2 {
+    font-size: var(--text-3xl);
+    font-weight: 600;
+}
+
+h3 {
+    font-size: var(--text-2xl);
+    font-weight: 600;
+}
+
+h4 {
+    font-size: var(--text-xl);
+    font-weight: 500;
+}
+
+h5, h6 {
+    font-size: var(--text-lg);
+    font-weight: 500;
+}
+
+p {
+    margin-bottom: var(--space-4);
+    line-height: 1.7;
+}
+
+.text-sub {
+    color: var(--color-text-sub);
+}
+
+.text-accent {
+    color: var(--color-accent-1);
+}
+
+/* ========== ボタンシステム ========== */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-3) var(--space-6);
+    border: none;
+    border-radius: var(--radius-md);
+    font-family: var(--font-body-jp);
+    font-size: var(--text-base);
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    gap: var(--space-2);
+}
+
+.btn-primary {
+    background-color: var(--color-accent-1);
+    color: var(--color-base-bg);
+}
+
+.btn-primary:hover {
+    background-color: var(--color-accent-1-dark);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-secondary {
+    background-color: var(--color-accent-2);
+    color: var(--color-text-main);
+}
+
+.btn-secondary:hover {
+    background-color: var(--color-accent-2-dark);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-outline {
+    background-color: transparent;
+    border: 2px solid var(--color-accent-1);
+    color: var(--color-accent-1);
+}
+
+.btn-outline:hover {
+    background-color: var(--color-accent-1);
+    color: var(--color-base-bg);
+}
+
+.btn-lg {
+    padding: var(--space-4) var(--space-8);
+    font-size: var(--text-lg);
+}
+
+.btn-sm {
+    padding: var(--space-2) var(--space-4);
+    font-size: var(--text-sm);
+}
+
+/* ========== カードシステム ========== */
+.card {
+    background-color: var(--color-base-bg);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    transition: all var(--transition-base);
+}
+
+.card:hover {
+    transform: scale(1.02);
+    box-shadow: var(--shadow-hover);
+}
+
+.card-body {
+    padding: var(--space-6);
+}
+
+.card-header {
+    padding: var(--space-6) var(--space-6) var(--space-3) var(--space-6);
+    border-bottom: 1px solid var(--color-border-light);
+}
+
+.card-footer {
+    padding: var(--space-3) var(--space-6) var(--space-6) var(--space-6);
+    background-color: var(--color-bg-light);
+}
+
+/* ========== 検索バー ========== */
+.search-container {
+    position: relative;
+    width: 100%;
+    max-width: 600px;
+}
+
+.search-input {
+    width: 100%;
+    padding: var(--space-4) var(--space-6) var(--space-4) var(--space-12);
+    border: 2px solid var(--color-border-light);
+    border-radius: var(--radius-full);
+    font-family: var(--font-body-jp);
+    font-size: var(--text-base);
+    background-color: var(--color-base-bg);
+    transition: all var(--transition-base);
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--color-accent-1);
+    box-shadow: 0 0 0 3px rgba(119, 201, 212, 0.1);
+}
+
+.search-icon {
+    position: absolute;
+    left: var(--space-4);
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-text-sub);
+    font-size: var(--text-lg);
+}
+
+/* ========== レイアウト ========== */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 var(--space-4);
+}
+
+.container-fluid {
+    width: 100%;
+    padding: 0 var(--space-4);
+}
+
+.section {
+    padding: var(--section-gap) 0;
+}
+
+.section-sm {
+    padding: var(--space-16) 0;
+}
+
+/* グリッドシステム */
+.grid {
+    display: grid;
+    gap: var(--card-gap);
+}
+
+.grid-2 {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.grid-3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.grid-4 {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+.grid-auto {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+/* フレックス */
+.flex {
+    display: flex;
+}
+
+.flex-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.flex-between {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.flex-col {
+    flex-direction: column;
+}
+
+/* ========== ユーティリティ ========== */
+.text-center {
+    text-align: center;
+}
+
+.text-left {
+    text-align: left;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.mb-0 { margin-bottom: 0; }
+.mb-2 { margin-bottom: var(--space-2); }
+.mb-4 { margin-bottom: var(--space-4); }
+.mb-6 { margin-bottom: var(--space-6); }
+.mb-8 { margin-bottom: var(--space-8); }
+
+.mt-0 { margin-top: 0; }
+.mt-2 { margin-top: var(--space-2); }
+.mt-4 { margin-top: var(--space-4); }
+.mt-6 { margin-top: var(--space-6); }
+.mt-8 { margin-top: var(--space-8); }
+
+.hidden {
+    display: none;
+}
+
+.visible {
+    display: block;
+}
+
+/* ========== レスポンシブ ========== */
+@media (max-width: 768px) {
+    .grid-2,
+    .grid-3,
+    .grid-4 {
+        grid-template-columns: 1fr;
+    }
+    
+    .grid-auto {
+        grid-template-columns: 1fr;
+    }
+    
+    h1 {
+        font-size: var(--text-3xl);
+    }
+    
+    h2 {
+        font-size: var(--text-2xl);
+    }
+    
+    h3 {
+        font-size: var(--text-xl);
+    }
+    
+    .section {
+        padding: var(--space-16) 0;
+    }
+    
+    .container {
+        padding: 0 var(--space-3);
+    }
+}
+
+@media (max-width: 480px) {
+    .card-body {
+        padding: var(--space-4);
+    }
+    
+    .btn-lg {
+        width: 100%;
+    }
+    
+    .search-input {
+        font-size: var(--text-sm);
+    }
+}

@@ -711,13 +711,12 @@ async function generateV28AIResponse(currentMessage, userProfile, conversationHi
         );
 
         const response = await openai.chat.completions.create({
-            model: "gpt-4o",
+            model: "gpt-5",
             messages: [
                 { role: "system", content: systemPrompt },
                 { role: "user", content: currentMessage }
             ],
-            max_tokens: 1000,
-            temperature: 0.7,
+            max_completion_tokens: 1000,
             presence_penalty: 0.1,
             frequency_penalty: 0.1
         });
@@ -992,13 +991,12 @@ async function generateAIResponse(currentMessage, userProfile, conversationHisto
         const systemPrompt = generateSystemPrompt(userProfile, conversationHistory, pastExperiences, divingPlans);
 
         const response = await openai.chat.completions.create({
-            model: "gpt-4o",
+            model: "gpt-5",
             messages: [
                 { role: "system", content: systemPrompt },
                 { role: "user", content: currentMessage }
             ],
-            max_tokens: 1000,
-            temperature: 0.8
+            max_completion_tokens: 1000
         });
 
         return response.choices[0].message.content;

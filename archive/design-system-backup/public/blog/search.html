@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ブログ検索結果 | Dive Buddy's - ダイビング情報</title>
+    <meta name="description" content="Dive Buddy'sブログの検索結果。沖縄・離島のダイビング情報、ポイント情報、ライセンス情報を検索できます。">
+    
+    <link rel="stylesheet" href="/app/v28-styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        .search-page {
+            background: #f8f9ff;
+            min-height: 100vh;
+        }
+
+        .search-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 80px 0 40px;
+            text-align: center;
+        }
+
+        .search-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .search-subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+        }
+
+        .search-container {
+            max-width: 1200px;
+            margin: -40px auto 0;
+            padding: 0 1rem 4rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .search-box-section {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .search-input-group {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 1.2rem 3.5rem 1.2rem 1.5rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-family: 'Noto Sans JP', sans-serif;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .search-button {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.2rem;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .search-button:hover {
+            transform: translateY(-50%) scale(1.05);
+        }
+
+        .search-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            z-index: 100;
+            max-height: 300px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .suggestion-item {
+            padding: 0.8rem 1.5rem;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .suggestion-item:hover {
+            background: #f8f9ff;
+        }
+
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+
+        .search-filters {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+
+        .filter-select {
+            padding: 0.8rem 1.2rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-family: 'Noto Sans JP', sans-serif;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .popular-keywords {
+            margin-top: 1rem;
+        }
+
+        .popular-keywords h4 {
+            font-size: 0.95rem;
+            color: #6b7280;
+            margin-bottom: 0.8rem;
+        }
+
+        .keyword-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .keyword-tag {
+            background: #f3f4f6;
+            color: #4b5563;
+            padding: 0.4rem 0.8rem;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .keyword-tag:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .search-results-section {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #f1f5f9;
+        }
+
+        .results-info {
+            font-size: 1.1rem;
+            color: #4b5563;
+        }
+
+        .results-count {
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .sort-select {
+            padding: 0.6rem 1rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            background: white;
+        }
+
+        .search-results {
+            display: grid;
+            gap: 2rem;
+        }
+
+        .result-item {
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .result-item:hover {
+            border-color: #667eea;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+
+        .result-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 0.8rem;
+            line-height: 1.4;
+        }
+
+        .result-title a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .result-title a:hover {
+            color: #667eea;
+        }
+
+        .result-meta {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            color: #6b7280;
+        }
+
+        .result-category {
+            background: #667eea;
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .result-date {
+            white-space: nowrap;
+        }
+
+        .result-views {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .result-excerpt {
+            color: #4b5563;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .result-excerpt mark {
+            background: #fef3c7;
+            color: #92400e;
+            padding: 0.1rem 0.2rem;
+            border-radius: 3px;
+        }
+
+        .result-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .result-tag {
+            background: #f3f4f6;
+            color: #6b7280;
+            padding: 0.3rem 0.6rem;
+            border-radius: 10px;
+            font-size: 0.8rem;
+        }
+
+        .result-reasons {
+            font-size: 0.85rem;
+            color: #9ca3af;
+            font-style: italic;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #6b7280;
+        }
+
+        .no-results i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            color: #d1d5db;
+        }
+
+        .no-results h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #374151;
+        }
+
+        .no-results p {
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .try-keywords {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .pagination-button {
+            padding: 0.8rem 1.2rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background: white;
+            color: #4b5563;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .pagination-button:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .pagination-button.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .pagination-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .search-header {
+                padding: 60px 0 20px;
+            }
+
+            .search-title {
+                font-size: 2rem;
+            }
+
+            .search-container {
+                margin: -20px 1rem 2rem;
+            }
+
+            .search-box-section {
+                padding: 1.5rem;
+            }
+
+            .search-filters {
+                flex-direction: column;
+            }
+
+            .filter-select {
+                width: 100%;
+            }
+
+            .results-header {
+                flex-direction: column;
+                align-items: start;
+                gap: 1rem;
+            }
+
+            .result-meta {
+                flex-direction: column;
+                align-items: start;
+                gap: 0.5rem;
+            }
+
+            .pagination {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ヘッダー -->
+    <header class="main-header">
+        <nav class="main-nav">
+            <a href="/" class="main-logo">
+                <h1>🌺 Dive Buddy's</h1>
+                <span>ダイビング情報</span>
+            </a>
+            
+            <ul class="main-nav-menu">
+                <li><a href="/">ホーム</a></li>
+                <li><a href="/about">サービス</a></li>
+                <li><a href="/member">会員システム</a></li>
+                <li><a href="/shops-database">ショップDB</a></li>
+                <li><a href="/travel-guide">旅行ガイド</a></li>
+                <li><a href="/weather-ocean">海況・天気</a></li>
+                <li><a href="/blog" class="active">ブログ</a></li>
+                <li><a href="/contact">お問い合わせ</a></li>
+            </ul>
+            
+            <div class="main-nav-buttons">
+                <a href="https://line.me/ti/p/@2007331165" class="btn btn-primary btn-line-connect" target="_blank">
+                    <i class="fab fa-line"></i> Jijiに相談
+                </a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- 検索ヘッダー -->
+    <section class="search-header">
+        <div class="container">
+            <h1 class="search-title">
+                <i class="fas fa-search"></i> ブログ検索
+            </h1>
+            <p class="search-subtitle">
+                沖縄・離島のダイビング情報を検索
+            </p>
+        </div>
+    </section>
+
+    <!-- 検索メインコンテンツ -->
+    <section class="search-page">
+        <div class="search-container">
+            <!-- 検索ボックス -->
+            <div class="search-box-section">
+                <div class="search-input-group">
+                    <input type="text" id="searchInput" class="search-input" 
+                           placeholder="キーワードを入力してください（例: 沖縄、マンタ、青の洞窟）">
+                    <button id="searchButton" class="search-button">
+                        <i class="fas fa-search"></i>
+                    </button>
+                    <div id="searchSuggestions" class="search-suggestions"></div>
+                </div>
+
+                <div class="search-filters">
+                    <select id="categoryFilter" class="filter-select">
+                        <option value="">すべてのカテゴリ</option>
+                        <option value="ダイビングガイド">ダイビングガイド</option>
+                        <option value="ダイビング情報">ダイビング情報</option>
+                        <option value="ダイビングポイント">ダイビングポイント</option>
+                        <option value="ライセンス講習">ライセンス講習</option>
+                        <option value="機材レビュー">機材レビュー</option>
+                        <option value="旅行情報">旅行情報</option>
+                    </select>
+
+                    <select id="sortFilter" class="filter-select">
+                        <option value="relevance">関連度順</option>
+                        <option value="date">新しい順</option>
+                        <option value="views">人気順</option>
+                    </select>
+                </div>
+
+                <div class="popular-keywords">
+                    <h4><i class="fas fa-fire"></i> 人気のキーワード</h4>
+                    <div class="keyword-tags" id="popularKeywords">
+                        <!-- 動的に生成 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 検索結果 -->
+            <div class="search-results-section">
+                <div class="results-header">
+                    <div class="results-info">
+                        <span class="results-count" id="resultsCount">0</span> 件の記事が見つかりました
+                        <span id="searchQuery"></span>
+                    </div>
+                </div>
+
+                <!-- ローディング -->
+                <div id="loadingSpinner" class="loading-spinner">
+                    <div class="spinner"></div>
+                    <p>検索中...</p>
+                </div>
+
+                <!-- 検索結果リスト -->
+                <div id="searchResults" class="search-results">
+                    <!-- 動的に生成 -->
+                </div>
+
+                <!-- 結果なし -->
+                <div id="noResults" class="no-results" style="display: none;">
+                    <i class="fas fa-search"></i>
+                    <h3>検索結果が見つかりませんでした</h3>
+                    <p>検索キーワードを変更するか、以下のキーワードをお試しください</p>
+                    <div class="try-keywords">
+                        <span class="keyword-tag" onclick="searchKeyword('沖縄')">沖縄</span>
+                        <span class="keyword-tag" onclick="searchKeyword('マンタ')">マンタ</span>
+                        <span class="keyword-tag" onclick="searchKeyword('青の洞窟')">青の洞窟</span>
+                        <span class="keyword-tag" onclick="searchKeyword('石垣島')">石垣島</span>
+                        <span class="keyword-tag" onclick="searchKeyword('宮古島')">宮古島</span>
+                    </div>
+                </div>
+
+                <!-- ページング -->
+                <div id="pagination" class="pagination" style="display: none;">
+                    <!-- 動的に生成 -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- フッター -->
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>🌺 Dive Buddy's ブログ</h3>
+                    <p>沖縄・離島のダイビング情報をお届け</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>人気のカテゴリ</h3>
+                    <ul>
+                        <li><a href="/blog?category=ダイビングガイド">ダイビングガイド</a></li>
+                        <li><a href="/blog?category=ダイビング情報">ダイビング情報</a></li>
+                        <li><a href="/blog?category=ダイビングポイント">ダイビングポイント</a></li>
+                        <li><a href="/blog?category=ライセンス講習">ライセンス講習</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>サポート</h3>
+                    <ul>
+                        <li><a href="https://line.me/ti/p/@2007331165" target="_blank">LINE Bot相談</a></li>
+                        <li><a href="/contact">お問い合わせ</a></li>
+                        <li><a href="/help">ヘルプ</a></li>
+                        <li><a href="/legal">利用規約</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>関連サービス</h3>
+                    <ul>
+                        <li><a href="/shops-database">ショップDB</a></li>
+                        <li><a href="/travel-guide">旅行ガイド</a></li>
+                        <li><a href="/weather-ocean">海況・天気</a></li>
+                        <li><a href="/member">会員システム</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 Dive Buddy's ブログ - あなた専属のダイビング情報</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        class BlogSearchManager {
+            constructor() {
+                this.currentQuery = '';
+                this.currentPage = 1;
+                this.currentFilters = {};
+                this.suggestionTimer = null;
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.loadPopularKeywords();
+                this.handleURLParams();
+            }
+
+            setupEventListeners() {
+                // 検索実行
+                document.getElementById('searchButton').addEventListener('click', () => {
+                    this.performSearch();
+                });
+
+                document.getElementById('searchInput').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.performSearch();
+                    }
+                });
+
+                // 検索サジェスト
+                document.getElementById('searchInput').addEventListener('input', (e) => {
+                    this.handleSearchInput(e.target.value);
+                });
+
+                // フィルター変更
+                document.getElementById('categoryFilter').addEventListener('change', () => {
+                    this.performSearch();
+                });
+
+                document.getElementById('sortFilter').addEventListener('change', () => {
+                    this.performSearch();
+                });
+
+                // 外部クリックでサジェストを閉じる
+                document.addEventListener('click', (e) => {
+                    if (!e.target.closest('.search-input-group')) {
+                        this.hideSuggestions();
+                    }
+                });
+            }
+
+            handleURLParams() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const query = urlParams.get('q');
+                const category = urlParams.get('category');
+
+                if (query) {
+                    document.getElementById('searchInput').value = query;
+                    this.currentQuery = query;
+                }
+
+                if (category) {
+                    document.getElementById('categoryFilter').value = category;
+                }
+
+                if (query) {
+                    this.performSearch();
+                }
+            }
+
+            async handleSearchInput(value) {
+                clearTimeout(this.suggestionTimer);
+                
+                if (value.length < 2) {
+                    this.hideSuggestions();
+                    return;
+                }
+
+                this.suggestionTimer = setTimeout(async () => {
+                    await this.loadSuggestions(value);
+                }, 300);
+            }
+
+            async loadSuggestions(query) {
+                try {
+                    const response = await fetch(`/api/blog/suggest?q=${encodeURIComponent(query)}`);
+                    const data = await response.json();
+
+                    if (data.success && data.suggestions.length > 0) {
+                        this.showSuggestions(data.suggestions);
+                    } else {
+                        this.hideSuggestions();
+                    }
+                } catch (error) {
+                    console.error('サジェスト取得エラー:', error);
+                    this.hideSuggestions();
+                }
+            }
+
+            showSuggestions(suggestions) {
+                const container = document.getElementById('searchSuggestions');
+                container.innerHTML = suggestions.map(suggestion => 
+                    `<div class="suggestion-item" onclick="window.blogSearch.selectSuggestion('${suggestion}')">${suggestion}</div>`
+                ).join('');
+                container.style.display = 'block';
+            }
+
+            hideSuggestions() {
+                document.getElementById('searchSuggestions').style.display = 'none';
+            }
+
+            selectSuggestion(suggestion) {
+                document.getElementById('searchInput').value = suggestion;
+                this.hideSuggestions();
+                this.performSearch();
+            }
+
+            async loadPopularKeywords() {
+                try {
+                    const response = await fetch('/api/blog/popular-keywords');
+                    const data = await response.json();
+
+                    if (data.success) {
+                        const container = document.getElementById('popularKeywords');
+                        container.innerHTML = data.keywords.slice(0, 8).map(item => 
+                            `<span class="keyword-tag" onclick="window.blogSearch.searchKeyword('${item.keyword}')">${item.keyword}</span>`
+                        ).join('');
+                    }
+                } catch (error) {
+                    console.error('人気キーワード取得エラー:', error);
+                }
+            }
+
+            searchKeyword(keyword) {
+                document.getElementById('searchInput').value = keyword;
+                this.performSearch();
+            }
+
+            async performSearch(page = 1) {
+                const query = document.getElementById('searchInput').value.trim();
+                const category = document.getElementById('categoryFilter').value;
+                const sort = document.getElementById('sortFilter').value;
+
+                if (!query) {
+                    alert('検索キーワードを入力してください');
+                    return;
+                }
+
+                this.showLoading(true);
+                this.hideNoResults();
+
+                try {
+                    const params = new URLSearchParams({
+                        q: query,
+                        page: page,
+                        limit: 10
+                    });
+
+                    if (category) params.append('category', category);
+                    if (sort && sort !== 'relevance') params.append('sort', sort);
+
+                    const response = await fetch(`/api/blog/search?${params}`);
+                    const data = await response.json();
+
+                    if (data.success) {
+                        this.displayResults(data, query);
+                        this.updateURL(query, category, page);
+                    } else {
+                        this.showNoResults();
+                    }
+                } catch (error) {
+                    console.error('検索エラー:', error);
+                    this.showNoResults();
+                } finally {
+                    this.showLoading(false);
+                }
+            }
+
+            displayResults(data, query) {
+                const resultsContainer = document.getElementById('searchResults');
+                const resultsCount = document.getElementById('resultsCount');
+                const searchQuery = document.getElementById('searchQuery');
+
+                resultsCount.textContent = data.total;
+                searchQuery.textContent = query ? `「${query}」の検索結果` : '';
+
+                if (data.articles.length === 0) {
+                    this.showNoResults();
+                    return;
+                }
+
+                resultsContainer.innerHTML = data.articles.map(article => `
+                    <div class="result-item" onclick="window.location.href='/blog/${article.slug || article.id}'">
+                        <h2 class="result-title">
+                            <a href="/blog/${article.slug || article.id}">${article.highlight?.title || article.title}</a>
+                        </h2>
+                        
+                        <div class="result-meta">
+                            <span class="result-category">${article.category}</span>
+                            <span class="result-date">
+                                <i class="fas fa-calendar"></i>
+                                ${new Date(article.published_at).toLocaleDateString('ja-JP')}
+                            </span>
+                            <span class="result-views">
+                                <i class="fas fa-eye"></i>
+                                ${article.views.toLocaleString()}
+                            </span>
+                        </div>
+                        
+                        <div class="result-excerpt">
+                            ${article.highlight?.content_excerpt || article.summary}
+                        </div>
+                        
+                        <div class="result-tags">
+                            ${article.tags.map(tag => `<span class="result-tag">${tag}</span>`).join('')}
+                        </div>
+                        
+                        ${article.related_reasons ? `
+                            <div class="result-reasons">
+                                関連: ${article.related_reasons.join(', ')}
+                            </div>
+                        ` : ''}
+                    </div>
+                `).join('');
+
+                // ページング表示
+                this.displayPagination(data);
+            }
+
+            displayPagination(data) {
+                const container = document.getElementById('pagination');
+                const currentPage = data.page || 1;
+                const totalPages = Math.ceil(data.total / (data.limit || 10));
+
+                if (totalPages <= 1) {
+                    container.style.display = 'none';
+                    return;
+                }
+
+                let paginationHTML = '';
+
+                // 前のページ
+                if (currentPage > 1) {
+                    paginationHTML += `<button class="pagination-button" onclick="window.blogSearch.performSearch(${currentPage - 1})">
+                        <i class="fas fa-chevron-left"></i> 前のページ
+                    </button>`;
+                }
+
+                // ページ番号
+                const startPage = Math.max(1, currentPage - 2);
+                const endPage = Math.min(totalPages, currentPage + 2);
+
+                for (let i = startPage; i <= endPage; i++) {
+                    const isActive = i === currentPage;
+                    paginationHTML += `<button class="pagination-button ${isActive ? 'active' : ''}" 
+                        ${isActive ? '' : `onclick="window.blogSearch.performSearch(${i})"`}>
+                        ${i}
+                    </button>`;
+                }
+
+                // 次のページ
+                if (currentPage < totalPages) {
+                    paginationHTML += `<button class="pagination-button" onclick="window.blogSearch.performSearch(${currentPage + 1})">
+                        次のページ <i class="fas fa-chevron-right"></i>
+                    </button>`;
+                }
+
+                container.innerHTML = paginationHTML;
+                container.style.display = 'flex';
+            }
+
+            showLoading(show) {
+                document.getElementById('loadingSpinner').style.display = show ? 'block' : 'none';
+                document.getElementById('searchResults').style.display = show ? 'none' : 'grid';
+            }
+
+            showNoResults() {
+                document.getElementById('noResults').style.display = 'block';
+                document.getElementById('searchResults').style.display = 'none';
+                document.getElementById('pagination').style.display = 'none';
+            }
+
+            hideNoResults() {
+                document.getElementById('noResults').style.display = 'none';
+            }
+
+            updateURL(query, category, page) {
+                const params = new URLSearchParams();
+                if (query) params.set('q', query);
+                if (category) params.set('category', category);
+                if (page > 1) params.set('page', page);
+
+                const newURL = `${window.location.pathname}?${params.toString()}`;
+                window.history.pushState({}, '', newURL);
+            }
+        }
+
+        // グローバル関数
+        function searchKeyword(keyword) {
+            window.blogSearch.searchKeyword(keyword);
+        }
+
+        // 初期化
+        document.addEventListener('DOMContentLoaded', () => {
+            window.blogSearch = new BlogSearchManager();
+        });
+    </script>
+</body>
+</html>

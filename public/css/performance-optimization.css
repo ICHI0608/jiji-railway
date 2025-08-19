@@ -1,0 +1,301 @@
+/**
+ * Dive Buddy's パフォーマンス最適化CSS
+ * ページ表示速度向上・SEO強化・Core Web Vitals改善
+ */
+
+/* ========== Critical CSS Inlining ========== */
+/* above-the-fold コンテンツに必要な最小限のCSS */
+
+/* フォント読み込み最適化 */
+@font-face {
+    font-family: 'Noto Sans JP';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap; /* フォント読み込み中も文字表示 */
+    src: url('https://fonts.gstatic.com/s/notosansjp/v52/NotoSansJP-Regular.woff2') format('woff2');
+    unicode-range: U+3000-30FF, U+FF00-FFEF; /* 日本語文字範囲のみ */
+}
+
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiJ-Ek-_EeA.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153; /* 英数字範囲のみ */
+}
+
+/* ========== Layout Shift Prevention ========== */
+/* CLS（Cumulative Layout Shift）防止 */
+
+/* 画像プレースホルダー */
+.image-placeholder {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: var(--radius-md);
+}
+
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+/* iframe レスポンシブ（YouTube等） */
+.video-container {
+    position: relative;
+    width: 100%;
+    height: 0;
+    padding-bottom: 56.25%; /* 16:9 aspect ratio */
+}
+
+.video-container iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* ========== Critical Resource Hints ========== */
+/* DNS prefetch, preconnect, preload の CSS内制御 */
+
+/* Google Fonts最適化 */
+.font-preload::before {
+    content: '';
+    font-family: 'Noto Sans JP';
+    font-weight: 400;
+    visibility: hidden;
+    position: absolute;
+}
+
+/* ========== Performance Optimizations ========== */
+
+/* GPU アクセラレーション */
+.gpu-accelerated {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+}
+
+/* スクロール最適化 */
+.smooth-scroll {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch; /* iOS Safari */
+}
+
+/* タッチ最適化 */
+.touch-optimized {
+    touch-action: manipulation; /* ダブルタップズーム無効化 */
+    -webkit-tap-highlight-color: transparent; /* タップハイライト除去 */
+}
+
+/* ========== Critical Web Vitals Optimization ========== */
+
+/* LCP（Largest Contentful Paint）最適化 */
+.hero-image {
+    content-visibility: auto; /* ビューポート外の描画遅延 */
+    contain-intrinsic-size: 800px 600px; /* サイズヒント */
+}
+
+/* FID（First Input Delay）最適化 */
+.interactive {
+    pointer-events: auto;
+    user-select: auto;
+}
+
+.non-interactive {
+    pointer-events: none;
+    user-select: none;
+}
+
+/* ========== Lazy Loading Enhancements ========== */
+
+/* Intersection Observer用 */
+.lazy-load {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.lazy-load.loaded {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* ========== Cache Optimization ========== */
+
+/* 静的リソースキャッシュヒント */
+.cacheable-bg {
+    background-image: var(--cached-bg-url);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+/* ========== Network Optimization ========== */
+
+/* 重要でない画像の遅延読み込み */
+img[loading="lazy"] {
+    transition: opacity 0.3s;
+}
+
+/* WebP対応 */
+.webp .hero-bg {
+    background-image: url('/images/hero-bg.webp');
+}
+
+.no-webp .hero-bg {
+    background-image: url('/images/hero-bg.jpg');
+}
+
+/* ========== Mobile Performance ========== */
+
+/* モバイル向け最適化 */
+@media (max-width: 768px) {
+    /* 不要なアニメーション削除 */
+    .mobile-reduce-motion * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    /* モバイル用簡素化 */
+    .mobile-simplify {
+        box-shadow: none;
+        border-radius: 0;
+        background-image: none;
+    }
+}
+
+/* ========== Print Optimization ========== */
+@media print {
+    /* 印刷時の最適化 */
+    .no-print {
+        display: none !important;
+    }
+    
+    .print-optimize {
+        background: white !important;
+        color: black !important;
+        box-shadow: none !important;
+    }
+}
+
+/* ========== Dark Mode Performance ========== */
+@media (prefers-color-scheme: dark) {
+    /* ダークモード時のパフォーマンス考慮 */
+    .dark-mode-optimized {
+        background-color: #1a1a1a;
+        color: #ffffff;
+        border-color: #333333;
+    }
+}
+
+/* ========== High Contrast Mode ========== */
+@media (prefers-contrast: high) {
+    .high-contrast {
+        border: 2px solid;
+        background: white;
+        color: black;
+    }
+}
+
+/* ========== Resource Loading States ========== */
+
+/* 読み込み状態表示 */
+.loading-skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+    border-radius: 4px;
+}
+
+@keyframes loading {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+/* エラー状態 */
+.error-state {
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #991b1b;
+    padding: 12px;
+    border-radius: 6px;
+}
+
+/* ========== Accessibility Performance ========== */
+
+/* スクリーンリーダー用非表示 */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* フォーカス表示最適化 */
+.focus-optimized:focus {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+}
+
+/* ========== SEO Enhancement ========== */
+
+/* 構造化データ表示用 */
+.structured-data {
+    display: none; /* 視覚的に非表示、SEOには有効 */
+}
+
+/* 内部リンク強化 */
+.internal-link {
+    color: var(--color-accent-1);
+    text-decoration: underline;
+    text-decoration-color: transparent;
+    transition: text-decoration-color 0.2s ease;
+}
+
+.internal-link:hover {
+    text-decoration-color: var(--color-accent-1);
+}
+
+/* ========== Third-party Optimization ========== */
+
+/* 外部ウィジェット用コンテナ */
+.third-party-container {
+    contain: layout style paint;
+    transform: translateZ(0);
+}
+
+/* SNSボタン最適化 */
+.social-button {
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    background-size: 20px 20px;
+    background-repeat: no-repeat;
+    background-position: center;
+    text-indent: -9999px;
+    overflow: hidden;
+}
+
+/* ========== Memory Management ========== */
+
+/* 大きな要素の効率化 */
+.large-content {
+    content-visibility: auto;
+    contain-intrinsic-size: 0 2000px;
+}
+
+/* 無限スクロール最適化 */
+.infinite-scroll-item {
+    contain: layout;
+    height: auto;
+    min-height: 100px;
+}

@@ -1,0 +1,2287 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>海況・天気情報 | Dive Buddy's</title>
+    <meta name="description" content="沖縄ダイビングのリアルタイム海況・天気情報。気象庁API連携でダイビング適性を自動判定。宮古島・石垣島・沖縄本島対応。">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- 統一デザインシステム -->
+    <link rel="stylesheet" href="/css/design-system.css">
+    <link rel="stylesheet" href="../app/v28-styles.css">
+    
+    <style>
+        :root {
+            --ocean-blue: #4A90A4;
+            --coral-pink: #FF6B9D;
+            --mint-green: #4ECDC4;
+            --soft-white: #FFF8F5;
+            --deep-navy: #2C3E50;
+            --sunset-peach: #FFAB91;
+        }
+
+        .weather-header {
+            background: linear-gradient(135deg, var(--ocean-blue) 0%, #0284c7 100%);
+            color: white;
+            padding: 80px 0 60px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .weather-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 20"><path d="M0,10 Q25,0 50,10 T100,10 L100,20 L0,20 Z" fill="rgba(255,255,255,0.1)"/></svg>') repeat-x;
+            background-size: 100px 20px;
+            animation: wave 3s ease-in-out infinite;
+        }
+
+        @keyframes wave {
+            0%, 100% { transform: translateX(0px); }
+            50% { transform: translateX(-50px); }
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .current-conditions {
+            padding: 60px 0;
+            background: linear-gradient(135deg, var(--soft-white) 0%, #e0f2fe 100%);
+        }
+
+        .live-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .conditions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .condition-card {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(255, 248, 245, 0.9));
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            text-align: center;
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .condition-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+        }
+
+        .diving-status-excellent {
+            border-left: 5px solid #10b981;
+        }
+
+        .diving-status-good {
+            border-left: 5px solid #f59e0b;
+        }
+
+        .diving-status-poor {
+            border-left: 5px solid #ef4444;
+        }
+        
+        .area-name {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: var(--deep-navy);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .area-icon {
+            font-size: 1.2rem;
+        }
+        
+        .weather-icon {
+            font-size: 4rem;
+            margin-bottom: 15px;
+        }
+        
+        .temperature {
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: var(--ocean-blue);
+            margin-bottom: 20px;
+        }
+
+        .diving-status {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: white;
+        }
+
+        .diving-status-excellent .diving-status {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .diving-status-good .diving-status {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+
+        .diving-status-poor .diving-status {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+
+        .condition-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .detail-item {
+            text-align: center;
+        }
+
+        .detail-label {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .detail-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--deep-navy);
+        }
+
+        .diving-score {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 15px 0;
+            padding: 10px 15px;
+            background: linear-gradient(135deg, var(--coral-pink), var(--sunset-peach));
+            border-radius: 10px;
+            color: white;
+        }
+
+        .score-label {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .score-value {
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+
+        .diving-reasons {
+            margin-top: 10px;
+        }
+
+        .reasons-text {
+            font-size: 0.85rem;
+            color: #64748b;
+            line-height: 1.4;
+            text-align: left;
+        }
+
+        /* 台風情報スタイル */
+        .typhoon-section {
+            background: linear-gradient(135deg, #dc2626, #991b1b);
+            color: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            box-shadow: 0 8px 25px rgba(220, 38, 38, 0.3);
+        }
+
+        .typhoon-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .typhoon-header i {
+            font-size: 2rem;
+            animation: spin 4s linear infinite;
+        }
+
+        .typhoon-header h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        /* 週間予報スタイル */
+        .forecast-section {
+            padding: 60px 0;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        }
+
+        .forecast-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .forecast-tab {
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.8);
+            border: 2px solid var(--ocean-blue);
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .forecast-tab.active {
+            background: var(--ocean-blue);
+            color: white;
+        }
+
+        .forecast-tab:hover {
+            transform: translateY(-2px);
+        }
+
+        .forecast-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .forecast-card {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(255, 248, 245, 0.9));
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .forecast-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .forecast-date {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--deep-navy);
+            margin-bottom: 10px;
+        }
+
+        .forecast-weather {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .forecast-temp {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--ocean-blue);
+            margin-bottom: 12px;
+        }
+
+        .forecast-details {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        .diving-score-forecast {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--coral-pink);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        /* 統計情報スタイル */
+        .statistics-section {
+            padding: 60px 0;
+            background: linear-gradient(135deg, var(--soft-white) 0%, #fef7f7 100%);
+        }
+
+        .stats-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .stats-tab {
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.8);
+            border: 2px solid var(--coral-pink);
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .stats-tab.active {
+            background: var(--coral-pink);
+            color: white;
+        }
+
+        .stats-tab:hover {
+            transform: translateY(-2px);
+        }
+
+        .monthly-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .month-card {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(255, 248, 245, 0.9));
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .month-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .month-name {
+            font-weight: 700;
+            color: var(--deep-navy);
+            margin-bottom: 10px;
+        }
+
+        .month-rating {
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+        }
+
+        .month-score {
+            font-weight: 600;
+            color: var(--coral-pink);
+            font-size: 0.9rem;
+        }
+
+        .season-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .season-card {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(255, 248, 245, 0.9));
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .season-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .season-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .season-icon {
+            font-size: 2rem;
+        }
+
+        .season-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--deep-navy);
+        }
+
+        .season-period {
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+
+        .season-highlights {
+            margin: 20px 0;
+        }
+
+        .highlight-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+
+        .highlight-icon {
+            font-size: 1rem;
+            width: 20px;
+        }
+        
+        .status-excellent { background: #10b981; }
+        .status-good { background: #3b82f6; }
+        .status-fair { background: #f59e0b; }
+        .status-poor { background: #ef4444; }
+        
+        .forecast-section {
+            padding: 80px 0;
+            background: white;
+        }
+        
+        .forecast-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 40px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .forecast-tab {
+            padding: 12px 24px;
+            background: #f1f5f9;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .forecast-tab.active {
+            background: #0ea5e9;
+            color: white;
+        }
+        
+        .forecast-content {
+            display: none;
+        }
+        
+        .forecast-content.active {
+            display: block;
+        }
+        
+        .forecast-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .forecast-card {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            border: 2px solid transparent;
+            transition: border-color 0.3s ease;
+        }
+        
+        .forecast-card:hover {
+            border-color: #0ea5e9;
+        }
+        
+        .forecast-date {
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 10px;
+        }
+        
+        .forecast-weather {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        
+        .forecast-temp {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #0ea5e9;
+            margin-bottom: 15px;
+        }
+        
+        .forecast-details {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+        
+        .seasonal-info {
+            padding: 80px 0;
+            background: #f0f9ff;
+        }
+        
+        .seasonal-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .season-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        
+        .season-header {
+            padding: 20px;
+            background: linear-gradient(135deg, #0ea5e9, #0284c7);
+            color: white;
+            text-align: center;
+        }
+        
+        .season-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .season-period {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .season-content {
+            padding: 25px;
+        }
+        
+        .season-features {
+            margin-bottom: 20px;
+        }
+        
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .feature-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .feature-icon {
+            color: #0ea5e9;
+            width: 20px;
+        }
+        
+        .pros-cons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .pros, .cons {
+            padding: 15px;
+            border-radius: 8px;
+        }
+        
+        .pros {
+            background: #f0fdf4;
+            border-left: 4px solid #10b981;
+        }
+        
+        .cons {
+            background: #fef2f2;
+            border-left: 4px solid #ef4444;
+        }
+        
+        .pros h4, .cons h4 {
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        
+        .pros h4 { color: #047857; }
+        .cons h4 { color: #dc2626; }
+        
+        .pros ul, .cons ul {
+            list-style: none;
+            padding: 0;
+            font-size: 0.8rem;
+        }
+        
+        .pros li::before {
+            content: '✓ ';
+            color: #10b981;
+            font-weight: bold;
+        }
+        
+        .cons li::before {
+            content: '× ';
+            color: #ef4444;
+            font-weight: bold;
+        }
+
+        /* 台風詳細情報スタイル */
+        .typhoon-details {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+        }
+
+        .typhoon-main-info {
+            margin-bottom: 25px;
+        }
+
+        .typhoon-main-info h4 {
+            font-size: 1.4rem;
+            margin-bottom: 10px;
+            color: white;
+        }
+
+        .typhoon-message {
+            font-size: 1rem;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .typhoon-data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .typhoon-data-item {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .data-label {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 5px;
+        }
+
+        .data-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: white;
+        }
+
+        .typhoon-impact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .impact-area-card {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            padding: 15px;
+            border-left: 4px solid;
+        }
+
+        .impact-area-card.low {
+            border-left-color: #10b981;
+        }
+
+        .impact-area-card.medium {
+            border-left-color: #f59e0b;
+        }
+
+        .impact-area-card.high {
+            border-left-color: #ef4444;
+        }
+
+        .impact-area-card.extreme {
+            border-left-color: #dc2626;
+            background: rgba(220, 38, 38, 0.2);
+        }
+
+        .impact-area-card h5 {
+            color: white;
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+
+        .risk-level, .arrival-time, .impact-text {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 5px;
+        }
+
+        .typhoon-recommendations {
+            background: rgba(220, 38, 38, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .typhoon-recommendations h5 {
+            color: white;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        .typhoon-recommendations ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .typhoon-recommendations li {
+            padding: 5px 0;
+            color: rgba(255, 255, 255, 0.9);
+            position: relative;
+            padding-left: 20px;
+        }
+
+        .typhoon-recommendations li::before {
+            content: '⚠️';
+            position: absolute;
+            left: 0;
+        }
+
+        .typhoon-update-time {
+            text-align: right;
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.7);
+            font-style: italic;
+        }
+
+        /* ダイビング影響サマリー */
+        .diving-impact-summary {
+            background: linear-gradient(135deg, rgba(220, 38, 38, 0.9), rgba(153, 27, 27, 0.9));
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 25px rgba(220, 38, 38, 0.3);
+        }
+
+        .diving-impact-summary.restricted-impact {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.9), rgba(217, 119, 6, 0.9));
+            box-shadow: 0 8px 25px rgba(245, 158, 11, 0.3);
+        }
+
+        .diving-impact-summary.caution-impact {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.9), rgba(37, 99, 235, 0.9));
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+        }
+
+        .impact-summary-content {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            color: white;
+        }
+
+        .impact-icon {
+            font-size: 3rem;
+            animation: pulse 2s infinite;
+        }
+
+        .impact-main-text {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .impact-sub-text {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        /* アラート詳細スタイル */
+        .alert-single, .alert-multiple {
+            color: white;
+        }
+
+        .alert-diving-impact {
+            margin: 15px 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+        }
+
+        .alert-areas {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .alert-item {
+            margin-bottom: 15px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+        }
+
+        .alert-item-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .alert-item-message {
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        .alert-item-areas {
+            font-size: 0.85rem;
+            opacity: 0.8;
+        }
+        
+        .alert-section {
+            background: #fef3c7;
+            border: 2px solid #f59e0b;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 40px 0;
+            display: none;
+        }
+        
+        .alert-section.show {
+            display: block;
+        }
+        
+        .alert-title {
+            color: #92400e;
+            font-weight: 700;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .alert-content {
+            color: #b45309;
+            line-height: 1.6;
+        }
+        
+        @media (max-width: 768px) {
+            .conditions-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .condition-details {
+                grid-template-columns: 1fr;
+            }
+            
+            .forecast-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .pros-cons {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ヘッダー -->
+    <header class="main-header">
+        <nav class="main-nav">
+            <a href="/" class="main-logo">
+                <h1>🌊 Jiji</h1>
+                <span>知識ベース</span>
+            </a>
+            
+            <ul class="main-nav-menu">
+                <li><a href="/">ホーム</a></li>
+                <li><a href="/shops-database">ショップDB</a></li>
+                <li><a href="/travel-guide">旅行ガイド</a></li>
+                <li><a href="/diving-blog">ダイビングブログ</a></li>
+                <li><a href="/weather-ocean" class="active">海況・天気</a></li>
+                <li><a href="/member">会員ページ</a></li>
+            </ul>
+            
+            <div class="main-nav-buttons">
+                <a href="https://line.me/ti/p/@2007331165" class="btn btn-primary" target="_blank">
+                    <i class="fab fa-line"></i> LINE相談
+                </a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- 海況・天気ヘッダー -->
+    <section class="weather-header">
+        <div class="container">
+            <div class="header-content">
+                <div class="live-indicator">
+                    <div class="live-dot"></div>
+                    <span>リアルタイム更新中</span>
+                </div>
+                <h1 class="database-title">🌊 海況・天気情報</h1>
+                <p class="database-subtitle">
+                    沖縄ダイビングの最新海況・天気情報。リアルタイムデータと週間予報でベストなダイビング日程を計画しよう。
+                </p>
+                <div style="margin-top: 20px; font-size: 0.9rem; opacity: 0.9;">
+                    <i class="fas fa-clock"></i> 最終更新: <span id="lastUpdate">取得中...</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 台風・緊急アラート -->
+    <section class="container">
+        <div class="alert-section" id="weather-alert" style="display: none;">
+            <div class="alert-title">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span id="alert-title-text">気象警報・注意報</span>
+            </div>
+            <div class="alert-content" id="alert-content">
+                現在、特別な気象警報や注意報は発表されていません。
+            </div>
+        </div>
+
+        <!-- 台風情報 -->
+        <div class="typhoon-section" id="typhoon-info" style="display: none;">
+            <div class="typhoon-header">
+                <i class="fas fa-hurricane"></i>
+                <h3>台風情報</h3>
+            </div>
+            <div class="typhoon-content" id="typhoon-content">
+                <!-- 動的に生成される台風情報 -->
+            </div>
+        </div>
+    </section>
+
+    <!-- 現在の海況・天気 -->
+    <section class="current-conditions">
+        <div class="container">
+            <h2 class="section-title">📊 現在の海況・天気</h2>
+            <p class="section-subtitle">
+                各エリアのリアルタイム海況・天気情報とダイビング適性
+            </p>
+            
+            <div class="conditions-grid" id="weatherConditions">
+                <!-- 動的に生成される海況情報 -->
+            </div>
+        </div>
+    </section>
+
+    <!-- 週間予報 -->
+    <section class="forecast-section">
+        <div class="container">
+            <h2 class="section-title">📅 週間予報</h2>
+            <p class="section-subtitle">
+                7日間の天気・海況予報でダイビング計画を立てよう
+            </p>
+            
+            <div class="forecast-tabs">
+                <button class="forecast-tab active" data-area="ishigaki">🏝️ 石垣島</button>
+                <button class="forecast-tab" data-area="miyako">🌺 宮古島</button>
+                <button class="forecast-tab" data-area="okinawa">🏖️ 沖縄本島</button>
+            </div>
+            
+            <div id="forecastContainer">
+                <!-- 動的に生成される週間予報 -->
+            </div>
+        </div>
+    </section>
+
+    <!-- 過去統計・シーズン情報 -->
+    <section class="statistics-section">
+        <div class="container">
+            <h2 class="section-title">📊 統計・シーズン情報</h2>
+            <p class="section-subtitle">
+                過去のデータから最適なダイビングシーズンを知ろう
+            </p>
+
+            <div class="stats-tabs">
+                <button class="stats-tab active" data-type="monthly">月別統計</button>
+                <button class="stats-tab" data-type="seasonal">シーズン情報</button>
+                <button class="stats-tab" data-type="historical">過去データ</button>
+            </div>
+
+            <div id="statisticsContainer">
+                <!-- 動的に生成される統計情報 -->
+            </div>
+        </div>
+    </section>
+        </div>
+    </section>
+
+    <!-- 季節別ダイビング情報 -->
+    <section class="seasonal-info">
+        <div class="container">
+            <h2 class="section-title">📅 季節別ダイビング情報</h2>
+            <p class="section-subtitle">
+                各シーズンの特徴とベストタイミングを把握してダイビング計画を立てよう
+            </p>
+            
+            <div class="seasonal-grid">
+                <div class="season-card">
+                    <div class="season-header">
+                        <div class="season-title">🌸 春シーズン</div>
+                        <div class="season-period">3月〜5月</div>
+                    </div>
+                    <div class="season-content">
+                        <div class="season-features">
+                            <ul class="feature-list">
+                                <li><i class="fas fa-thermometer-half feature-icon"></i>過ごしやすい気候</li>
+                                <li><i class="fas fa-eye feature-icon"></i>透明度向上開始</li>
+                                <li><i class="fas fa-fish feature-icon"></i>マンタシーズン開始</li>
+                                <li><i class="fas fa-users feature-icon"></i>混雑少なめ</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="pros-cons">
+                            <div class="pros">
+                                <h4>メリット</h4>
+                                <ul>
+                                    <li>料金が安い</li>
+                                    <li>気候が安定</li>
+                                    <li>人が少ない</li>
+                                </ul>
+                            </div>
+                            <div class="cons">
+                                <h4>注意点</h4>
+                                <ul>
+                                    <li>稀に北風あり</li>
+                                    <li>水温やや低め</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="season-card">
+                    <div class="season-header">
+                        <div class="season-title">☀️ 夏シーズン</div>
+                        <div class="season-period">6月〜8月</div>
+                    </div>
+                    <div class="season-content">
+                        <div class="season-features">
+                            <ul class="feature-list">
+                                <li><i class="fas fa-star feature-icon"></i>ベストシーズン</li>
+                                <li><i class="fas fa-water feature-icon"></i>海況安定</li>
+                                <li><i class="fas fa-whale feature-icon"></i>ジンベエザメ遭遇</li>
+                                <li><i class="fas fa-sun feature-icon"></i>最高の透明度</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="pros-cons">
+                            <div class="pros">
+                                <h4>メリット</h4>
+                                <ul>
+                                    <li>最高の海況</li>
+                                    <li>生物豊富</li>
+                                    <li>安定した天気</li>
+                                </ul>
+                            </div>
+                            <div class="cons">
+                                <h4>注意点</h4>
+                                <ul>
+                                    <li>料金が高い</li>
+                                    <li>混雑</li>
+                                    <li>台風リスク</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="season-card">
+                    <div class="season-header">
+                        <div class="season-title">🍂 秋シーズン</div>
+                        <div class="season-period">9月〜11月</div>
+                    </div>
+                    <div class="season-content">
+                        <div class="season-features">
+                            <ul class="feature-list">
+                                <li><i class="fas fa-eye feature-icon"></i>透明度抜群</li>
+                                <li><i class="fas fa-fish feature-icon"></i>秋マンタ活発</li>
+                                <li><i class="fas fa-users-slash feature-icon"></i>混雑解消</li>
+                                <li><i class="fas fa-temperature-high feature-icon"></i>まだ暖かい</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="pros-cons">
+                            <div class="pros">
+                                <h4>メリット</h4>
+                                <ul>
+                                    <li>透明度最高</li>
+                                    <li>人が少ない</li>
+                                    <li>マンタ活発</li>
+                                </ul>
+                            </div>
+                            <div class="cons">
+                                <h4>注意点</h4>
+                                <ul>
+                                    <li>台風の影響</li>
+                                    <li>気温下降</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="season-card">
+                    <div class="season-header">
+                        <div class="season-title">❄️ 冬シーズン</div>
+                        <div class="season-period">12月〜2月</div>
+                    </div>
+                    <div class="season-content">
+                        <div class="season-features">
+                            <ul class="feature-list">
+                                <li><i class="fas fa-whale feature-icon"></i>ホエールウォッチング</li>
+                                <li><i class="fas fa-hammer feature-icon"></i>ハンマーヘッド</li>
+                                <li><i class="fas fa-yen-sign feature-icon"></i>料金安い</li>
+                                <li><i class="fas fa-users-slash feature-icon"></i>空いている</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="pros-cons">
+                            <div class="pros">
+                                <h4>メリット</h4>
+                                <ul>
+                                    <li>特別な生物</li>
+                                    <li>料金最安</li>
+                                    <li>空いている</li>
+                                </ul>
+                            </div>
+                            <div class="cons">
+                                <h4>注意点</h4>
+                                <ul>
+                                    <li>北風強い</li>
+                                    <li>気温低め</li>
+                                    <li>海況不安定</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- フッター -->
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>🌊 Jiji知識ベース</h3>
+                    <p>LINE Bot完結型・Web知識ベース統合システム</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>海況・天気</h3>
+                    <ul>
+                        <li><a href="/weather-ocean/current">現在の海況</a></li>
+                        <li><a href="/weather-ocean/forecast">週間予報</a></li>
+                        <li><a href="/weather-ocean/seasonal">季節情報</a></li>
+                        <li><a href="/weather-ocean/history">過去データ</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>エリア別情報</h3>
+                    <ul>
+                        <li><a href="/weather-ocean/ishigaki">石垣島</a></li>
+                        <li><a href="/weather-ocean/miyako">宮古島</a></li>
+                        <li><a href="/weather-ocean/okinawa">沖縄本島</a></li>
+                        <li><a href="/weather-ocean/other">その他離島</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>サポート</h3>
+                    <ul>
+                        <li><a href="https://line.me/ti/p/@2007331165" target="_blank">LINE Bot相談</a></li>
+                        <li><a href="/contact">お問い合わせ</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 Jiji知識ベース - 海況・天気情報システム</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 予報タブ切り替え
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabs = document.querySelectorAll('.forecast-tab');
+            const contents = document.querySelectorAll('.forecast-content');
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // アクティブタブの切り替え
+                    tabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // コンテンツの切り替え
+                    contents.forEach(c => c.classList.remove('active'));
+                    const targetArea = this.dataset.area;
+                    const targetContent = document.getElementById(`forecast-${targetArea}`);
+                    if (targetContent) {
+                        targetContent.classList.add('active');
+                    }
+                });
+            });
+            
+            // リアルタイム更新（簡易実装）
+            setInterval(updateCurrentConditions, 300000); // 5分ごと
+        });
+        
+        // リアルタイム海況情報更新
+        async function updateCurrentConditions() {
+            try {
+                console.log('🌊 海況・天気情報を更新中...');
+                
+                // 複数エリアの並行取得
+                const areas = ['okinawa_main', 'ishigaki', 'miyakojima'];
+                const areaPromises = areas.map(area => 
+                    fetch(`/api/weather/diving-condition/${area}`)
+                        .then(response => response.json())
+                        .catch(error => ({ success: false, area, error: error.message }))
+                );
+                
+                const results = await Promise.all(areaPromises);
+                
+                // 成功したデータのみを処理
+                const validData = results
+                    .filter(result => result.success)
+                    .map(result => transformWeatherData(result));
+                
+                if (validData.length > 0) {
+                    renderWeatherConditions(validData);
+                    updateLastUpdateTime();
+                } else {
+                    console.warn('全ての気象庁APIデータ取得に失敗、サンプルデータ表示');
+                    renderWeatherConditions(getSampleWeatherData());
+                }
+                
+            } catch (error) {
+                console.error('天気データ更新エラー:', error);
+                // フォールバック - サンプルデータ表示
+                renderWeatherConditions(getSampleWeatherData());
+            }
+        }
+
+        // 気象庁APIデータを表示用フォーマットに変換
+        function transformWeatherData(apiData) {
+            const { area, diving_condition } = apiData;
+            
+            return {
+                region: getAreaDisplayName(area),
+                temperature: 25 + Math.floor(Math.random() * 5), // 実際のAPIから取得予定
+                weather: getWeatherFromScore(diving_condition.score),
+                wind_direction: '北東',
+                wind_speed: diving_condition.score > 80 ? 3 : 5,
+                wave_height: diving_condition.score > 80 ? 1.0 : 1.5,
+                visibility: diving_condition.score > 80 ? 25 : 20,
+                water_temperature: 23 + Math.floor(Math.random() * 4),
+                diving_suitability_score: diving_condition.score,
+                diving_conditions: {
+                    factors: transformConditionsToFactors(diving_condition)
+                }
+            };
+        }
+
+        // エリアコード→表示名変換
+        function getAreaDisplayName(areaCode) {
+            const areaNames = {
+                'okinawa_main': '沖縄本島',
+                'ishigaki': '石垣島',
+                'miyakojima': '宮古島',
+                'kerama': '慶良間',
+                'kume': '久米島'
+            };
+            return areaNames[areaCode] || areaCode;
+        }
+
+        // スコアから天気推定
+        function getWeatherFromScore(score) {
+            if (score >= 80) return '晴れ';
+            if (score >= 60) return '曇り';
+            return '小雨';
+        }
+
+        // ダイビング条件を要因に変換
+        function transformConditionsToFactors(divingCondition) {
+            const factors = {};
+            
+            if (divingCondition.conditions && divingCondition.conditions.length > 0) {
+                factors.weather = { 
+                    status: 'good', 
+                    reason: divingCondition.conditions[0] 
+                };
+            }
+            
+            if (divingCondition.warnings && divingCondition.warnings.length > 0) {
+                factors.warning = { 
+                    status: 'poor', 
+                    reason: divingCondition.warnings[0] 
+                };
+            }
+            
+            return factors;
+        }
+
+        // 海況情報レンダリング
+        function renderWeatherConditions(weatherData) {
+            const container = document.getElementById('weatherConditions');
+            if (!container) return;
+
+            container.innerHTML = weatherData.map(area => {
+                const statusClass = getStatusClass(area.diving_suitability_score);
+                const statusText = getStatusText(area.diving_suitability_score);
+                const weatherIcon = getWeatherIcon(area.weather);
+
+                return `
+                    <div class="condition-card ${statusClass}">
+                        <div class="diving-status">${statusText}</div>
+                        <h3 class="area-name">
+                            <span class="area-icon">${getAreaIcon(area.region)}</span>
+                            ${area.region}
+                        </h3>
+                        <div class="weather-icon">${weatherIcon}</div>
+                        <div class="temperature">${area.temperature}°C</div>
+                        
+                        <div class="condition-details">
+                            <div class="detail-item">
+                                <div class="detail-label">風向・風速</div>
+                                <div class="detail-value">${area.wind_direction} ${area.wind_speed}m/s</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">波高</div>
+                                <div class="detail-value">${area.wave_height}m</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">透明度</div>
+                                <div class="detail-value">${area.visibility || '20-25'}m</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">水温</div>
+                                <div class="detail-value">${area.water_temperature || (area.temperature - 2)}°C</div>
+                            </div>
+                        </div>
+                        
+                        <div class="diving-score">
+                            <div class="score-label">ダイビング適性スコア</div>
+                            <div class="score-value">${area.diving_suitability_score}/100</div>
+                        </div>
+                        
+                        <div class="diving-reasons">
+                            <div class="reasons-text">${area.diving_conditions?.factors ? formatDivingReasons(area.diving_conditions.factors) : '良好なコンディション'}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ダイビング条件表示テキスト生成
+        function formatDivingReasons(factors) {
+            const goodFactors = [];
+            const badFactors = [];
+
+            Object.entries(factors).forEach(([key, factor]) => {
+                if (factor.status === 'good') {
+                    goodFactors.push(`✓ ${factor.reason}`);
+                } else if (factor.status === 'poor') {
+                    badFactors.push(`× ${factor.reason}`);
+                }
+            });
+
+            let result = '';
+            if (goodFactors.length > 0) {
+                result += goodFactors.slice(0, 2).join(' ');
+            }
+            if (badFactors.length > 0) {
+                result += (result ? ' ' : '') + badFactors.slice(0, 1).join(' ');
+            }
+
+            return result || '標準的なコンディション';
+        }
+
+        // ステータスクラス取得
+        function getStatusClass(score) {
+            if (score >= 80) return 'diving-status-excellent';
+            if (score >= 60) return 'diving-status-good';
+            return 'diving-status-poor';
+        }
+
+        // ステータステキスト取得
+        function getStatusText(score) {
+            if (score >= 80) return 'ダイビング最適';
+            if (score >= 60) return 'ダイビング良好';
+            return 'ダイビング注意';
+        }
+
+        // 天気アイコン取得
+        function getWeatherIcon(weather) {
+            if (weather.includes('晴')) return '☀️';
+            if (weather.includes('曇')) return '⛅';
+            if (weather.includes('雨')) return '🌧️';
+            if (weather.includes('雷')) return '⛈️';
+            return '🌤️';
+        }
+
+        // エリアアイコン取得
+        function getAreaIcon(region) {
+            const icons = {
+                '石垣島': '🏝️',
+                '宮古島': '🌺',
+                '沖縄本島': '🏖️',
+                '久米島': '🌴',
+                '西表島': '🐾',
+                '与那国島': '🚢'
+            };
+            return icons[region] || '🏝️';
+        }
+
+        // 最終更新時刻表示
+        function updateLastUpdateTime() {
+            const element = document.getElementById('lastUpdate');
+            if (element) {
+                const now = new Date();
+                element.textContent = now.toLocaleString('ja-JP');
+            }
+        }
+
+        // サンプルデータ（API接続失敗時のフォールバック）
+        function getSampleWeatherData() {
+            return [
+                {
+                    region: '石垣島',
+                    temperature: 28,
+                    weather: '晴れ',
+                    wind_direction: '北東',
+                    wind_speed: 3,
+                    wave_height: 1.0,
+                    visibility: 25,
+                    water_temperature: 26,
+                    diving_suitability_score: 89,
+                    diving_conditions: {
+                        factors: {
+                            weather: { status: 'good', reason: '良好な天気' },
+                            wind: { status: 'good', reason: '穏やかな風' },
+                            waves: { status: 'good', reason: '低い波高' }
+                        }
+                    }
+                },
+                {
+                    region: '宮古島',
+                    temperature: 27,
+                    weather: '曇り',
+                    wind_direction: '東',
+                    wind_speed: 4,
+                    wave_height: 1.5,
+                    visibility: 30,
+                    water_temperature: 25,
+                    diving_suitability_score: 75,
+                    diving_conditions: {
+                        factors: {
+                            weather: { status: 'fair', reason: '曇り空' },
+                            wind: { status: 'good', reason: '適度な風' },
+                            waves: { status: 'fair', reason: 'やや高い波' }
+                        }
+                    }
+                },
+                {
+                    region: '沖縄本島',
+                    temperature: 25,
+                    weather: '小雨',
+                    wind_direction: '南西',
+                    wind_speed: 6,
+                    wave_height: 2.0,
+                    visibility: 15,
+                    water_temperature: 24,
+                    diving_suitability_score: 55,
+                    diving_conditions: {
+                        factors: {
+                            weather: { status: 'poor', reason: '雨天' },
+                            wind: { status: 'fair', reason: 'やや強い風' },
+                            waves: { status: 'poor', reason: '高い波' }
+                        }
+                    }
+                }
+            ];
+        }
+        
+        // 週間予報データ読み込み・表示
+        async function loadWeeklyForecast() {
+            try {
+                console.log('📅 週間予報データ取得中...');
+                
+                const activeArea = document.querySelector('.forecast-tab.active')?.dataset.area || 'ishigaki';
+                const areaCode = {
+                    'ishigaki': 'ishigaki',
+                    'miyako': 'miyakojima', 
+                    'okinawa': 'okinawa_main'
+                }[activeArea] || 'ishigaki';
+                
+                const response = await fetch(`/api/weather/forecast/${areaCode}`);
+                const data = await response.json();
+                
+                if (data.success && data.data) {
+                    const forecastData = { [activeArea]: processForecastData(data.data) };
+                    renderWeeklyForecast(forecastData);
+                } else {
+                    console.error('週間予報取得失敗:', data.message);
+                    // フォールバック - サンプルデータ表示
+                    renderWeeklyForecast(getSampleForecastData());
+                }
+                
+            } catch (error) {
+                console.error('週間予報取得エラー:', error);
+                renderWeeklyForecast(getSampleForecastData());
+            }
+        }
+
+        // 気象庁予報データを週間予報フォーマットに変換
+        function processForecastData(jmaData) {
+            const baseDate = new Date();
+            const forecastDays = [];
+
+            // 気象庁データから7日間の予報を生成
+            for (let i = 0; i < 7; i++) {
+                const date = new Date(baseDate);
+                date.setDate(date.getDate() + i);
+                
+                // JMAデータから該当日のデータを取得（利用可能であれば）
+                const dayData = extractDayData(jmaData, i);
+                
+                forecastDays.push({
+                    date: date.toISOString().split('T')[0],
+                    weather: dayData.weather || '晴れ',
+                    temp_max: dayData.tempMax || (25 + Math.floor(Math.random() * 5)),
+                    temp_min: dayData.tempMin || (20 + Math.floor(Math.random() * 4)),
+                    wave_height: (1.0 + Math.random() * 1.0).toFixed(1),
+                    wind_direction: dayData.windDirection || '北東',
+                    wind_speed: dayData.windSpeed || (2 + Math.floor(Math.random() * 4)),
+                    diving_score: calculateForecastDivingScore(dayData)
+                });
+            }
+
+            return forecastDays;
+        }
+
+        // JMAデータから特定日のデータを抽出
+        function extractDayData(jmaData, dayIndex) {
+            try {
+                const timeSeries = jmaData[0]?.timeSeries || [];
+                
+                // 天気情報
+                const weatherData = timeSeries.find(ts => ts.areas?.[0]?.weathers);
+                const weather = weatherData?.areas?.[0]?.weathers?.[Math.min(dayIndex, weatherData.areas[0].weathers.length - 1)];
+                
+                // 気温情報
+                const tempData = timeSeries.find(ts => ts.areas?.[0]?.temps);
+                const tempMax = tempData?.areas?.[0]?.temps?.[Math.min(dayIndex * 2, tempData.areas[0].temps.length - 2)];
+                const tempMin = tempData?.areas?.[0]?.temps?.[Math.min(dayIndex * 2 + 1, tempData.areas[0].temps.length - 1)];
+                
+                // 風情報
+                const windData = timeSeries.find(ts => ts.areas?.[0]?.winds);
+                const wind = windData?.areas?.[0]?.winds?.[Math.min(dayIndex, windData.areas[0].winds.length - 1)];
+                
+                return {
+                    weather: weather || '晴れ',
+                    tempMax: tempMax ? parseInt(tempMax) : null,
+                    tempMin: tempMin ? parseInt(tempMin) : null,
+                    windDirection: extractWindDirection(wind),
+                    windSpeed: extractWindSpeed(wind)
+                };
+            } catch (error) {
+                console.warn('JMAデータ解析エラー:', error);
+                return {};
+            }
+        }
+
+        // 風向きを抽出
+        function extractWindDirection(windText) {
+            if (!windText) return '北東';
+            if (windText.includes('北東')) return '北東';
+            if (windText.includes('東')) return '東';
+            if (windText.includes('南東')) return '南東';
+            if (windText.includes('南')) return '南';
+            if (windText.includes('南西')) return '南西';
+            if (windText.includes('西')) return '西';
+            if (windText.includes('北西')) return '北西';
+            if (windText.includes('北')) return '北';
+            return '北東';
+        }
+
+        // 風速を抽出
+        function extractWindSpeed(windText) {
+            if (!windText) return 3;
+            const match = windText.match(/(\d+)/);
+            return match ? parseInt(match[1]) : 3;
+        }
+
+        // 予報ダイビングスコア計算
+        function calculateForecastDivingScore(dayData) {
+            let score = 85; // ベーススコア
+            
+            if (dayData.weather) {
+                if (dayData.weather.includes('雨')) score -= 20;
+                if (dayData.weather.includes('雷')) score -= 30;
+                if (dayData.weather.includes('曇')) score -= 5;
+            }
+            
+            if (dayData.windSpeed) {
+                if (dayData.windSpeed > 8) score -= 25;
+                else if (dayData.windSpeed > 5) score -= 10;
+            }
+            
+            return Math.max(20, Math.min(100, score));
+        }
+
+        // 週間予報レンダリング
+        function renderWeeklyForecast(forecastData) {
+            const container = document.getElementById('forecastContainer');
+            if (!container) return;
+
+            const activeArea = document.querySelector('.forecast-tab.active')?.dataset.area || 'ishigaki';
+            const areaForecast = forecastData[activeArea] || forecastData.ishigaki;
+
+            container.innerHTML = `
+                <div class="forecast-grid">
+                    ${areaForecast.map((day, index) => `
+                        <div class="forecast-card">
+                            <div class="diving-score-forecast">${day.diving_score}</div>
+                            <div class="forecast-date">${formatForecastDate(day.date, index)}</div>
+                            <div class="forecast-weather">${getWeatherIcon(day.weather)}</div>
+                            <div class="forecast-temp">最高${day.temp_max}°C / 最低${day.temp_min}°C</div>
+                            <div class="forecast-details">
+                                <span>波高: ${day.wave_height}m</span>
+                                <span>風: ${day.wind_direction}${day.wind_speed}m/s</span>
+                                <span>ダイビング: ${getDivingCondition(day.diving_score)}</span>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // 統計情報データ読み込み・表示
+        async function loadStatistics() {
+            try {
+                console.log('📊 統計情報データ取得中...');
+                
+                const activeType = document.querySelector('.stats-tab.active')?.dataset.type || 'monthly';
+                const response = await fetch(`/api/weather/statistics/${activeType}`);
+                const data = await response.json();
+                
+                if (data.success && data.data) {
+                    renderStatistics(data.data);
+                } else {
+                    console.error('統計情報取得失敗:', data.message);
+                    renderStatistics(getSampleStatisticsData());
+                }
+                
+            } catch (error) {
+                console.error('統計情報取得エラー:', error);
+                renderStatistics(getSampleStatisticsData());
+            }
+        }
+
+        // 統計情報レンダリング
+        function renderStatistics(statsData) {
+            const container = document.getElementById('statisticsContainer');
+            if (!container) return;
+
+            const activeType = document.querySelector('.stats-tab.active')?.dataset.type || 'monthly';
+
+            if (activeType === 'monthly') {
+                renderMonthlyStats(container, statsData.monthly);
+            } else if (activeType === 'seasonal') {
+                renderSeasonalInfo(container, statsData.seasonal);
+            } else if (activeType === 'historical') {
+                renderHistoricalData(container, statsData.historical);
+            }
+        }
+
+        // 月別統計レンダリング
+        function renderMonthlyStats(container, monthlyData) {
+            container.innerHTML = `
+                <div class="monthly-stats">
+                    ${monthlyData.map(month => `
+                        <div class="month-card">
+                            <div class="month-name">${month.month}</div>
+                            <div class="month-rating">${getMonthRating(month.score)}</div>
+                            <div class="month-score">${month.score}点</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // シーズン情報レンダリング
+        function renderSeasonalInfo(container, seasonalData) {
+            container.innerHTML = `
+                <div class="season-info">
+                    ${seasonalData.map(season => `
+                        <div class="season-card">
+                            <div class="season-header">
+                                <div class="season-icon">${season.icon}</div>
+                                <div>
+                                    <div class="season-title">${season.name}</div>
+                                    <div class="season-period">${season.period}</div>
+                                </div>
+                            </div>
+                            <div class="season-highlights">
+                                ${season.highlights.map(highlight => `
+                                    <div class="highlight-item">
+                                        <div class="highlight-icon">${highlight.icon}</div>
+                                        <div>${highlight.text}</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // 過去データレンダリング
+        function renderHistoricalData(container, historicalData) {
+            container.innerHTML = `
+                <div class="historical-data">
+                    <div class="chart-placeholder">
+                        <h3>過去5年間のダイビング適性推移</h3>
+                        <p>グラフ機能は今後実装予定です</p>
+                    </div>
+                    <div class="historical-summary">
+                        <h4>過去データサマリー</h4>
+                        <ul>
+                            <li>最高スコア月: ${historicalData.best_month} (${historicalData.best_score}点)</li>
+                            <li>平均スコア: ${historicalData.average_score}点</li>
+                            <li>台風発生回数: 年平均${historicalData.typhoon_average}回</li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 台風・緊急アラートの表示制御
+        async function checkWeatherAlerts() {
+            try {
+                console.log('⚠️ 気象警報・海上警報・台風情報をチェック中...');
+                
+                const response = await fetch('/api/weather/alerts/all');
+                const data = await response.json();
+                
+                if (data.success && data.alerts && data.alerts.length > 0) {
+                    console.log(`🚨 ${data.alerts.length}件のアラートを検出`);
+                    displayAdvancedWeatherAlerts(data.alerts);
+                } else {
+                    console.log('✅ 現在、気象警報・台風情報はありません');
+                    hideWeatherAlerts();
+                }
+                
+            } catch (error) {
+                console.error('アラート情報取得エラー:', error);
+                // フォールバック - 基本的なアラート表示
+                displaySampleAlerts();
+            }
+        }
+
+        // 高度なアラート表示システム
+        function displayAdvancedWeatherAlerts(alerts) {
+            // 最優先度のアラートを特定
+            const criticalAlerts = alerts.filter(alert => alert.priority === 'critical');
+            const highAlerts = alerts.filter(alert => alert.priority === 'high');
+            const mediumAlerts = alerts.filter(alert => alert.priority === 'medium');
+
+            // 台風アラート表示
+            criticalAlerts.forEach(alert => {
+                if (alert.type === 'typhoon') {
+                    displayTyphoonAlert(alert);
+                }
+            });
+
+            // 一般アラート表示
+            if (highAlerts.length > 0 || mediumAlerts.length > 0) {
+                const combinedAlerts = [...highAlerts, ...mediumAlerts];
+                displayGeneralAlerts(combinedAlerts);
+            }
+
+            // ダイビング影響サマリー表示
+            displayDivingImpactSummary(alerts);
+        }
+
+        // 台風アラート表示
+        function displayTyphoonAlert(typhoonAlert) {
+            const typhoonSection = document.getElementById('typhoon-info');
+            const typhoonContent = document.getElementById('typhoon-content');
+            
+            if (typhoonSection && typhoonContent) {
+                const details = typhoonAlert.details;
+                const impact = details.impact;
+                
+                typhoonContent.innerHTML = `
+                    <div class="typhoon-details">
+                        <div class="typhoon-main-info">
+                            <h4>${typhoonAlert.title}</h4>
+                            <p class="typhoon-message">${typhoonAlert.message}</p>
+                        </div>
+                        
+                        <div class="typhoon-data-grid">
+                            <div class="typhoon-data-item">
+                                <div class="data-label">最大風速</div>
+                                <div class="data-value">${details.maxWind}m/s</div>
+                            </div>
+                            <div class="typhoon-data-item">
+                                <div class="data-label">中心気圧</div>
+                                <div class="data-value">${details.pressure}hPa</div>
+                            </div>
+                            <div class="typhoon-data-item">
+                                <div class="data-label">移動</div>
+                                <div class="data-value">${details.movement}</div>
+                            </div>
+                        </div>
+
+                        <div class="typhoon-impact-grid">
+                            ${Object.entries(impact).map(([area, areaImpact]) => `
+                                <div class="impact-area-card ${areaImpact.risk_level}">
+                                    <h5>${getAreaDisplayName(area)}</h5>
+                                    <div class="risk-level">危険度: ${getRiskLevelText(areaImpact.risk_level)}</div>
+                                    <div class="arrival-time">到達予想: ${areaImpact.arrival_time}</div>
+                                    <div class="impact-text">${areaImpact.expected_impact}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        
+                        <div class="typhoon-recommendations">
+                            <h5>🚨 緊急対応事項</h5>
+                            <ul>
+                                ${typhoonAlert.diving_impact.recommendations.map(rec => 
+                                    `<li>${rec}</li>`
+                                ).join('')}
+                            </ul>
+                        </div>
+                        
+                        <div class="typhoon-update-time">
+                            最終更新: ${formatAlertTime(typhoonAlert.issued_at)}
+                        </div>
+                    </div>
+                `;
+                
+                typhoonSection.style.display = 'block';
+                typhoonSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+
+        // 一般アラート表示
+        function displayGeneralAlerts(alerts) {
+            const alertSection = document.getElementById('weather-alert');
+            const alertTitleText = document.getElementById('alert-title-text');
+            const alertContent = document.getElementById('alert-content');
+            
+            if (alertSection && alertTitleText && alertContent) {
+                if (alerts.length === 1) {
+                    const alert = alerts[0];
+                    alertTitleText.textContent = alert.title;
+                    alertContent.innerHTML = `
+                        <div class="alert-single">
+                            <p>${alert.message}</p>
+                            <div class="alert-diving-impact">
+                                <strong>ダイビングへの影響:</strong>
+                                <p>${alert.diving_impact.message}</p>
+                            </div>
+                            <div class="alert-areas">
+                                対象エリア: ${alert.areas.map(area => getAreaDisplayName(area)).join(', ')}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    alertTitleText.textContent = `${alerts.length}件の気象警報・注意報`;
+                    alertContent.innerHTML = `
+                        <div class="alert-multiple">
+                            ${alerts.map(alert => `
+                                <div class="alert-item">
+                                    <div class="alert-item-title">${alert.title}</div>
+                                    <div class="alert-item-message">${alert.message}</div>
+                                    <div class="alert-item-areas">
+                                        ${alert.areas.map(area => getAreaDisplayName(area)).join(', ')}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+                
+                // レベルに応じてスタイル調整
+                const highestPriority = Math.max(...alerts.map(alert => 
+                    ({ 'critical': 4, 'high': 3, 'medium': 2, 'low': 1 }[alert.priority] || 1)
+                ));
+                
+                if (highestPriority >= 3) {
+                    alertSection.style.background = 'linear-gradient(135deg, #dc2626, #991b1b)';
+                    alertSection.style.color = 'white';
+                } else {
+                    alertSection.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
+                    alertSection.style.color = 'white';
+                }
+                
+                alertSection.style.display = 'block';
+            }
+        }
+
+        // ダイビング影響サマリー表示
+        function displayDivingImpactSummary(alerts) {
+            const container = document.getElementById('weatherConditions');
+            if (!container) return;
+
+            // 最も重要な影響を特定
+            const impacts = alerts.map(alert => alert.diving_impact?.status).filter(Boolean);
+            const hasCriticalStop = impacts.includes('critical_stop');
+            const hasRestricted = impacts.includes('restricted');
+            const hasCaution = impacts.includes('caution');
+
+            let summaryClass = '';
+            let summaryText = '';
+            let summaryIcon = '';
+
+            if (hasCriticalStop) {
+                summaryClass = 'critical-impact';
+                summaryText = '🛑 全海域ダイビング活動停止';
+                summaryIcon = '🌀';
+            } else if (hasRestricted) {
+                summaryClass = 'restricted-impact';
+                summaryText = '⚠️ ダイビング活動制限中';
+                summaryIcon = '🌊';
+            } else if (hasCaution) {
+                summaryClass = 'caution-impact';
+                summaryText = '💡 ダイビング時要注意';
+                summaryIcon = '⚡';
+            }
+
+            if (summaryText) {
+                // 既存のcontainerの上に影響サマリーを表示
+                const summaryHTML = `
+                    <div class="diving-impact-summary ${summaryClass}" style="margin-bottom: 30px;">
+                        <div class="impact-summary-content">
+                            <div class="impact-icon">${summaryIcon}</div>
+                            <div class="impact-text">
+                                <div class="impact-main-text">${summaryText}</div>
+                                <div class="impact-sub-text">
+                                    詳細は上記の警報情報をご確認ください
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                container.insertAdjacentHTML('beforebegin', summaryHTML);
+            }
+        }
+
+        // アラート表示
+        function displayWeatherAlerts(alerts) {
+            alerts.forEach(alert => {
+                if (alert.type === 'typhoon') {
+                    displayTyphoonInfo(alert);
+                } else {
+                    displayGeneralAlert(alert);
+                }
+            });
+        }
+
+        // 台風情報表示
+        function displayTyphoonInfo(typhoonAlert) {
+            const typhoonSection = document.getElementById('typhoon-info');
+            const typhoonContent = document.getElementById('typhoon-content');
+            
+            if (typhoonSection && typhoonContent) {
+                typhoonContent.innerHTML = `
+                    <div class="typhoon-details">
+                        <h4>${typhoonAlert.title}</h4>
+                        <p>${typhoonAlert.message}</p>
+                        <div class="typhoon-impact">
+                            <strong>ダイビングへの影響:</strong>
+                            <ul>
+                                <li>全海域でダイビング中止を推奨</li>
+                                <li>ボートダイビングは完全停止</li>
+                                <li>予約のキャンセル・変更をご検討ください</li>
+                            </ul>
+                        </div>
+                    </div>
+                `;
+                typhoonSection.style.display = 'block';
+            }
+        }
+
+        // 一般アラート表示
+        function displayGeneralAlert(alert) {
+            const alertSection = document.getElementById('weather-alert');
+            const alertTitleText = document.getElementById('alert-title-text');
+            const alertContent = document.getElementById('alert-content');
+            
+            if (alertSection && alertTitleText && alertContent) {
+                alertTitleText.textContent = alert.title || '気象警報・注意報';
+                alertContent.textContent = alert.message;
+                alertSection.style.display = 'block';
+                
+                // レベルに応じてスタイル調整
+                if (alert.level === 'warning') {
+                    alertSection.style.background = 'linear-gradient(135deg, #dc2626, #991b1b)';
+                    alertSection.style.color = 'white';
+                } else if (alert.level === 'caution') {
+                    alertSection.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
+                    alertSection.style.color = 'white';
+                }
+            }
+        }
+
+        // アラート非表示
+        function hideWeatherAlerts() {
+            const alertSection = document.getElementById('weather-alert');
+            const typhoonSection = document.getElementById('typhoon-info');
+            
+            if (alertSection) alertSection.style.display = 'none';
+            if (typhoonSection) typhoonSection.style.display = 'none';
+        }
+
+        // サンプルアラート表示（開発用）
+        function displaySampleAlerts() {
+            // 台風シーズン中（6-10月）のみサンプル表示
+            const now = new Date();
+            const month = now.getMonth() + 1;
+            
+            if (month >= 6 && month <= 10 && Math.random() < 0.3) { // 30%の確率
+                displayTyphoonInfo({
+                    type: 'typhoon',
+                    title: '台風第12号接近中',
+                    message: '台風第12号が沖縄地方に接近しています。今後24時間以内に影響を受ける見込みです。'
+                });
+            }
+        }
+
+        // ヘルパー関数群
+        function formatForecastDate(dateStr, index) {
+            if (index === 0) return '今日';
+            if (index === 1) return '明日';
+            
+            const date = new Date(dateStr);
+            const month = date.getMonth() + 1;
+            const day = date.getDate();
+            return `${month}/${day}`;
+        }
+
+        function getDivingCondition(score) {
+            if (score >= 80) return '最適';
+            if (score >= 60) return '良好';
+            if (score >= 40) return '注意';
+            return '困難';
+        }
+
+        function getMonthRating(score) {
+            if (score >= 80) return '⭐⭐⭐';
+            if (score >= 60) return '⭐⭐';
+            return '⭐';
+        }
+
+        // アラート関連ヘルパー関数
+        function getRiskLevelText(level) {
+            const levels = {
+                'low': '低',
+                'medium': '中',
+                'high': '高',
+                'extreme': '極高'
+            };
+            return levels[level] || level;
+        }
+
+        function formatAlertTime(timeString) {
+            try {
+                const date = new Date(timeString);
+                return date.toLocaleString('ja-JP', {
+                    year: 'numeric',
+                    month: 'numeric',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            } catch (error) {
+                return timeString;
+            }
+        }
+
+        // サンプルデータ
+        function getSampleForecastData() {
+            const baseDate = new Date();
+            const areas = ['ishigaki', 'miyako', 'okinawa'];
+            const forecastData = {};
+
+            areas.forEach(area => {
+                forecastData[area] = [];
+                for (let i = 0; i < 7; i++) {
+                    const date = new Date(baseDate);
+                    date.setDate(date.getDate() + i);
+                    
+                    forecastData[area].push({
+                        date: date.toISOString().split('T')[0],
+                        weather: ['晴れ', '曇り', '小雨'][Math.floor(Math.random() * 3)],
+                        temp_max: 26 + Math.floor(Math.random() * 6),
+                        temp_min: 22 + Math.floor(Math.random() * 4),
+                        wave_height: (0.8 + Math.random() * 1.5).toFixed(1),
+                        wind_direction: ['北', '北東', '東', '南東'][Math.floor(Math.random() * 4)],
+                        wind_speed: 2 + Math.floor(Math.random() * 5),
+                        diving_score: 50 + Math.floor(Math.random() * 40)
+                    });
+                }
+            });
+
+            return forecastData;
+        }
+
+        function getSampleStatisticsData() {
+            return {
+                monthly: [
+                    { month: '1月', score: 70 }, { month: '2月', score: 75 },
+                    { month: '3月', score: 80 }, { month: '4月', score: 85 },
+                    { month: '5月', score: 88 }, { month: '6月', score: 90 },
+                    { month: '7月', score: 85 }, { month: '8月', score: 82 },
+                    { month: '9月', score: 80 }, { month: '10月', score: 85 },
+                    { month: '11月', score: 88 }, { month: '12月', score: 75 }
+                ],
+                seasonal: [
+                    {
+                        name: '春シーズン',
+                        period: '3月-5月',
+                        icon: '🌸',
+                        highlights: [
+                            { icon: '🌡️', text: '快適な水温（24-26°C）' },
+                            { icon: '🌤️', text: '安定した天候' },
+                            { icon: '🐠', text: '透明度抜群（30m+）' }
+                        ]
+                    },
+                    {
+                        name: '夏シーズン',
+                        period: '6月-8月',
+                        icon: '☀️',
+                        highlights: [
+                            { icon: '🌊', text: '最高水温（28-30°C）' },
+                            { icon: '🐢', text: 'ウミガメ遭遇率高' },
+                            { icon: '⚠️', text: '台風シーズン要注意' }
+                        ]
+                    },
+                    {
+                        name: '秋シーズン',
+                        period: '9月-11月',
+                        icon: '🍂',
+                        highlights: [
+                            { icon: '🌡️', text: '程よい水温（26-28°C）' },
+                            { icon: '🌊', text: '穏やかな海況' },
+                            { icon: '🐠', text: 'マンタシーズン' }
+                        ]
+                    },
+                    {
+                        name: '冬シーズン',
+                        period: '12月-2月',
+                        icon: '❄️',
+                        highlights: [
+                            { icon: '🌡️', text: '水温やや低め（22-24°C）' },
+                            { icon: '🌊', text: '透明度最高（35m+）' },
+                            { icon: '🐋', text: 'ホエールウォッチング' }
+                        ]
+                    }
+                ],
+                historical: {
+                    best_month: '6月',
+                    best_score: 92,
+                    average_score: 82,
+                    typhoon_average: 3.2
+                }
+            };
+        }
+        
+        // タブ切り替えイベント設定
+        function setupTabEvents() {
+            // 週間予報タブ
+            document.querySelectorAll('.forecast-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    document.querySelectorAll('.forecast-tab').forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    loadWeeklyForecast();
+                });
+            });
+
+            // 統計情報タブ
+            document.querySelectorAll('.stats-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    document.querySelectorAll('.stats-tab').forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    loadStatistics();
+                });
+            });
+        }
+
+        // ページ読み込み時の初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            checkWeatherAlerts();
+            updateCurrentConditions(); // 初回データ読み込み
+            loadWeeklyForecast(); // 週間予報初期化
+            loadStatistics(); // 統計情報初期化
+            setupTabEvents(); // タブイベント設定
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dive Buddy's UI コンセプト壁打ち分析</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Hiragino Sans', 'Yu Gothic', sans-serif;
+            background: #f8fafb;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #77C9D4 0%, #A2DED0 100%);
+            color: white;
+            padding: 40px 20px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(119, 201, 212, 0.3);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .analysis-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .analysis-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            border-left: 4px solid #77C9D4;
+        }
+
+        .section-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-icon {
+            font-size: 1.8rem;
+            color: #77C9D4;
+        }
+
+        .decision-item {
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+
+        .decision-title {
+            font-weight: 600;
+            color: #0c4a6e;
+            margin-bottom: 8px;
+        }
+
+        .decision-content {
+            color: #374151;
+            font-size: 0.95rem;
+        }
+
+        .gap-comparison {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 30px 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        .comparison-item {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 10px;
+            background: #fafbfc;
+        }
+
+        .current-ui {
+            background: #fef2f2;
+            border-left: 4px solid #ef4444;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .decided-ui {
+            background: #ecfdf5;
+            border-left: 4px solid #10b981;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .label {
+            font-weight: 700;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .current-label {
+            color: #dc2626;
+        }
+
+        .decided-label {
+            color: #059669;
+        }
+
+        .content-text {
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .priority-high {
+            border-left: 4px solid #ef4444;
+            background: #fef2f2;
+        }
+
+        .priority-medium {
+            border-left: 4px solid #f59e0b;
+            background: #fef3c7;
+        }
+
+        .priority-low {
+            border-left: 4px solid #10b981;
+            background: #ecfdf5;
+        }
+
+        .strategy-box {
+            background: #e0f2fe;
+            border: 2px solid #77C9D4;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .strategy-title {
+            font-weight: 700;
+            color: #0c4a6e;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .persona-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+
+        .persona-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .persona-title {
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .persona-desc {
+            font-size: 0.9rem;
+            color: #6b7280;
+        }
+
+        .action-list {
+            list-style: none;
+            margin: 15px 0;
+        }
+
+        .action-item {
+            display: flex;
+            align-items: center;
+            margin: 8px 0;
+            padding: 8px 0;
+        }
+
+        .action-item::before {
+            content: '📝';
+            margin-right: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .analysis-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .comparison-item {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎨 Dive Buddy's UIコンセプト分析</h1>
+            <p>デザイナー壁打ちで決定した重要事項と既存UIとのズレ分析</p>
+        </div>
+
+        <!-- 重要な決定事項 -->
+        <div class="analysis-grid">
+            <!-- ブランドアイデンティティ -->
+            <div class="analysis-section">
+                <div class="section-title">
+                    <span class="section-icon">🤝</span>
+                    ブランドアイデンティティ
+                </div>
+                
+                <div class="decision-item">
+                    <div class="decision-title">「バディ」の定義</div>
+                    <div class="decision-content">
+                        相棒的役割。ダイビング仲間、信頼できるインストラクター、なんでも相談できる相手。
+                        タメ口ではなく自然なやりとり。
+                    </div>
+                </div>
+
+                <div class="decision-item">
+                    <div class="decision-title">サービスの本質</div>
+                    <div class="decision-content">
+                        <strong>コンシェルジュサービス</strong><br>
+                        「探しに行く」→「紹介してもらう」へのパラダイムシフト
+                    </div>
+                </div>
+
+                <div class="decision-item">
+                    <div class="decision-title">差別化ポイント</div>
+                    <div class="decision-content">
+                        「自分の意見や要望を伝えられるサービス」<br>
+                        文字ベースの要望 → AIマッチング → 最適提案
+                    </div>
+                </div>
+            </div>
+
+            <!-- ターゲット戦略 -->
+            <div class="analysis-section">
+                <div class="section-title">
+                    <span class="section-icon">🎯</span>
+                    ターゲット戦略
+                </div>
+                
+                <div class="decision-item">
+                    <div class="decision-title">メインターゲット</div>
+                    <div class="decision-content">
+                        <strong>20代後半〜30代前半女性</strong><br>
+                        沖縄ダイビング初心者・経験浅い層
+                    </div>
+                </div>
+
+                <div class="decision-item">
+                    <div class="decision-title">事業戦略</div>
+                    <div class="decision-content">
+                        <strong>B案：幅広いユーザー獲得</strong><br>
+                        ショップ広告収入モデルのため、アクティブユーザー数が重要
+                    </div>
+                </div>
+
+                <div class="decision-item">
+                    <div class="decision-title">成功指標</div>
+                    <div class="decision-content">
+                        短期：満足度・使いやすさ<br>
+                        長期：リピート利用率
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 感情的価値・体験設計 -->
+        <div class="analysis-grid">
+            <div class="analysis-section">
+                <div class="section-title">
+                    <span class="section-icon">💕</span>
+                    感情的価値・体験設計
+                </div>
+                
+                <div class="decision-item">
+                    <div class="decision-title">核心的価値</div>
+                    <div class="decision-content">
+                        <strong>「沖縄の海で輝く私」</strong><br>
+                        沖縄ブランドの海で潜る自分への憧れ
+                    </div>
+                </div>
+
+                <div class="decision-item">
+                    <div class="decision-title">感情変化の設計</div>
+                    <div class="decision-content">
+                        <strong>不安 → ワクワク → もっと知りたい</strong><br>
+                        楽しみに変わる瞬間：全予約完了時、行きたい離島発見時
+                    </div>
+                </div>
+
+                <div class="decision-item">
+                    <div class="decision-title">ユーザーニーズ</div>
+                    <div class="decision-content">
+                        普段と違う経験をしたい、透明度の高い海、沖縄ブランドの海で潜る自分に酔いたい
+                    </div>
+                </div>
+            </div>
+
+            <!-- 動線・機能設計 -->
+            <div class="analysis-section">
+                <div class="section-title">
+                    <span class="section-icon">🛤️</span>
+                    動線・機能設計
+                </div>
+                
+                <div class="decision-item">
+                    <div class="decision-title">Web vs LINE の役割</div>
+                    <div class="decision-content">
+                        <strong>Web</strong>：情報閲覧（受動的）<br>
+                        <strong>LINE</strong>：マッチング・相談（能動的）
+                    </div>
+                </div>
+
+                <div class="decision-item">
+                    <div class="decision-title">理想の動線</div>
+                    <div class="decision-content">
+                        サイト訪問 → サービス本質説明 → 信頼獲得 → LINE登録 → アンケート → 本格マッチング
+                    </div>
+                </div>
+
+                <div class="decision-item">
+                    <div class="decision-title">LINE登録のタイミング</div>
+                    <div class="decision-content">
+                        サービス概要を見て、情報を見て信頼できると感じたら「相談したい」と思うタイミング
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 確定UI要素 -->
+        <div class="strategy-box">
+            <div class="strategy-title">🎨 確定UI要素</div>
+            <div class="persona-grid">
+                <div class="persona-card">
+                    <div class="persona-title">メインキャッチコピー</div>
+                    <div class="persona-desc">「沖縄の海で、新しい自分に出会う」</div>
+                </div>
+                <div class="persona-card">
+                    <div class="persona-title">サービス説明</div>
+                    <div class="persona-desc">「初心者から上級者まで、安心のマッチングサービス」</div>
+                </div>
+                <div class="persona-card">
+                    <div class="persona-title">CTAボタン</div>
+                    <div class="persona-desc">「Jijiに相談してみる」</div>
+                </div>
+                <div class="persona-card">
+                    <div class="persona-title">メイン写真</div>
+                    <div class="persona-desc">沖縄の海+風景 or 海中写真</div>
+                </div>
+                <div class="persona-card">
+                    <div class="persona-title">店舗数表記</div>
+                    <div class="persona-desc">具体数は避ける（沖縄全域対応に変更）</div>
+                </div>
+                <div class="persona-card">
+                    <div class="persona-title">差別化表現</div>
+                    <div class="persona-desc">キャッチコピー + 店舗紹介サービスをわかりやすく</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 既存UIとのズレ分析 -->
+        <div class="gap-comparison">
+            <div class="section-title">
+                <span class="section-icon">⚠️</span>
+                既存UIとのズレ分析
+            </div>
+
+            <div class="comparison-item priority-high">
+                <div class="current-ui">
+                    <div class="label current-label">現在のキャッチコピー</div>
+                    <div class="content-text">「『どうしよう...』が『楽しみ！』に変わる瞬間」</div>
+                </div>
+                <div class="decided-ui">
+                    <div class="label decided-label">決定したキャッチコピー</div>
+                    <div class="content-text">「沖縄の海で、新しい自分に出会う」</div>
+                </div>
+            </div>
+
+            <div class="comparison-item priority-high">
+                <div class="current-ui">
+                    <div class="label current-label">現在のサービス説明</div>
+                    <div class="content-text">「AIチャットで気軽に相談。AIチャット（Jiji）があなたの希望を聞いて、ベストなショップをマッチング！初めての沖縄ダイビングも、もう一人で悩まなくて大丈夫。」</div>
+                </div>
+                <div class="decided-ui">
+                    <div class="label decided-label">決定したサービス説明</div>
+                    <div class="content-text">「初心者から上級者まで、安心のマッチングサービス」</div>
+                </div>
+            </div>
+
+            <div class="comparison-item priority-medium">
+                <div class="current-ui">
+                    <div class="label current-label">現在のCTAボタン</div>
+                    <div class="content-text">「公式LINE（AIチャット）に登録」</div>
+                </div>
+                <div class="decided-ui">
+                    <div class="label decided-label">決定したCTAボタン</div>
+                    <div class="content-text">「Jijiに相談してみる」</div>
+                </div>
+            </div>
+
+            <div class="comparison-item priority-medium">
+                <div class="current-ui">
+                    <div class="label current-label">現在の店舗数表記</div>
+                    <div class="content-text">「79店舗から最適なショップを検索」</div>
+                </div>
+                <div class="decided-ui">
+                    <div class="label decided-label">決定した表記</div>
+                    <div class="content-text">「沖縄全域対応」「各離島網羅」など具体数を避ける</div>
+                </div>
+            </div>
+
+            <div class="comparison-item priority-low">
+                <div class="current-ui">
+                    <div class="label current-label">現在のトーン</div>
+                    <div class="content-text">機能説明中心、技術的な表現（AI、マッチング等の強調）</div>
+                </div>
+                <div class="decided-ui">
+                    <div class="label decided-label">決定したトーン</div>
+                    <div class="content-text">感情的価値重視、安心感重視、憧れ・期待感の演出</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 次のアクション -->
+        <div class="strategy-box">
+            <div class="strategy-title">📝 次のアクション（優先順位順）</div>
+            <ul class="action-list">
+                <li class="action-item">メインキャッチコピーの変更：「沖縄の海で、新しい自分に出会う」</li>
+                <li class="action-item">サービス説明の簡素化：「初心者から上級者まで、安心のマッチングサービス」</li>
+                <li class="action-item">CTAボタンの親しみやすさ向上：「Jijiに相談してみる」</li>
+                <li class="action-item">店舗数表記の修正：「79店舗」→「沖縄全域対応」</li>
+                <li class="action-item">全体トーンの調整：機能的価値→感情的価値・安心感重視</li>
+                <li class="action-item">メイン画像の検討：沖縄の海（風景・海中）で憧れ感演出</li>
+                <li class="action-item">情報コンテンツの見直し：信頼獲得のためのコンテンツ充実</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Dive Buddy\'s UIコンセプト分析初期化完了');
+        });
+    </script>
+</body>
+</html>

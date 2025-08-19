@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>口コミ投稿 | Dive Buddy's - ダイビング情報</title>
+    <meta name="description" content="ダイビングショップの口コミを投稿して、他のダイバーと体験を共有しましょう。">
+    
+    <link rel="stylesheet" href="/app/v28-styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        .review-page {
+            background: #f8f9ff;
+            min-height: 100vh;
+        }
+
+        .review-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 80px 0 40px;
+            text-align: center;
+        }
+
+        .review-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .review-subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+        }
+
+        .review-container {
+            max-width: 800px;
+            margin: -40px auto 0;
+            padding: 0 1rem 4rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .review-form-section {
+            background: white;
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .form-step {
+            margin-bottom: 2rem;
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #f1f5f9;
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            margin-right: 1rem;
+        }
+
+        .step-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-label.required::after {
+            content: ' *';
+            color: #ef4444;
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-family: 'Noto Sans JP', sans-serif;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .rating-input {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .star-button {
+            background: none;
+            border: none;
+            font-size: 2rem;
+            color: #d1d5db;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .star-button:hover,
+        .star-button.active {
+            color: #fbbf24;
+        }
+
+        .rating-label {
+            font-size: 0.9rem;
+            color: #6b7280;
+            margin-top: 0.5rem;
+        }
+
+        .shop-search {
+            position: relative;
+        }
+
+        .shop-suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            z-index: 100;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .shop-suggestion {
+            padding: 1rem;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .shop-suggestion:hover {
+            background: #f8f9ff;
+        }
+
+        .shop-suggestion:last-child {
+            border-bottom: none;
+        }
+
+        .shop-name {
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .shop-location {
+            font-size: 0.9rem;
+            color: #6b7280;
+            margin-top: 0.2rem;
+        }
+
+        .photo-upload {
+            border: 2px dashed #d1d5db;
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .photo-upload:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .photo-upload-icon {
+            font-size: 3rem;
+            color: #9ca3af;
+            margin-bottom: 1rem;
+        }
+
+        .photo-upload-text {
+            color: #6b7280;
+            margin-bottom: 0.5rem;
+        }
+
+        .photo-upload-note {
+            font-size: 0.8rem;
+            color: #9ca3af;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .checkbox-input {
+            width: 20px;
+            height: 20px;
+        }
+
+        .checkbox-label {
+            color: #374151;
+            margin-bottom: 0;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 2px solid #f1f5f9;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+            border: 2px solid #e5e7eb;
+        }
+
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+
+        .success-message {
+            background: #dcfce7;
+            border: 2px solid #22c55e;
+            color: #166534;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            display: none;
+        }
+
+        .error-message {
+            background: #fef2f2;
+            border: 2px solid #ef4444;
+            color: #dc2626;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .review-header {
+                padding: 60px 0 20px;
+            }
+
+            .review-title {
+                font-size: 2rem;
+            }
+
+            .review-container {
+                margin: -20px 1rem 2rem;
+            }
+
+            .review-form-section {
+                padding: 2rem 1.5rem;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ヘッダー -->
+    <header class="main-header">
+        <nav class="main-nav">
+            <a href="/" class="main-logo">
+                <h1>🌺 Dive Buddy's</h1>
+                <span>ダイビング情報</span>
+            </a>
+            
+            <ul class="main-nav-menu">
+                <li><a href="/">ホーム</a></li>
+                <li><a href="/about">サービス</a></li>
+                <li><a href="/member">会員システム</a></li>
+                <li><a href="/shops-database">ショップDB</a></li>
+                <li><a href="/travel-guide">旅行ガイド</a></li>
+                <li><a href="/weather-ocean">海況・天気</a></li>
+                <li><a href="/blog">ブログ</a></li>
+                <li><a href="/contact">お問い合わせ</a></li>
+            </ul>
+            
+            <div class="main-nav-buttons">
+                <a href="https://line.me/ti/p/@2007331165" class="btn btn-primary btn-line-connect" target="_blank">
+                    <i class="fab fa-line"></i> Jijiに相談
+                </a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- 口コミヘッダー -->
+    <section class="review-header">
+        <div class="container">
+            <h1 class="review-title">
+                <i class="fas fa-star"></i> 口コミ投稿
+            </h1>
+            <p class="review-subtitle">
+                あなたのダイビング体験を共有して、他のダイバーをサポートしましょう
+            </p>
+        </div>
+    </section>
+
+    <!-- 口コミフォーム -->
+    <section class="review-page">
+        <div class="review-container">
+            <!-- 成功・エラーメッセージ -->
+            <div id="successMessage" class="success-message">
+                <i class="fas fa-check-circle"></i> 口コミを投稿しました！承認後に公開されます。
+            </div>
+            <div id="errorMessage" class="error-message">
+                <i class="fas fa-exclamation-triangle"></i> <span id="errorText">エラーが発生しました。</span>
+            </div>
+
+            <div class="review-form-section">
+                <form id="reviewForm">
+                    <!-- ステップ1: ショップ選択 -->
+                    <div class="form-step">
+                        <div class="step-header">
+                            <div class="step-number">1</div>
+                            <h2 class="step-title">ダイビングショップを選択</h2>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="shopSearch" class="form-label required">ショップ名</label>
+                            <div class="shop-search">
+                                <input type="text" id="shopSearch" class="form-input" 
+                                       placeholder="ショップ名を入力してください" required>
+                                <input type="hidden" id="shopId" name="shop_id">
+                                <div id="shopSuggestions" class="shop-suggestions"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ステップ2: 評価 -->
+                    <div class="form-step">
+                        <div class="step-header">
+                            <div class="step-number">2</div>
+                            <h2 class="step-title">総合評価</h2>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label required">評価を選択</label>
+                            <div class="rating-input">
+                                <button type="button" class="star-button" data-rating="1">★</button>
+                                <button type="button" class="star-button" data-rating="2">★</button>
+                                <button type="button" class="star-button" data-rating="3">★</button>
+                                <button type="button" class="star-button" data-rating="4">★</button>
+                                <button type="button" class="star-button" data-rating="5">★</button>
+                            </div>
+                            <div class="rating-label" id="ratingLabel">評価を選択してください</div>
+                            <input type="hidden" id="rating" name="rating" required>
+                        </div>
+                    </div>
+
+                    <!-- ステップ3: 体験詳細 -->
+                    <div class="form-step">
+                        <div class="step-header">
+                            <div class="step-number">3</div>
+                            <h2 class="step-title">体験詳細</h2>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="title" class="form-label">タイトル</label>
+                            <input type="text" id="title" name="title" class="form-input" 
+                                   placeholder="口コミのタイトルを入力してください">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="content" class="form-label">詳細な口コミ</label>
+                            <textarea id="content" name="content" class="form-textarea" 
+                                      placeholder="ダイビング体験の詳細、スタッフの対応、おすすめポイントなどをお書きください"></textarea>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                            <div class="form-group">
+                                <label for="experienceDate" class="form-label">体験日</label>
+                                <input type="date" id="experienceDate" name="experience_date" class="form-input">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="diveType" class="form-label">ダイビングタイプ</label>
+                                <select id="diveType" name="dive_type" class="form-select">
+                                    <option value="体験ダイビング">体験ダイビング</option>
+                                    <option value="ファンダイビング">ファンダイビング</option>
+                                    <option value="ライセンス講習">ライセンス講習</option>
+                                    <option value="アドバンス講習">アドバンス講習</option>
+                                    <option value="スペシャルティ講習">スペシャルティ講習</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="diveLevel" class="form-label">ダイビングレベル</label>
+                                <select id="diveLevel" name="dive_level" class="form-select">
+                                    <option value="初心者">初心者</option>
+                                    <option value="中級者">中級者</option>
+                                    <option value="上級者">上級者</option>
+                                    <option value="インストラクター">インストラクター</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ステップ4: 写真アップロード -->
+                    <div class="form-step">
+                        <div class="step-header">
+                            <div class="step-number">4</div>
+                            <h2 class="step-title">写真アップロード（任意）</h2>
+                        </div>
+                        
+                        <div class="form-group">
+                            <div class="photo-upload" onclick="document.getElementById('photoInput').click()">
+                                <div class="photo-upload-icon">
+                                    <i class="fas fa-camera"></i>
+                                </div>
+                                <div class="photo-upload-text">
+                                    クリックして写真を選択
+                                </div>
+                                <div class="photo-upload-note">
+                                    JPG, PNG形式（最大5MB）
+                                </div>
+                            </div>
+                            <input type="file" id="photoInput" accept="image/*" multiple style="display: none;">
+                        </div>
+                    </div>
+
+                    <!-- ステップ5: プライバシー設定 -->
+                    <div class="form-step">
+                        <div class="step-header">
+                            <div class="step-number">5</div>
+                            <h2 class="step-title">プライバシー設定</h2>
+                        </div>
+                        
+                        <div class="form-group">
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="anonymous" name="anonymous" class="checkbox-input">
+                                <label for="anonymous" class="checkbox-label">匿名で投稿する</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 送信ボタン -->
+                    <div class="form-actions">
+                        <a href="/shops-database" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> ショップ一覧に戻る
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i> 口コミを投稿
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- フッター -->
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>🌺 Dive Buddy's</h3>
+                    <p>沖縄・離島のダイビング情報をお届け</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>人気のカテゴリ</h3>
+                    <ul>
+                        <li><a href="/shops-database">ショップ検索</a></li>
+                        <li><a href="/weather-ocean">海況情報</a></li>
+                        <li><a href="/travel-guide">旅行ガイド</a></li>
+                        <li><a href="/blog">ブログ</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>サポート</h3>
+                    <ul>
+                        <li><a href="https://line.me/ti/p/@2007331165" target="_blank">LINE Bot相談</a></li>
+                        <li><a href="/contact">お問い合わせ</a></li>
+                        <li><a href="/help">ヘルプ</a></li>
+                        <li><a href="/legal">利用規約</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>関連サービス</h3>
+                    <ul>
+                        <li><a href="/member">会員システム</a></li>
+                        <li><a href="/reviews/submit">口コミ投稿</a></li>
+                        <li><a href="/travel-guide/cost-simulator">費用シミュレーター</a></li>
+                        <li><a href="/blog/search">ブログ検索</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 Dive Buddy's - あなた専属のダイビング情報</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        class ReviewFormManager {
+            constructor() {
+                this.selectedRating = 0;
+                this.selectedShopId = null;
+                this.init();
+            }
+
+            init() {
+                this.setupRatingSystem();
+                this.setupShopSearch();
+                this.setupFormSubmission();
+                this.setupPhotoUpload();
+            }
+
+            setupRatingSystem() {
+                const starButtons = document.querySelectorAll('.star-button');
+                const ratingLabel = document.getElementById('ratingLabel');
+                const ratingInput = document.getElementById('rating');
+
+                const ratingLabels = {
+                    1: '⭐ 不満',
+                    2: '⭐⭐ やや不満',
+                    3: '⭐⭐⭐ 普通',
+                    4: '⭐⭐⭐⭐ 満足',
+                    5: '⭐⭐⭐⭐⭐ 大満足'
+                };
+
+                starButtons.forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const rating = parseInt(button.dataset.rating);
+                        this.selectedRating = rating;
+                        ratingInput.value = rating;
+
+                        // 星の表示更新
+                        starButtons.forEach((star, index) => {
+                            star.classList.toggle('active', index < rating);
+                        });
+
+                        ratingLabel.textContent = ratingLabels[rating];
+                    });
+
+                    button.addEventListener('mouseover', () => {
+                        const rating = parseInt(button.dataset.rating);
+                        starButtons.forEach((star, index) => {
+                            star.style.color = index < rating ? '#fbbf24' : '#d1d5db';
+                        });
+                    });
+
+                    button.addEventListener('mouseout', () => {
+                        starButtons.forEach((star, index) => {
+                            star.style.color = index < this.selectedRating ? '#fbbf24' : '#d1d5db';
+                        });
+                    });
+                });
+            }
+
+            setupShopSearch() {
+                const searchInput = document.getElementById('shopSearch');
+                const shopIdInput = document.getElementById('shopId');
+                const suggestionsContainer = document.getElementById('shopSuggestions');
+                let searchTimer = null;
+
+                searchInput.addEventListener('input', (e) => {
+                    const query = e.target.value.trim();
+                    clearTimeout(searchTimer);
+
+                    if (query.length < 2) {
+                        this.hideSuggestions();
+                        return;
+                    }
+
+                    searchTimer = setTimeout(() => {
+                        this.searchShops(query);
+                    }, 300);
+                });
+
+                // 外部クリックで候補を閉じる
+                document.addEventListener('click', (e) => {
+                    if (!e.target.closest('.shop-search')) {
+                        this.hideSuggestions();
+                    }
+                });
+            }
+
+            async searchShops(query) {
+                try {
+                    const response = await fetch(`/api/shops/search?q=${encodeURIComponent(query)}&limit=5`);
+                    const data = await response.json();
+
+                    if (data.success && data.shops.length > 0) {
+                        this.showShopSuggestions(data.shops);
+                    } else {
+                        this.hideSuggestions();
+                    }
+                } catch (error) {
+                    console.error('ショップ検索エラー:', error);
+                    this.hideSuggestions();
+                }
+            }
+
+            showShopSuggestions(shops) {
+                const container = document.getElementById('shopSuggestions');
+                container.innerHTML = shops.map(shop => `
+                    <div class="shop-suggestion" onclick="window.reviewForm.selectShop(${shop.id}, '${shop.name}')">
+                        <div class="shop-name">${shop.name}</div>
+                        <div class="shop-location">${shop.location}</div>
+                    </div>
+                `).join('');
+                container.style.display = 'block';
+            }
+
+            hideSuggestions() {
+                document.getElementById('shopSuggestions').style.display = 'none';
+            }
+
+            selectShop(shopId, shopName) {
+                this.selectedShopId = shopId;
+                document.getElementById('shopSearch').value = shopName;
+                document.getElementById('shopId').value = shopId;
+                this.hideSuggestions();
+            }
+
+            setupPhotoUpload() {
+                const photoInput = document.getElementById('photoInput');
+                photoInput.addEventListener('change', (e) => {
+                    const files = Array.from(e.target.files);
+                    if (files.length > 0) {
+                        console.log('写真選択:', files.map(f => f.name));
+                        // 写真アップロード機能は後で実装
+                    }
+                });
+            }
+
+            setupFormSubmission() {
+                const form = document.getElementById('reviewForm');
+                form.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.submitReview();
+                });
+            }
+
+            async submitReview() {
+                try {
+                    // バリデーション
+                    if (!this.selectedShopId) {
+                        this.showError('ショップを選択してください。');
+                        return;
+                    }
+
+                    if (!this.selectedRating) {
+                        this.showError('評価を選択してください。');
+                        return;
+                    }
+
+                    const formData = new FormData(document.getElementById('reviewForm'));
+                    
+                    const reviewData = {
+                        shop_id: this.selectedShopId,
+                        rating: this.selectedRating,
+                        title: formData.get('title'),
+                        content: formData.get('content'),
+                        experience_date: formData.get('experience_date'),
+                        dive_type: formData.get('dive_type'),
+                        dive_level: formData.get('dive_level'),
+                        anonymous: formData.get('anonymous') === 'on',
+                        photos: [] // 写真アップロード機能は後で実装
+                    };
+
+                    console.log('口コミ投稿データ:', reviewData);
+
+                    const response = await fetch('/api/reviews/submit', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(reviewData)
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        this.showSuccess(result.message);
+                        document.getElementById('reviewForm').reset();
+                        this.selectedRating = 0;
+                        this.selectedShopId = null;
+                        this.resetRatingDisplay();
+                    } else {
+                        this.showError(result.message || '口コミの投稿に失敗しました。');
+                    }
+
+                } catch (error) {
+                    console.error('口コミ投稿エラー:', error);
+                    this.showError('口コミの投稿中にエラーが発生しました。');
+                }
+            }
+
+            resetRatingDisplay() {
+                const starButtons = document.querySelectorAll('.star-button');
+                starButtons.forEach(button => {
+                    button.classList.remove('active');
+                    button.style.color = '#d1d5db';
+                });
+                document.getElementById('ratingLabel').textContent = '評価を選択してください';
+                document.getElementById('rating').value = '';
+            }
+
+            showSuccess(message) {
+                const successDiv = document.getElementById('successMessage');
+                successDiv.style.display = 'block';
+                document.getElementById('errorMessage').style.display = 'none';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            showError(message) {
+                const errorDiv = document.getElementById('errorMessage');
+                document.getElementById('errorText').textContent = message;
+                errorDiv.style.display = 'block';
+                document.getElementById('successMessage').style.display = 'none';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        // 初期化
+        document.addEventListener('DOMContentLoaded', () => {
+            window.reviewForm = new ReviewFormManager();
+        });
+    </script>
+</body>
+</html>

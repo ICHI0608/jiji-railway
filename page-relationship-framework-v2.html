@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dive Buddy's ページ関係性フレームワーク v2.0</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Hiragino Sans', 'Yu Gothic', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #77C9D4 0%, #A2DED0 100%);
+            color: white;
+            padding: 40px 20px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(119, 201, 212, 0.3);
+        }
+
+        .header h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .version-badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-top: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .priority-overview {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .priority-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+        }
+
+        .priority-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .priority-high { border-top: 5px solid #ef4444; }
+        .priority-medium { border-top: 5px solid #f59e0b; }
+        .priority-low { border-top: 5px solid #22c55e; }
+
+        .priority-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .priority-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .priority-pages {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #77C9D4;
+            margin-bottom: 10px;
+        }
+
+        .priority-desc {
+            font-size: 0.9rem;
+            color: #6b7280;
+        }
+
+        .framework-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .category-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            border: 1px solid #e5e7eb;
+            transition: all 0.3s ease;
+        }
+
+        .category-section:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+        }
+
+        .category-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f3f4f6;
+        }
+
+        .category-icon {
+            font-size: 2.5rem;
+            margin-right: 15px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            color: white;
+        }
+
+        .high-priority { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
+        .medium-priority { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+        .low-priority { background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); }
+
+        .category-info h3 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 5px;
+        }
+
+        .category-meta {
+            font-size: 0.9rem;
+            color: #6b7280;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .status-complete { background: #dcfce7; color: #166534; }
+        .status-progress { background: #fef3c7; color: #92400e; }
+        .status-new { background: #dbeafe; color: #1e40af; }
+
+        .page-list {
+            list-style: none;
+        }
+
+        .page-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f3f4f6;
+            transition: all 0.2s ease;
+        }
+
+        .page-item:hover {
+            background: #f8f9ff;
+            margin: 0 -10px;
+            padding: 12px 10px;
+            border-radius: 8px;
+        }
+
+        .page-item:last-child {
+            border-bottom: none;
+        }
+
+        .page-role {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-right: 12px;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .role-entry { background: #dbeafe; color: #1e40af; }
+        .role-main { background: #dcfce7; color: #166534; }
+        .role-detail { background: #fef3c7; color: #92400e; }
+        .role-new { background: #fce7f3; color: #be185d; }
+        .role-enhance { background: #e0f2fe; color: #0c4a6e; }
+
+        .page-name {
+            flex: 1;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .page-connections {
+            font-size: 0.8rem;
+            color: #6b7280;
+            margin-left: 10px;
+        }
+
+        .journey-flow {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        .journey-title {
+            font-size: 2rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 30px;
+            color: #1f2937;
+        }
+
+        .journey-phases {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .journey-phase {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border-radius: 12px;
+            padding: 20px;
+            border: 2px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+        .journey-phase:hover {
+            border-color: #77C9D4;
+            transform: translateY(-3px);
+        }
+
+        .phase-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .phase-flow {
+            font-size: 0.9rem;
+            color: #4b5563;
+            line-height: 1.6;
+        }
+
+        .flow-arrow {
+            color: #77C9D4;
+            font-weight: bold;
+            margin: 0 5px;
+        }
+
+        .statistics-v2 {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        .stats-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 30px;
+            color: #1f2937;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .stat-item:hover {
+            background: linear-gradient(135deg, #77C9D4 0%, #A2DED0 100%);
+            color: white;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #77C9D4;
+            margin-bottom: 5px;
+        }
+
+        .stat-item:hover .stat-number {
+            color: white;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .stat-item:hover .stat-label {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .roadmap {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        .roadmap-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 30px;
+            color: #1f2937;
+        }
+
+        .roadmap-phases {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .roadmap-phase {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 20px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .roadmap-phase:hover {
+            background: #f8fafc;
+            transform: translateX(5px);
+        }
+
+        .phase1 { border-left: 5px solid #ef4444; }
+        .phase2 { border-left: 5px solid #f59e0b; }
+        .phase3 { border-left: 5px solid #22c55e; }
+
+        .roadmap-phase-number {
+            background: linear-gradient(135deg, #77C9D4 0%, #A2DED0 100%);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .roadmap-phase-content {
+            flex: 1;
+        }
+
+        .roadmap-phase-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: #1f2937;
+        }
+
+        .roadmap-phase-desc {
+            font-size: 0.9rem;
+            color: #6b7280;
+            margin-bottom: 10px;
+        }
+
+        .roadmap-phase-tasks {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .roadmap-task {
+            background: #e0f2fe;
+            color: #0c4a6e;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            .priority-overview {
+                grid-template-columns: 1fr;
+            }
+            
+            .framework-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .journey-phases {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .roadmap-phase {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌊 Dive Buddy's ページ関係性フレームワーク</h1>
+            <p>新導線v2.0 - ユーザージャーニー重視の戦略的サイト構造</p>
+            <div class="version-badge">v2.0 - 段階的実装・優先度最適化</div>
+        </div>
+
+        <!-- 優先度概要 -->
+        <div class="priority-overview">
+            <div class="priority-card priority-high">
+                <div class="priority-icon">🚀</div>
+                <div class="priority-title">高優先</div>
+                <div class="priority-pages">4</div>
+                <div class="priority-desc">即時実装・メイン導線</div>
+            </div>
+            <div class="priority-card priority-medium">
+                <div class="priority-icon">📈</div>
+                <div class="priority-title">中優先</div>
+                <div class="priority-pages">8</div>
+                <div class="priority-desc">段階実装・差別化機能</div>
+            </div>
+            <div class="priority-card priority-low">
+                <div class="priority-icon">✅</div>
+                <div class="priority-title">低優先</div>
+                <div class="priority-pages">40</div>
+                <div class="priority-desc">既存実装済み・維持</div>
+            </div>
+        </div>
+
+        <!-- 優先度別カテゴリ構成 -->
+        <div class="framework-grid">
+            <!-- 高優先: メイン導線 -->
+            <div class="category-section">
+                <div class="category-header">
+                    <div class="category-icon high-priority">🚀</div>
+                    <div class="category-info">
+                        <h3>メイン導線（高優先）</h3>
+                        <div class="category-meta">
+                            4ページ | 即時実装
+                            <span class="status-badge status-progress">調整中</span>
+                        </div>
+                    </div>
+                </div>
+                <ul class="page-list">
+                    <li class="page-item">
+                        <span class="page-role role-entry">入口</span>
+                        <span class="page-name">Topページ (index_ui_check.html)</span>
+                        <span class="page-connections">→全機能への導線（7ボタン配置）</span>
+                    </li>
+                    <li class="page-item">
+                        <span class="page-role role-main">概要</span>
+                        <span class="page-name">サービス概要 (about.html)</span>
+                        <span class="page-connections">←もっと詳しく</span>
+                    </li>
+                    <li class="page-item">
+                        <span class="page-role role-main">獲得</span>
+                        <span class="page-name">会員登録 (member/register)</span>
+                        <span class="page-connections">→ダッシュボード</span>
+                    </li>
+                    <li class="page-item">
+                        <span class="page-role role-main">中核</span>
+                        <span class="page-name">ショップ検索 (shops-database)</span>
+                        <span class="page-connections">→詳細・予約</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- 中優先: 沖縄ガイド -->
+            <div class="category-section">
+                <div class="category-header">
+                    <div class="category-icon medium-priority">🏝️</div>
+                    <div class="category-info">
+                        <h3>沖縄ガイド（中優先）</h3>
+                        <div class="category-meta">
+                            4ページ | 差別化機能
+                            <span class="status-badge status-new">新規作成</span>
+                        </div>
+                    </div>
+                </div>
+                <ul class="page-list">
+                    <li class="page-item">
+                        <span class="page-role role-new">新規</span>
+                        <span class="page-name">ダイビングガイドTOP (diving-guide)</span>
+                        <span class="page-connections">→地域選択</span>
+                    </li>
+                    <li class="page-item">
+                        <span class="page-role role-new">地域</span>
+                        <span class="page-name">石垣島ガイド (diving-guide/ishigaki)</span>
+                        <span class="page-connections">→ショップ検索</span>
+                    </li>
+                    <li class="page-item">
+                        <span class="page-role role-new">地域</span>
+                        <span class="page-name">宮古島ガイド (diving-guide/miyako)</span>
+                        <span class="page-connections">→ショップ検索</span>
+                    </li>
+                    <li class="page-item">
+                        <span class="page-role role-new">地域</span>
+                        <span class="page-name">沖縄本島ガイド (diving-guide/okinawa)</span>
+                        <span class="page-connections">→ショップ検索</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- 中優先: 海況天気強化 -->
+            <div class="category-section">
+                <div class="category-header">
+                    <div class="category-icon medium-priority">🌊</div>
+                    <div class="category-info">
+                        <h3>海況天気（中優先）</h3>
+                        <div class="category-meta">
+                            2ページ | リアルタイム強化
+                            <span class="status-badge status-progress">機能拡充</span>
+                        </div>
+                    </div>
+                </div>
+                <ul class="page-list">
+                    <li class="page-item">
+                        <span class="page-role role-enhance">強化</span>
+                        <span class="page-name">海況・天気 (weather-ocean)</span>
+                        <span class="page-connections">3日間リアルタイム表示</span>
+                    </li>
+                    <li class="page-item">
+                        <span class="page-role role-new">新規</span>
+                        <span class="page-name">海況詳細 (weather-ocean/details)</span>
+                        <span class="page-connections">7日間・適性判定</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- 中優先: 旅行ガイド強化 -->
+            <div class="category-section">
+                <div class="category-header">
+                    <div class="category-icon medium-priority">✈️</div>
+                    <div class="category-info">
+                        <h3>旅行ガイド（中優先）</h3>
+                        <div class="category-meta">
+                            3ページ | チケット検索特化
+                            <span class="status-badge status-progress">機能拡充</span>
+                        </div>
+                    </div>
+                </div>
+                <ul class="page-list">
+                    <li class="page-item">
+                        <span class="page-role role-enhance">強化</span>
+                        <span class="page-name">旅行ガイドTOP (travel-guide)</span>
+                        <span class="page-connections">チケット検索API統合</span>
+                    </li>
+                    <li class="page-item">
+                        <span class="page-role role-main">既存</span>
+                        <span class="page-name">航空券検索 (flights)</span>
+                        <span class="page-connections">→宿泊予約</span>
+                    </li>
+                    <li class="page-item">
+                        <span class="page-role role-main">既存</span>
+                        <span class="page-name">宿泊ガイド (accommodation)</span>
+                        <span class="page-connections">→交通手配</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- 低優先: 既存機能群 -->
+            <div class="category-section">
+                <div class="category-header">
+                    <div class="category-icon low-priority">📚</div>
+                    <div class="category-info">
+                        <h3>既存機能群（低優先）</h3>
+                        <div class="category-meta">
+                            40ページ | 安定稼働中
+                            <span class="status-badge status-complete">実装済み</span>
+                        </div>
+                    </div>
+                </div>
+                <ul class="page-list">
+                    <li class="page-item">
+                        <span class="page-role role-main">ブログ</span>
+                        <span class="page-name">4ページ (blog系)</span>
+                        <span class="page-connections">コンテンツ配信</span>
+                    </li>
+                    <li class="page-item">
+                        <span class="page-role role-main">会員</span>
+                        <span class="page-name">8ページ (member系)</span>
+                        <span class="page-connections">ユーザー管理</span>
+                    </li>
+                    <li class="page-item">
+                        <span class="page-role role-main">管理</span>
+                        <span class="page-name">6ページ (admin系)</span>
+                        <span class="page-connections">システム運用</span>
+                    </li>
+                    <li class="page-item">
+                        <span class="page-role role-main">パートナー</span>
+                        <span class="page-name">5ページ (partner系)</span>
+                        <span class="page-connections">ビジネス向け</span>
+                    </li>
+                    <li class="page-item">
+                        <span class="page-role role-main">サポート</span>
+                        <span class="page-name">17ページ (その他)</span>
+                        <span class="page-connections">各種サポート機能</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 新ユーザージャーニーフロー -->
+        <div class="journey-flow">
+            <h2 class="journey-title">🎯 新ユーザージャーニー v2.0</h2>
+            <div class="journey-phases">
+                <div class="journey-phase">
+                    <div class="phase-title">
+                        🔍 情報収集フェーズ
+                    </div>
+                    <div class="phase-flow">
+                        Topページ（7ボタン配置） <span class="flow-arrow">→</span> サービス概要 <span class="flow-arrow">→</span> 沖縄ガイド/海況天気/ブログ
+                        <br><br>
+                        <strong>目的:</strong> ダイビング情報の収集・理解促進
+                        <br><strong>重要ページ:</strong> diving-guide（新追加）, weather-ocean
+                    </div>
+                </div>
+
+                <div class="journey-phase">
+                    <div class="phase-title">
+                        💭 検討・比較フェーズ
+                    </div>
+                    <div class="phase-flow">
+                        ショップ検索 <span class="flow-arrow">→</span> 詳細比較 <span class="flow-arrow">→</span> 旅行ガイド（宿泊・交通手配）
+                        <br><br>
+                        <strong>目的:</strong> 最適なショップ・プランの選定
+                        <br><strong>重要機能:</strong> 79店舗DB、価格比較、評価システム
+                    </div>
+                </div>
+
+                <div class="journey-phase">
+                    <div class="phase-title">
+                        🚀 行動フェーズ
+                    </div>
+                    <div class="phase-flow">
+                        会員登録 <span class="flow-arrow">→</span> ショップ予約 <span class="flow-arrow">→</span> 会員ページでの管理
+                        <br><br>
+                        <strong>目的:</strong> 実際の予約・利用開始
+                        <br><strong>コンバージョン:</strong> 会員登録率15%目標
+                    </div>
+                </div>
+
+                <div class="journey-phase">
+                    <div class="phase-title">
+                        🔄 継続利用フェーズ
+                    </div>
+                    <div class="phase-flow">
+                        ダイビング履歴 <span class="flow-arrow">→</span> レビュー投稿 <span class="flow-arrow">→</span> ポイント活用
+                        <br><br>
+                        <strong>目的:</strong> リピート利用・コミュニティ形成
+                        <br><strong>指標:</strong> リピート率40%目標
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- v2.0統計 -->
+        <div class="statistics-v2">
+            <h2 class="stats-title">📊 新導線v2.0 統計</h2>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number">52</div>
+                    <div class="stat-label">総ページ数</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">5</div>
+                    <div class="stat-label">新規作成ページ</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">3</div>
+                    <div class="stat-label">優先度レベル</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">4</div>
+                    <div class="stat-label">ユーザージャーニー段階</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">7</div>
+                    <div class="stat-label">Topページボタン数</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">62h</div>
+                    <div class="stat-label">開発工数（時間）</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">8</div>
+                    <div class="stat-label">開発期間（営業日）</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 実装ロードマップ -->
+        <div class="roadmap">
+            <h2 class="roadmap-title">🚀 実装ロードマップ v2.0</h2>
+            <div class="roadmap-phases">
+                <div class="roadmap-phase phase1">
+                    <div class="roadmap-phase-number">1</div>
+                    <div class="roadmap-phase-content">
+                        <div class="roadmap-phase-title">Phase 1: 基盤整備（2週間）</div>
+                        <div class="roadmap-phase-desc">高優先ページの完成・最適化</div>
+                        <div class="roadmap-phase-tasks">
+                            <span class="roadmap-task">Topページ最終調整</span>
+                            <span class="roadmap-task">about.html拡充</span>
+                            <span class="roadmap-task">diving-guide/index.html作成</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="roadmap-phase phase2">
+                    <div class="roadmap-phase-number">2</div>
+                    <div class="roadmap-phase-content">
+                        <div class="roadmap-phase-title">Phase 2: コンテンツ拡充（3週間）</div>
+                        <div class="roadmap-phase-desc">地域別ガイド・機能強化の実装</div>
+                        <div class="roadmap-phase-tasks">
+                            <span class="roadmap-task">地域別ガイド3ページ</span>
+                            <span class="roadmap-task">海況詳細ページ</span>
+                            <span class="roadmap-task">旅行ガイド機能強化</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="roadmap-phase phase3">
+                    <div class="roadmap-phase-number">3</div>
+                    <div class="roadmap-phase-content">
+                        <div class="roadmap-phase-title">Phase 3: 最適化・運用（2週間）</div>
+                        <div class="roadmap-phase-desc">パフォーマンス改善・分析導入</div>
+                        <div class="roadmap-phase-tasks">
+                            <span class="roadmap-task">表示速度改善</span>
+                            <span class="roadmap-task">SEO対策実装</span>
+                            <span class="roadmap-task">アクセス解析導入</span>
+                            <span class="roadmap-task">A/Bテスト開始</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // v2.0 インタラクション機能
+        document.addEventListener('DOMContentLoaded', function() {
+            // 優先度カードのホバー効果
+            const priorityCards = document.querySelectorAll('.priority-card');
+            priorityCards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-10px) scale(1.02)';
+                });
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(-5px) scale(1)';
+                });
+            });
+
+            // カテゴリセクションの詳細展開
+            const sections = document.querySelectorAll('.category-section');
+            sections.forEach(section => {
+                section.addEventListener('click', function() {
+                    const title = this.querySelector('h3').textContent;
+                    console.log(`${title} セクションがクリックされました`);
+                });
+            });
+
+            // ジャーニーフェーズのハイライト
+            const journeyPhases = document.querySelectorAll('.journey-phase');
+            journeyPhases.forEach((phase, index) => {
+                phase.addEventListener('mouseenter', function() {
+                    this.style.backgroundColor = '#e0f2fe';
+                    this.style.borderColor = '#77C9D4';
+                });
+                phase.addEventListener('mouseleave', function() {
+                    this.style.backgroundColor = '';
+                    this.style.borderColor = '#e2e8f0';
+                });
+            });
+
+            // ロードマップフェーズの進捗表示
+            const roadmapPhases = document.querySelectorAll('.roadmap-phase');
+            roadmapPhases.forEach((phase, index) => {
+                phase.addEventListener('click', function() {
+                    const phaseNum = index + 1;
+                    alert(`Phase ${phaseNum} の詳細タスクを表示します`);
+                });
+            });
+
+            // 統計項目のアニメーション
+            const statItems = document.querySelectorAll('.stat-item');
+            const observerOptions = {
+                threshold: 0.5,
+                rootMargin: '0px 0px -100px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.animation = 'pulse 0.6s ease-in-out';
+                    }
+                });
+            }, observerOptions);
+
+            statItems.forEach(item => observer.observe(item));
+
+            console.log('Dive Buddy\'s 新導線v2.0 フレームワーク初期化完了');
+            console.log('優先度別実装アプローチ: 高4ページ → 中8ページ → 低40ページ');
+        });
+
+        // CSS Animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes pulse {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.05); }
+                100% { transform: scale(1); }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

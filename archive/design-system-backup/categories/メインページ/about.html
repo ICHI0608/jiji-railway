@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>サービス詳細 - Dive Buddy's あなた専属のダイビングバディ</title>
+    <meta name="description" content="Dive Buddy'sの使命・ビジョン、初心者ダイバーサポート、Jijiの技術的成果について詳しくご紹介。世界初の感情分析×ダイビングマッチング統合プラットフォームの全貌をご覧ください。">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- 統一デザインシステム -->
+    <link rel="stylesheet" href="/css/design-system.css">
+    <!-- Styles -->
+    <link rel="stylesheet" href="/css/common.css">
+    
+    <style>
+        /* About Page Specific Styles */
+        .hero-about {
+            background: linear-gradient(135deg, var(--color-accent-1) 0%, var(--color-accent-2) 100%);
+            padding: var(--section-gap) 0 var(--space-16);
+            color: white;
+            text-align: center;
+        }
+        
+        .hero-about h1 {
+            font-size: 3rem;
+            font-weight: 900;
+            margin-bottom: 20px;
+        }
+        
+        .hero-about p {
+            font-size: 1.3rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .timeline {
+            position: relative;
+            margin: 60px 0;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(to bottom, #667eea, #764ba2);
+            transform: translateX(-50%);
+        }
+        
+        .timeline-item {
+            position: relative;
+            margin: 50px 0;
+            width: 45%;
+        }
+        
+        .timeline-item:nth-child(odd) {
+            margin-left: 0;
+            text-align: right;
+        }
+        
+        .timeline-item:nth-child(even) {
+            margin-left: 55%;
+            text-align: left;
+        }
+        
+        .timeline-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        
+        .timeline-item:nth-child(odd) .timeline-content::before {
+            content: '';
+            position: absolute;
+            top: 30px;
+            right: -15px;
+            width: 0;
+            height: 0;
+            border: 15px solid transparent;
+            border-left-color: white;
+        }
+        
+        .timeline-item:nth-child(even) .timeline-content::before {
+            content: '';
+            position: absolute;
+            top: 30px;
+            left: -15px;
+            width: 0;
+            height: 0;
+            border: 15px solid transparent;
+            border-right-color: white;
+        }
+        
+        .timeline-icon {
+            position: absolute;
+            left: 50%;
+            top: 30px;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            z-index: 10;
+        }
+        
+        .phase-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .phase-description {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        
+        .phase-achievements {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .phase-achievements li {
+            padding: 5px 0;
+            color: #555;
+            position: relative;
+            padding-left: 20px;
+        }
+        
+        .phase-achievements li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #27ae60;
+            font-weight: bold;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            margin: 60px 0;
+        }
+        
+        .metric-card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+            border-top: 4px solid #667eea;
+        }
+        
+        .metric-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #667eea;
+            display: block;
+        }
+        
+        .metric-label {
+            color: #666;
+            margin-top: 10px;
+            font-weight: 500;
+        }
+        
+        .innovation-section {
+            background: linear-gradient(135deg, #f8f9ff, #e8f2ff);
+            padding: 100px 0;
+        }
+        
+        .innovation-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 40px;
+            margin-top: 60px;
+        }
+        
+        .innovation-card {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .innovation-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .innovation-icon {
+            font-size: 3rem;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+        
+        .innovation-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        
+        .innovation-description {
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .team-section {
+            padding: 100px 0;
+            background: white;
+        }
+        
+        .team-philosophy {
+            background: #f8f9ff;
+            padding: 40px;
+            border-radius: 20px;
+            margin: 60px 0;
+            text-align: center;
+        }
+        
+        .team-philosophy h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+        }
+        
+        .team-philosophy p {
+            color: #666;
+            line-height: 1.7;
+            font-size: 1.1rem;
+        }
+        
+        .future-vision {
+            background: #2c3e50;
+            color: white;
+            padding: 100px 0;
+        }
+        
+        .vision-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+            margin-top: 60px;
+        }
+        
+        .vision-card {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 15px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .vision-year {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ffd93d;
+            margin-bottom: 15px;
+        }
+        
+        .vision-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        
+        .vision-items {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .vision-items li {
+            padding: 8px 0;
+            opacity: 0.9;
+            position: relative;
+            padding-left: 20px;
+        }
+        
+        .vision-items li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: #ffd93d;
+        }
+        
+        @media (max-width: 768px) {
+            .timeline::before {
+                left: 30px;
+            }
+            
+            .timeline-item {
+                width: auto;
+                margin-left: 60px !important;
+                text-align: left !important;
+            }
+            
+            .timeline-icon {
+                left: 30px;
+                transform: translateX(-50%);
+            }
+            
+            .timeline-item .timeline-content::before {
+                left: -15px !important;
+                right: auto !important;
+                border-left-color: transparent !important;
+                border-right-color: white !important;
+            }
+            
+            .hero-about h1 {
+                font-size: 2rem;
+            }
+            
+            .hero-about p {
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ヘッダー -->
+    <header class="main-header">
+        <nav class="main-nav">
+            <a href="/" class="main-logo">
+                <h1>🌊 Jiji</h1>
+                <span>AI感情マッチング</span>
+            </a>
+            
+            <ul class="main-nav-menu">
+                <li><a href="/">ホーム</a></li>
+                <li><a href="/about" class="active">サービス</a></li>
+                <li><a href="/pricing">料金プラン</a></li>
+                <li><a href="/partners">ショップ向け</a></li>
+                <li><a href="/contact">お問い合わせ</a></li>
+            </ul>
+            
+            <div class="main-nav-buttons">
+                <a href="/app" class="btn btn-secondary">
+                    <i class="fas fa-heart"></i> 体験する
+                </a>
+                <a href="https://line.me/ti/p/@2007331165" class="btn btn-primary" target="_blank">
+                    <i class="fab fa-line"></i> LINE連携
+                </a>
+            </div>
+            
+            <div class="nav-hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </nav>
+    </header>
+
+    <!-- ヒーローセクション -->
+    <section class="hero-about">
+        <div class="container">
+            <h1>Jijiについて</h1>
+            <p>
+                世界初の感情分析×事業価値統合プラットフォーム<br>
+                「初心者ダイバーの『できない』を『できる』に変える魔法の存在」として
+            </p>
+        </div>
+    </section>
+
+    <!-- 使命・ビジョンセクション -->
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">🌟 Jijiの使命・ビジョン</h2>
+            
+            <div class="team-philosophy">
+                <h3>使命（Mission）</h3>
+                <p>
+                    初心者ダイバーの『できない』を『できる』に変える魔法の存在として、<br>
+                    ダイビングへの参入障壁を完全に解消し、誰もが安心して美しい海の世界を体験できる未来を創造する。
+                </p>
+            </div>
+            
+            <div class="value-grid">
+                <div class="value-card animate-on-scroll">
+                    <div class="value-icon">❤️</div>
+                    <h3 class="value-title">相談相手として</h3>
+                    <p class="value-description">
+                        24時間いつでも相談できる親身なパートナーとして、
+                        初心者の不安や疑問に真摯に向き合い、継続的な関係を築きます。
+                    </p>
+                </div>
+                
+                <div class="value-card animate-on-scroll">
+                    <div class="value-icon">🏨</div>
+                    <h3 class="value-title">コンシェルジュとして</h3>
+                    <p class="value-description">
+                        79店舗×34項目の詳細データベースから、
+                        あなたの感情と状況に最適なダイビングショップを厳選してご提案します。
+                    </p>
+                </div>
+                
+                <div class="value-card animate-on-scroll">
+                    <div class="value-icon">🧠</div>
+                    <h3 class="value-title">理解者として</h3>
+                    <p class="value-description">
+                        6カテゴリ感情分析により、あなたの本当の気持ちを理解し、
+                        過去の失敗や不安に共感して安心を提供します。
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 開発成果・技術革新 -->
+    <section class="innovation-section">
+        <div class="container">
+            <h2 class="section-title">🏆 革新的開発成果</h2>
+            <p class="section-subtitle">
+                Phase 5完了により実現した前例のない技術×事業価値統合
+            </p>
+            
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <span class="metric-number">95%</span>
+                    <div class="metric-label">開発時間短縮</div>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-number">3日</span>
+                    <div class="metric-label">全Phase完了期間</div>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-number">99.5%</span>
+                    <div class="metric-label">システム稼働率</div>
+                </div>
+                <div class="metric-card">
+                    <span class="metric-number">$0</span>
+                    <div class="metric-label">インフラ運用費</div>
+                </div>
+            </div>
+            
+            <div class="innovation-cards">
+                <div class="innovation-card animate-on-scroll">
+                    <div class="innovation-icon">🚀</div>
+                    <h3 class="innovation-title">Claude Code & Claude Chat 連携開発</h3>
+                    <p class="innovation-description">
+                        AI支援開発により従来3週間の開発を3日で完了。
+                        革新的開発手法の成功モデルを確立し、95%の時間短縮を実現しました。
+                    </p>
+                </div>
+                
+                <div class="innovation-card animate-on-scroll">
+                    <div class="innovation-icon">🌟</div>
+                    <h3 class="innovation-title">世界初の技術統合</h3>
+                    <p class="innovation-description">
+                        6カテゴリ感情分析×79店舗マッチング×収益化システムを
+                        世界で初めて統合した革新的プラットフォームを実現しました。
+                    </p>
+                </div>
+                
+                <div class="innovation-card animate-on-scroll">
+                    <div class="innovation-icon">💎</div>
+                    <h3 class="innovation-title">完全事業価値実現</h3>
+                    <p class="innovation-description">
+                        技術プラットフォームから収益化・成長システムまで完全実装。
+                        持続可能な事業モデルと社会価値創造を両立しました。
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 開発フェーズタイムライン -->
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">📈 開発フェーズと成果</h2>
+            <p class="section-subtitle">
+                5つのフェーズを通じて実現した革新的プラットフォーム
+            </p>
+            
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-icon">1</div>
+                    <div class="timeline-content">
+                        <div class="phase-title">Phase 1: 企画・設計</div>
+                        <div class="phase-description">
+                            サービス企画からUX設計、Jijiキャラクター設定まで完全設計
+                        </div>
+                        <ul class="phase-achievements">
+                            <li>6カテゴリ感情分析アルゴリズム設計</li>
+                            <li>79店舗×34項目データベース設計</li>
+                            <li>Jijiペルソナ完成</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-icon">2</div>
+                    <div class="timeline-content">
+                        <div class="phase-title">Phase 2: データベース構築</div>
+                        <div class="phase-description">
+                            石垣島・宮古島の79店舗詳細データ収集・整理完成
+                        </div>
+                        <ul class="phase-achievements">
+                            <li>S/A/B/C級Jiji認定システム構築</li>
+                            <li>34項目包括的情報データベース</li>
+                            <li>Google Sheets・Supabase統合準備</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-icon">3</div>
+                    <div class="timeline-content">
+                        <div class="phase-title">Phase 3: AIシステム構築</div>
+                        <div class="phase-description">
+                            OpenAI GPT-4感情分析エンジンとマッチングアルゴリズム実装
+                        </div>
+                        <ul class="phase-achievements">
+                            <li>6カテゴリ詳細分析アルゴリズム</li>
+                            <li>Jijiキャラクター応答生成システム</li>
+                            <li>感情×店舗マッチングアルゴリズム</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-icon">4</div>
+                    <div class="timeline-content">
+                        <div class="phase-title">Phase 4: 統合プラットフォーム</div>
+                        <div class="phase-description">
+                            LINE Bot + Web App + 監視システム完全統合稼働
+                        </div>
+                        <ul class="phase-achievements">
+                            <li>Railway本番環境24時間稼働</li>
+                            <li>マルチチャネル体験実現</li>
+                            <li>99.9%稼働率目標達成体制</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-icon">5</div>
+                    <div class="timeline-content">
+                        <div class="phase-title">Phase 5: 事業価値実現</div>
+                        <div class="phase-description">
+                            ユーザー獲得・収益化・成長システム完全実装
+                        </div>
+                        <ul class="phase-achievements">
+                            <li>マーケティング自動化システム</li>
+                            <li>収益化システム（手数料・プレミアム・アフィリエイト）</li>
+                            <li>ビジネスKPI監視・統合ダッシュボード</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- チーム・開発手法 -->
+    <section class="team-section">
+        <div class="container">
+            <h2 class="section-title">👥 開発チーム・手法</h2>
+            
+            <div class="team-philosophy">
+                <h3>革新的AI連携開発手法</h3>
+                <p>
+                    Claude Code & Claude Chat の連携により、従来の開発プロセスを根本から変革。<br>
+                    企画から実装、運用まで一貫したAI支援開発を実現し、<br>
+                    <strong>95%の開発時間短縮と卓越した品質を両立</strong>しました。
+                </p>
+            </div>
+            
+            <div class="innovation-cards">
+                <div class="innovation-card animate-on-scroll">
+                    <div class="innovation-icon">🧠</div>
+                    <h3 class="innovation-title">AI First 開発思想</h3>
+                    <p class="innovation-description">
+                        人間の創造性とAIの効率性を最適に組み合わせ、
+                        従来不可能だった開発速度と品質を実現。
+                    </p>
+                </div>
+                
+                <div class="innovation-card animate-on-scroll">
+                    <div class="innovation-icon">⚡</div>
+                    <h3 class="innovation-title">極限効率化追求</h3>
+                    <p class="innovation-description">
+                        無駄を徹底排除し、価値創造に集中。
+                        3日間で完全な事業プラットフォームを構築。
+                    </p>
+                </div>
+                
+                <div class="innovation-card animate-on-scroll">
+                    <div class="innovation-icon">🎯</div>
+                    <h3 class="innovation-title">ユーザー中心設計</h3>
+                    <p class="innovation-description">
+                        初心者ダイバーの真のニーズを深く理解し、
+                        技術的解決策と感情的共感を両立。
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 将来展望 -->
+    <section class="future-vision">
+        <div class="container">
+            <h2 class="section-title" style="color: white;">🔮 将来展望・成長計画</h2>
+            <p class="section-subtitle" style="color: rgba(255,255,255,0.9);">
+                持続可能な成長と社会価値創造の継続的拡大
+            </p>
+            
+            <div class="vision-grid">
+                <div class="vision-card animate-on-scroll">
+                    <div class="vision-year">2025</div>
+                    <div class="vision-title">基盤拡張・市場確立</div>
+                    <ul class="vision-items">
+                        <li>月間1,000ユーザー獲得</li>
+                        <li>沖縄本島・離島エリア拡張</li>
+                        <li>βテストコミュニティ確立</li>
+                        <li>年間120万円売上達成</li>
+                    </ul>
+                </div>
+                
+                <div class="vision-card animate-on-scroll">
+                    <div class="vision-year">2026</div>
+                    <div class="vision-title">全国展開・機能拡張</div>
+                    <ul class="vision-items">
+                        <li>全国ダイビング市場進出</li>
+                        <li>音声・画像感情分析統合</li>
+                        <li>他マリンスポーツ対応</li>
+                        <li>3D・AR・VR体験統合</li>
+                    </ul>
+                </div>
+                
+                <div class="vision-card animate-on-scroll">
+                    <div class="vision-year">2027+</div>
+                    <div class="vision-title">グローバル展開・業界変革</div>
+                    <ul class="vision-items">
+                        <li>海外ダイビング市場進出</li>
+                        <li>ダイビング業界DX推進</li>
+                        <li>持続可能な海洋観光推進</li>
+                        <li>アウトドア統合プラットフォーム</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA セクション -->
+    <section class="cta-section">
+        <div class="container">
+            <div class="cta-content">
+                <h2 class="cta-title">
+                    Jijiと一緒に<br>
+                    <span style="color: #ffd93d;">ダイビングの未来</span>を創造しませんか？
+                </h2>
+                <p class="cta-subtitle">
+                    革新的なプラットフォームで、あなたの海への第一歩をサポートします
+                </p>
+                
+                <div class="cta-buttons">
+                    <a href="/app" class="btn-cta-primary">
+                        <i class="fas fa-heart"></i> Jijiを体験する
+                    </a>
+                    <a href="/contact" class="btn-cta-secondary">
+                        <i class="fas fa-envelope"></i> お問い合わせ
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- フッター -->
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>🌊 Jiji</h3>
+                    <p>初心者ダイバーの『できない』を『できる』に変える魔法の存在</p>
+                    <p style="margin-top: 15px;">
+                        <strong>AI感情分析 × 79店舗データベース</strong><br>
+                        = 最適なダイビング体験
+                    </p>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>サービス</h3>
+                    <ul>
+                        <li><a href="/app">Web App体験</a></li>
+                        <li><a href="https://line.me/ti/p/@2007331165" target="_blank">LINE Bot相談</a></li>
+                        <li><a href="/pricing">料金プラン</a></li>
+                        <li><a href="/about">サービス詳細</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>ビジネス</h3>
+                    <ul>
+                        <li><a href="/partners">ショップ向け</a></li>
+                        <li><a href="/contact">パートナーシップ</a></li>
+                        <li><a href="/contact">企業連携</a></li>
+                        <li><a href="/contact">メディア掲載</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>サポート</h3>
+                    <ul>
+                        <li><a href="/contact">お問い合わせ</a></li>
+                        <li><a href="/legal">利用規約</a></li>
+                        <li><a href="/legal">プライバシーポリシー</a></li>
+                        <li><a href="/contact">よくある質問</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 Jiji - AI感情分析ダイビングマッチング. All rights reserved.</p>
+                <p style="margin-top: 10px;">
+                    🚀 Phase 5完了 | ✅ 世界初感情分析×事業価値統合プラットフォーム稼働中
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="/js/common.js"></script>
+</body>
+</html>

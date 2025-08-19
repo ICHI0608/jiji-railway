@@ -4,7 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ショップ詳細 | Dive Buddy's</title>
-    <meta name="description" content="ダイビングショップの詳細情報。口コミ・評価・料金・サービス内容・写真ギャラリーで安心選択をサポート。">
+    <meta name="description" content="沖縄で一番あなたに合ったショップをご紹介。透明度抜群の海で、新しい自分に出会う特別なダイビング体験。">
+    
+    <!-- 統一デザインシステム -->
+    <link rel="stylesheet" href="/css/design-system.css">
     
     <style>
         /* リセット & ベースフォント */
@@ -1072,68 +1075,109 @@
         }
 
         // 口コミ・評価表示
-        function renderReviews(shop) {
+        async function renderReviews(shop) {
             const container = document.getElementById('reviewsContainer');
             
-            // 平均評価表示
-            const averageRating = shop.average_ratings?.overall_rating || 0;
-            const totalReviews = shop.average_ratings?.total_reviews || 0;
-            
-            let reviewsHTML = `
-                <div class="reviews-summary">
-                    <div class="overall-rating">${averageRating.toFixed(1)}</div>
-                    <div class="rating-text">総合評価 (${totalReviews}件の口コミ)</div>
-                    <div class="rating-breakdown">
-                        <div class="rating-item">
-                            <div class="rating-label">初心者対応</div>
-                            <div class="rating-score">${(shop.average_ratings?.beginner_friendliness || 0).toFixed(1)}</div>
+            try {
+                // 新しい口コミAPIから統計情報を取得
+                const statsResponse = await fetch(`/api/reviews/stats/${shopId}`);
+                const statsData = await statsResponse.json();
+                
+                let reviewStats = {
+                    total_reviews: 0,
+                    average_rating: 0,
+                    rating_distribution: [0, 0, 0, 0, 0]
+                };
+                
+                if (statsData.success) {
+                    reviewStats = statsData.stats;
+                }
+                
+                // 口コミ投稿ボタンと統計表示
+                let reviewsHTML = `
+                    <div class="reviews-summary">
+                        <div class="overall-rating">${reviewStats.average_rating.toFixed(1)}</div>
+                        <div class="rating-text">総合評価 (${reviewStats.total_reviews}件の口コミ)</div>
+                        <div style="margin-top: 20px;">
+                            <a href="/reviews/submit?shop_id=${shopId}" class="contact-button" style="background: var(--coral-pink); border-color: var(--coral-pink);">
+                                ✏️ 口コミを投稿する
+                            </a>
                         </div>
-                        <div class="rating-item">
-                            <div class="rating-label">安全性</div>
-                            <div class="rating-score">${(shop.average_ratings?.safety_rating || 0).toFixed(1)}</div>
-                        </div>
-                        <div class="rating-item">
-                            <div class="rating-label">インストラクター</div>
-                            <div class="rating-score">${(shop.average_ratings?.instructor_rating || 0).toFixed(1)}</div>
-                        </div>
-                        <div class="rating-item">
-                            <div class="rating-label">設備</div>
-                            <div class="rating-score">${(shop.average_ratings?.equipment_rating || 0).toFixed(1)}</div>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            // 個別口コミ表示
-            if (shop.reviews && shop.reviews.length > 0) {
-                reviewsHTML += `
-                    <div class="reviews-list">
-                        ${shop.reviews.map(review => `
-                            <div class="review-card">
-                                <div class="review-header">
-                                    <div class="review-rating">
-                                        ${generateStars(review.overall_rating)}
-                                    </div>
-                                    <div class="review-date">${formatDate(review.review_date)}</div>
-                                </div>
-                                <div class="review-text">${review.review_text}</div>
-                                <div class="review-helpful">
-                                    👍 ${review.helpful_count || 0}人が参考になったと回答
-                                </div>
-                            </div>
-                        `).join('')}
                     </div>
                 `;
-            } else {
-                reviewsHTML += `
+                
+                // 新しい口コミAPIから口コミ一覧を取得
+                const reviewsResponse = await fetch(`/api/reviews/shop/${shopId}?limit=5&sort=latest`);
+                const reviewsData = await reviewsResponse.json();
+                
+                if (reviewsData.success && reviewsData.reviews.length > 0) {
+                    reviewsHTML += `
+                        <div class="reviews-list">
+                            ${reviewsData.reviews.map(review => `
+                                <div class="review-card">
+                                    <div class="review-header">
+                                        <div class="review-rating">
+                                            ${generateStars(review.rating)}
+                                        </div>
+                                        <div class="review-date">${formatDate(review.created_at)}</div>
+                                    </div>
+                                    ${review.title ? `<div style="font-weight: bold; margin-bottom: 10px; color: var(--deep-navy);">${review.title}</div>` : ''}
+                                    <div class="review-text">${review.content}</div>
+                                    <div style="margin-top: 10px; font-size: 12px; color: #666;">
+                                        <span>👤 ${review.author}</span>
+                                        <span style="margin-left: 15px;">🏊‍♀️ ${review.dive_type}</span>
+                                        <span style="margin-left: 15px;">📈 ${review.dive_level}</span>
+                                        ${review.experience_date ? `<span style="margin-left: 15px;">📅 体験日: ${formatDate(review.experience_date)}</span>` : ''}
+                                    </div>
+                                    ${review.helpful_count > 0 ? `
+                                        <div class="review-helpful">
+                                            👍 ${review.helpful_count}人が参考になったと回答
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                    
+                    // 口コミがもっとある場合の表示
+                    if (reviewStats.total_reviews > 5) {
+                        reviewsHTML += `
+                            <div style="text-align: center; margin-top: 20px;">
+                                <a href="/reviews/shop/${shopId}" class="contact-button" style="background: var(--mint-green); border-color: var(--mint-green);">
+                                    📄 すべての口コミを見る (${reviewStats.total_reviews}件)
+                                </a>
+                            </div>
+                        `;
+                    }
+                } else {
+                    reviewsHTML += `
+                        <div style="text-align: center; padding: 40px; color: #666;">
+                            <p>まだ口コミがありません。<br>
+                            あなたの体験談をお聞かせください！</p>
+                            <div style="margin-top: 20px;">
+                                <a href="/reviews/submit?shop_id=${shopId}" class="contact-button" style="background: var(--coral-pink); border-color: var(--coral-pink);">
+                                    ✏️ 最初の口コミを投稿する
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                container.innerHTML = reviewsHTML;
+                
+            } catch (error) {
+                console.error('口コミデータ取得エラー:', error);
+                container.innerHTML = `
                     <div style="text-align: center; padding: 40px; color: #666;">
-                        <p>まだ口コミがありません。<br>
-                        あなたの体験談をお聞かせください！</p>
+                        <p>口コミデータの読み込みに失敗しました。</p>
+                        <div style="margin-top: 20px;">
+                            <a href="/reviews/submit?shop_id=${shopId}" class="contact-button" style="background: var(--coral-pink); border-color: var(--coral-pink);">
+                                ✏️ 口コミを投稿する
+                            </a>
+                        </div>
                     </div>
                 `;
             }
-            
-            container.innerHTML = reviewsHTML;
         }
 
         // 問い合わせ情報表示

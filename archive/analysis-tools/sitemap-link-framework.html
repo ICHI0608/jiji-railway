@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dive Buddy's サイトマップ - リンク構造フレームワーク</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Hiragino Sans', 'Yu Gothic', sans-serif;
+            background: #f8fafb;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #77C9D4 0%, #A2DED0 100%);
+            color: white;
+            padding: 40px 20px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(119, 201, 212, 0.3);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .control-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            background: #77C9D4;
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .control-btn:hover {
+            background: #66B8C4;
+            transform: translateY(-2px);
+        }
+
+        .control-btn.active {
+            background: #A2DED0;
+            color: #333;
+        }
+
+        .sitemap-container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            overflow-x: auto;
+        }
+
+        .sitemap-tree {
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 14px;
+            line-height: 1.8;
+            white-space: nowrap;
+        }
+
+        .page-node {
+            margin: 5px 0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .page-node:hover {
+            background: #f0f9ff;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-left: -8px;
+        }
+
+        .page-title {
+            font-weight: 700;
+            color: #1f2937;
+            font-size: 16px;
+            margin-bottom: 8px;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 4px;
+        }
+
+        .link-item {
+            color: #6b7280;
+            text-decoration: none;
+            transition: color 0.2s ease;
+            position: relative;
+        }
+
+        .link-item:hover {
+            color: #77C9D4;
+            text-decoration: underline;
+        }
+
+        .link-level-1 {
+            color: #1f2937;
+            font-weight: 600;
+        }
+
+        .link-level-2 {
+            color: #374151;
+            font-weight: 500;
+        }
+
+        .link-level-3 {
+            color: #6b7280;
+            font-weight: 400;
+        }
+
+        .external-link {
+            color: #f59e0b !important;
+        }
+
+        .api-link {
+            color: #8b5cf6 !important;
+        }
+
+        .tree-branch {
+            color: #d1d5db;
+            font-weight: normal;
+        }
+
+        .expandable {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .expandable::before {
+            content: '▶ ';
+            font-size: 12px;
+            margin-right: 5px;
+            transition: transform 0.2s ease;
+        }
+
+        .expandable.expanded::before {
+            transform: rotate(90deg);
+        }
+
+        .collapsed {
+            display: none;
+        }
+
+        .search-box {
+            width: 100%;
+            max-width: 500px;
+            padding: 12px 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 16px;
+            margin: 0 auto 30px;
+            display: block;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: #77C9D4;
+            box-shadow: 0 0 0 3px rgba(119, 201, 212, 0.1);
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #77C9D4;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .page-section {
+            margin-bottom: 40px;
+            background: #fafbfc;
+            border-radius: 10px;
+            padding: 20px;
+            border-left: 4px solid #77C9D4;
+        }
+
+        .highlight {
+            background: #fef3c7 !important;
+            padding: 2px 6px !important;
+            border-radius: 4px !important;
+            animation: highlight-flash 1s ease-in-out;
+        }
+
+        @keyframes highlight-flash {
+            0%, 100% { background: #fef3c7; }
+            50% { background: #fbbf24; }
+        }
+
+        .legend {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .legend-title {
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #1f2937;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+
+        .internal { background: #6b7280; }
+        .external { background: #f59e0b; }
+        .api { background: #8b5cf6; }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .sitemap-container {
+                padding: 20px 15px;
+            }
+            
+            .sitemap-tree {
+                font-size: 12px;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🗺️ Dive Buddy's サイトマップ</h1>
+            <p>実際のリンク構造に基づくインタラクティブなサイトマップ</p>
+        </div>
+
+        <!-- 凡例 -->
+        <div class="legend">
+            <div class="legend-title">🎨 リンクタイプ凡例</div>
+            <div style="display: flex; gap: 30px; flex-wrap: wrap;">
+                <div class="legend-item">
+                    <div class="legend-color internal"></div>
+                    <span>内部ページリンク</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color external"></div>
+                    <span>外部サービス（LINE Bot等）</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color api"></div>
+                    <span>API・データエンドポイント</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 統計情報 -->
+        <div class="stats-bar">
+            <div class="stat-item">
+                <div class="stat-number">47</div>
+                <div class="stat-label">総ページ数</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">15</div>
+                <div class="stat-label">主要セクション</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">120+</div>
+                <div class="stat-label">内部リンク数</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">8</div>
+                <div class="stat-label">外部連携</div>
+            </div>
+        </div>
+
+        <!-- 検索ボックス -->
+        <input type="text" class="search-box" id="searchBox" placeholder="ページやリンクを検索...（例：石垣島、ショップ、会員など）">
+
+        <!-- コントロールボタン -->
+        <div class="controls">
+            <button class="control-btn active" onclick="showAll()">全て表示</button>
+            <button class="control-btn" onclick="showMainPages()">主要ページのみ</button>
+            <button class="control-btn" onclick="showExternalLinks()">外部リンクのみ</button>
+            <button class="control-btn" onclick="collapseAll()">全て折りたたみ</button>
+            <button class="control-btn" onclick="expandAll()">全て展開</button>
+        </div>
+
+        <!-- サイトマップ本体 -->
+        <div class="sitemap-container">
+            <div class="sitemap-tree" id="sitemapTree">
+
+                <!-- メインUIページ -->
+                <div class="page-section">
+                    <div class="page-title">🏠 index_ui_check.html（メインUIページ）</div>
+                    <div class="page-node expandable expanded" data-type="main">
+                        <span class="tree-branch">├── </span><a href="#" class="link-item link-level-1">/（ホーム）</a>
+                    </div>
+                    <div class="page-node expandable expanded" data-type="main">
+                        <span class="tree-branch">├── </span><a href="#" class="link-item link-level-1">/shops-database（ショップDB）</a>
+                        <div style="margin-left: 30px;">
+                            <div class="page-node"><span class="tree-branch">│   ├── </span><a href="#" class="link-item link-level-2">/shops-database/index.html（ショップ検索）</a></div>
+                            <div class="page-node"><span class="tree-branch">│   └── </span><a href="#" class="link-item link-level-2">/shops-database/details.html（ショップ詳細）</a></div>
+                        </div>
+                    </div>
+                    <div class="page-node expandable expanded" data-type="main">
+                        <span class="tree-branch">├── </span><a href="#" class="link-item link-level-1">/travel-guide（旅行ガイド）</a>
+                        <div style="margin-left: 30px;">
+                            <div class="page-node"><span class="tree-branch">│   ├── </span><a href="#" class="link-item link-level-2">/travel-guide/ishigaki（石垣島）</a></div>
+                            <div class="page-node"><span class="tree-branch">│   ├── </span><a href="#" class="link-item link-level-2">/travel-guide/miyako（宮古島）</a></div>
+                            <div class="page-node"><span class="tree-branch">│   ├── </span><a href="#" class="link-item link-level-2">/travel-guide/okinawa（沖縄本島）</a></div>
+                            <div class="page-node"><span class="tree-branch">│   └── </span><a href="#" class="link-item link-level-2">/travel-guide/kerama（慶良間諸島）</a></div>
+                        </div>
+                    </div>
+                    <div class="page-node expandable expanded" data-type="main">
+                        <span class="tree-branch">├── </span><a href="#" class="link-item link-level-1">/member（会員システム）</a>
+                        <div style="margin-left: 30px;">
+                            <div class="page-node"><span class="tree-branch">│   ├── </span><a href="#" class="link-item link-level-2">/member/login（ログイン）</a></div>
+                            <div class="page-node"><span class="tree-branch">│   ├── </span><a href="#" class="link-item link-level-2">/member/profile（プロフィール）</a></div>
+                            <div class="page-node"><span class="tree-branch">│   └── </span><a href="#" class="link-item link-level-2">/member/points（ポイント）</a></div>
+                        </div>
+                    </div>
+                    <div class="page-node"><span class="tree-branch">├── </span><a href="#" class="link-item link-level-1">/weather-ocean（海況・天気）</a></div>
+                    <div class="page-node"><span class="tree-branch">├── </span><a href="#" class="link-item link-level-1">/blog（ブログ）</a></div>
+                    <div class="page-node"><span class="tree-branch">├── </span><a href="#" class="link-item link-level-1">/partners（ショップ向け）</a></div>
+                    <div class="page-node"><span class="tree-branch">├── </span><a href="#" class="link-item link-level-1">/contact（お問い合わせ）</a></div>
+                    <div class="page-node"><span class="tree-branch">└── </span><a href="#" class="link-item external-link">https://line.me/ti/p/@2007331165（LINE Bot）</a></div>
+                </div>
+
+                <!-- 旅行ガイド詳細 -->
+                <div class="page-section">
+                    <div class="page-title">✈️ travel-guide/index.html（旅行ガイドメイン）</div>
+                    <div class="page-node expandable expanded" data-type="travel">
+                        <span class="tree-branch">├── </span><a href="#" class="link-item link-level-1">共通ナビゲーション</a>
+                        <div style="margin-left: 30px;">
+                            <div class="page-node"><span class="tree-branch">│   ├── </span><a href="#" class="link-item link-level-2">/（ホーム）</a></div>
+                            <div class="page-node"><span class="tree-branch">│   ├── </span><a href="#" class="link-item link-level-2">/shops-database（ショップDB）</a></div>
+                            <div class="page-node"><span class="tree-branch">│   ├── </span><a href="#" class="link-item link-level-2">/member（会員システム）</a></div>
+                            <div class="page-node"><span class="tree-branch">│   └── </span><a href="#" class="link-item link-level-2">/weather-ocean（海況・天気）</a></div>
+                        </div>
+                    </div>
+                    <div class="page-node expandable expanded" data-type="travel">
+                        <span class="tree-branch">├── </span><a href="#" class="link-item link-level-1">エリア別ガイド</a>
+                        <div style="margin-left: 30px;">
+                            <div class="page-node"><span class="tree-branch">│   ├── </span><a href="#" class="link-item link-level-2">/travel-guide/ishigaki（石垣島ガイド）</a></div>
+                            <div class="page-node"><span class="tree-branch">│   ├── </span><a href="#" class="link-item link-level-2">/travel-guide/miyako（宮古島ガイド）</a></div>
+                            <div class="page-node"><span class="tree-branch">│   ├── </span><a href="#" class="link-item link-level-2">/travel-guide/okinawa-main（沖縄本島ガイド）</a></div>
+                            <div class="page-node"><span class="tree-branch">│   └── </span><a href="#" class="link-item link-level-2">/travel-guide/other-islands（その他離島）</a></div>
+                        </div>
+                    </div>
+                    <div class="page-node expandable expanded" data-type="travel">
+                        <span class="tree-branch">├── </span><a href="#" class="link-item link-level-1">旅行サポート機能</a>
+                        <div style="margin-left: 30px;">
+                            <div class="page-node"><span class="tree-branch">│   ├── </span><a href="#" class="link-item link-level-2">/travel-guide/flights.html（航空券検索）</a></div>
+                            <div class="page-node"><span class="tree-branch">│   ├── </span><a href="#" class="link-item link-level-2">/travel-guide/accommodation（宿泊情報）</a></div>
+                            <div class="page-node"><span class="tree-branch">│   ├── </span><a href="#" class="link-item link-level-2">/travel-guide/transport.html（交通情報）</a></div>
+                            <div class="page-node"><span class="tree-branch">│   └── </span><a href="#" class="link-item link-level-2">/travel-guide/budget-calculator（旅行費用計算）</a></div>
+                        </div>
+                    </div>
+                    <div class="page-node"><span class="tree-branch">└── </span><a href="#" class="link-item external-link">https://line.me/ti/p/@2007331165（LINE Bot相談）</a></div>
+                </div>
+
+                <!-- ショップデータベース -->
+                <div class="page-section">
+                    <div class="page-title">🏪 shops-database/index.html（ショップデータベース）</div>
+                    <div class="page-node expandable expanded" data-type="shops">
+                        <span class="tree-branch">├── </span><a href="#" class="link-item link-level-1">ショップ機能</a>
+                        <div style="margin-left: 30px;">
+                            <div class="page-node"><span class="tree-branch">│   ├── </span><a href="#" class="link-item link-level-2">/shops-database/shops.html（ショップ検索）</a></div>
+                            <div class="page-node"><span class="tree-branch">│   └── </span><a href="#" class="link-item link-level-2">/shops-database/details.html（ショップ詳細）</a></div>
+                        </div>
+                    </div>
+                    <div class="page-node expandable expanded" data-type="shops">
+                        <span class="tree-branch">├── </span><a href="#" class="link-item link-level-1">口コミ機能</a>
+                        <div style="margin-left: 30px;">
+                            <div class="page-node"><span class="tree-branch">│   ├── </span><a href="#" class="link-item link-level-2">/reviews/submit（口コミ投稿）</a></div>
+                            <div class="page-node"><span class="tree-branch">│   └── </span><a href="#" class="link-item link-level-2">/reviews/shop/[shop_id]（ショップ別口コミ）</a></div>
+                        </div>
+                    </div>
+                    <div class="page-node"><span class="tree-branch">└── </span><a href="#" class="link-item external-link">https://line.me/ti/p/@2007331165（LINE Bot相談）</a></div>
+                </div>
+
+                <!-- 会員システム -->
+                <div class="page-section">
+                    <div class="page-title">👤 member/index.html（会員システム）</div>
+                    <div class="page-node expandable expanded" data-type="member">
+                        <span class="tree-branch">├── </span><a href="#" class="link-item link-level-1">認証・プロフィール</a>
+                        <div style="margin-left: 30px;">
+                            <div class="page-node"><span class="tree-branch">│   ├── </span><a href="#" class="link-item link-level-2">/member/login（ログイン）</a></div>
+                            <div class="page-node"><span class="tree-branch">│   ├── </span><a href="#" class="link-item link-level-2">/member/profile（プロフィール編集）</a></div>
+                            <div class="page-node"><span class="tree-branch">│   └── </span><a href="#" class="link-item api-link">/api/auth/line（LINE認証）</a></div>
+                        </div>
+                    </div>
+                    <div class="page-node expandable expanded" data-type="member">
+                        <span class="tree-branch">├── </span><a href="#" class="link-item link-level-1">会員特典・履歴</a>
+                        <div style="margin-left: 30px;">
+                            <div class="page-node"><span class="tree-branch">│   ├── </span><a href="#" class="link-item link-level-2">/member/points（ポイント管理）</a></div>
+                            <div class="page-node"><span class="tree-branch">│   ├── </span><a href="#" class="link-item link-level-2">/member/favorites（お気に入り）</a></div>
+                            <div class="page-node"><span class="tree-branch">│   └── </span><a href="#" class="link-item link-level-2">/member/history（履歴）</a></div>
+                        </div>
+                    </div>
+                    <div class="page-node"><span class="tree-branch">└── </span><a href="#" class="link-item external-link">https://line.me/ti/p/@2007331165（LINE Bot連携）</a></div>
+                </div>
+
+                <!-- ブログ -->
+                <div class="page-section">
+                    <div class="page-title">📝 blog.html（ブログページ）</div>
+                    <div class="page-node expandable expanded" data-type="blog">
+                        <span class="tree-branch">├── </span><a href="#" class="link-item link-level-1">記事・検索</a>
+                        <div style="margin-left: 30px;">
+                            <div class="page-node"><span class="tree-branch">│   ├── </span><a href="#" class="link-item link-level-2">/blog/article/article_001（マンタポイント記事）</a></div>
+                            <div class="page-node"><span class="tree-branch">│   ├── </span><a href="#" class="link-item link-level-2">/blog/article/ishigaki-shops（石垣島ショップ記事）</a></div>
+                            <div class="page-node"><span class="tree-branch">│   ├── </span><a href="#" class="link-item link-level-2">/blog/article/miyako-diving（宮古島ダイビング記事）</a></div>
+                            <div class="page-node"><span class="tree-branch">│   └── </span><a href="#" class="link-item link-level-2">/blog/search（記事検索）</a></div>
+                        </div>
+                    </div>
+                    <div class="page-node expandable expanded" data-type="blog">
+                        <span class="tree-branch">├── </span><a href="#" class="link-item link-level-1">カテゴリ別記事</a>
+                        <div style="margin-left: 30px;">
+                            <div class="page-node"><span class="tree-branch">│   ├── </span><a href="#" class="link-item link-level-2">/blog?category=diving_spots（ダイビングスポット）</a></div>
+                            <div class="page-node"><span class="tree-branch">│   ├── </span><a href="#" class="link-item link-level-2">/blog?category=equipment（機材）</a></div>
+                            <div class="page-node"><span class="tree-branch">│   └── </span><a href="#" class="link-item link-level-2">/blog?category=beginner_tips（初心者向け）</a></div>
+                        </div>
+                    </div>
+                    <div class="page-node"><span class="tree-branch">└── </span><a href="#" class="link-item external-link">https://line.me/ti/p/@2007331165（LINE Bot相談）</a></div>
+                </div>
+
+                <!-- 海況・天気 -->
+                <div class="page-section">
+                    <div class="page-title">🌊 weather-ocean/index.html（海況・天気）</div>
+                    <div class="page-node expandable expanded" data-type="weather">
+                        <span class="tree-branch">├── </span><a href="#" class="link-item link-level-1">海況情報</a>
+                        <div style="margin-left: 30px;">
+                            <div class="page-node"><span class="tree-branch">│   ├── </span><a href="#" class="link-item link-level-2">/weather-ocean/current（現在の海況）</a></div>
+                            <div class="page-node"><span class="tree-branch">│   ├── </span><a href="#" class="link-item link-level-2">/weather-ocean/forecast（予報）</a></div>
+                            <div class="page-node"><span class="tree-branch">│   └── </span><a href="#" class="link-item link-level-2">/weather-ocean/seasonal（季節情報）</a></div>
+                        </div>
+                    </div>
+                    <div class="page-node expandable expanded" data-type="weather">
+                        <span class="tree-branch">├── </span><a href="#" class="link-item link-level-1">エリア別海況</a>
+                        <div style="margin-left: 30px;">
+                            <div class="page-node"><span class="tree-branch">│   ├── </span><a href="#" class="link-item link-level-2">/weather-ocean/ishigaki（石垣島海況）</a></div>
+                            <div class="page-node"><span class="tree-branch">│   ├── </span><a href="#" class="link-item link-level-2">/weather-ocean/miyako（宮古島海況）</a></div>
+                            <div class="page-node"><span class="tree-branch">│   └── </span><a href="#" class="link-item link-level-2">/weather-ocean/okinawa（沖縄本島海況）</a></div>
+                        </div>
+                    </div>
+                    <div class="page-node"><span class="tree-branch">└── </span><a href="#" class="link-item external-link">https://line.me/ti/p/@2007331165（LINE Bot相談）</a></div>
+                </div>
+
+                <!-- 石垣島詳細ガイド -->
+                <div class="page-section">
+                    <div class="page-title">🏝️ travel-guide/ishigaki.html（石垣島詳細ガイド）</div>
+                    <div class="page-node expandable expanded" data-type="area">
+                        <span class="tree-branch">├── </span><a href="#" class="link-item link-level-1">関連記事・情報</a>
+                        <div style="margin-left: 30px;">
+                            <div class="page-node"><span class="tree-branch">│   ├── </span><a href="#" class="link-item link-level-2">/blog/article/article_001（マンタポイント記事）</a></div>
+                            <div class="page-node"><span class="tree-branch">│   ├── </span><a href="#" class="link-item link-level-2">/blog/article/ishigaki-shops（石垣島ショップ記事）</a></div>
+                            <div class="page-node"><span class="tree-branch">│   └── </span><a href="#" class="link-item link-level-2">/blog?category=diving_spots&tags=石垣島（石垣島関連記事）</a></div>
+                        </div>
+                    </div>
+                    <div class="page-node expandable expanded" data-type="area">
+                        <span class="tree-branch">├── </span><a href="#" class="link-item link-level-1">サービス連携</a>
+                        <div style="margin-left: 30px;">
+                            <div class="page-node"><span class="tree-branch">│   ├── </span><a href="#" class="link-item link-level-2">/shops-database?area=石垣島（石垣島ショップ検索）</a></div>
+                            <div class="page-node"><span class="tree-branch">│   ├── </span><a href="#" class="link-item link-level-2">/weather-ocean?area=石垣島（石垣島海況）</a></div>
+                            <div class="page-node"><span class="tree-branch">│   └── </span><a href="#" class="link-item link-level-2">/travel-guide/flights.html?destination=ishigaki（石垣島航空券）</a></div>
+                        </div>
+                    </div>
+                    <div class="page-node expandable expanded" data-type="area">
+                        <span class="tree-branch">├── </span><a href="#" class="link-item link-level-1">他エリアガイド</a>
+                        <div style="margin-left: 30px;">
+                            <div class="page-node"><span class="tree-branch">│   ├── </span><a href="#" class="link-item link-level-2">/travel-guide/miyako（宮古島）</a></div>
+                            <div class="page-node"><span class="tree-branch">│   └── </span><a href="#" class="link-item link-level-2">/travel-guide/okinawa-main（沖縄本島）</a></div>
+                        </div>
+                    </div>
+                    <div class="page-node"><span class="tree-branch">└── </span><a href="#" class="link-item external-link">https://line.me/ti/p/@2007331165（LINE Bot相談）</a></div>
+                </div>
+
+                <!-- 管理画面 -->
+                <div class="page-section">
+                    <div class="page-title">🎯 admin/dashboard.html（管理画面ダッシュボード）</div>
+                    <div class="page-node expandable expanded" data-type="admin">
+                        <span class="tree-branch">├── </span><a href="#" class="link-item link-level-1">管理機能</a>
+                        <div style="margin-left: 30px;">
+                            <div class="page-node"><span class="tree-branch">│   ├── </span><a href="#" class="link-item link-level-2">/admin/blog-editor.html（記事作成）</a></div>
+                            <div class="page-node"><span class="tree-branch">│   ├── </span><a href="#" class="link-item link-level-2">/admin/blog-list.html（記事管理）</a></div>
+                            <div class="page-node"><span class="tree-branch">│   └── </span><a href="#" class="link-item link-level-2">/admin/analytics.html（分析）</a></div>
+                        </div>
+                    </div>
+                    <div class="page-node expandable expanded" data-type="admin">
+                        <span class="tree-branch">├── </span><a href="#" class="link-item link-level-1">データ管理</a>
+                        <div style="margin-left: 30px;">
+                            <div class="page-node"><span class="tree-branch">│   ├── </span><a href="#" class="link-item link-level-2">/shops-database?view=list（データ一覧）</a></div>
+                            <div class="page-node"><span class="tree-branch">│   └── </span><a href="#" class="link-item link-level-2">/admin/shop-import.html（データ追加）</a></div>
+                        </div>
+                    </div>
+                    <div class="page-node expandable expanded" data-type="admin">
+                        <span class="tree-branch">├── </span><a href="#" class="link-item link-level-1">API・統計</a>
+                        <div style="margin-left: 30px;">
+                            <div class="page-node"><span class="tree-branch">│   ├── </span><a href="#" class="link-item api-link">/api/stats（API統計）</a></div>
+                            <div class="page-node"><span class="tree-branch">│   ├── </span><a href="#" class="link-item api-link">/api/blog/statistics（ブログ統計API）</a></div>
+                            <div class="page-node"><span class="tree-branch">│   └── </span><a href="#" class="link-item api-link">/api/blog/articles（記事API）</a></div>
+                        </div>
+                    </div>
+                    <div class="page-node"><span class="tree-branch">└── </span><a href="#" class="link-item link-level-1">/（サイトへ戻る）</a></div>
+                </div>
+
+                <!-- API・外部連携 -->
+                <div class="page-section">
+                    <div class="page-title">🔗 API・外部連携エンドポイント</div>
+                    <div class="page-node expandable expanded" data-type="api">
+                        <span class="tree-branch">├── </span><a href="#" class="link-item link-level-1">ショップAPI</a>
+                        <div style="margin-left: 30px;">
+                            <div class="page-node"><span class="tree-branch">│   ├── </span><a href="#" class="link-item api-link">/api/shops/[id]（ショップ詳細）</a></div>
+                            <div class="page-node"><span class="tree-branch">│   └── </span><a href="#" class="link-item api-link">/api/shops/search（ショップ検索）</a></div>
+                        </div>
+                    </div>
+                    <div class="page-node expandable expanded" data-type="api">
+                        <span class="tree-branch">├── </span><a href="#" class="link-item link-level-1">口コミAPI</a>
+                        <div style="margin-left: 30px;">
+                            <div class="page-node"><span class="tree-branch">│   ├── </span><a href="#" class="link-item api-link">/api/reviews/shop/[shopId]（ショップ口コミ）</a></div>
+                            <div class="page-node"><span class="tree-branch">│   └── </span><a href="#" class="link-item api-link">/api/reviews/stats/[shopId]（口コミ統計）</a></div>
+                        </div>
+                    </div>
+                    <div class="page-node expandable expanded" data-type="api">
+                        <span class="tree-branch">├── </span><a href="#" class="link-item link-level-1">会員API</a>
+                        <div style="margin-left: 30px;">
+                            <div class="page-node"><span class="tree-branch">│   ├── </span><a href="#" class="link-item api-link">/api/member/profile（会員プロフィール）</a></div>
+                            <div class="page-node"><span class="tree-branch">│   └── </span><a href="#" class="link-item api-link">/api/auth/line（LINE認証）</a></div>
+                        </div>
+                    </div>
+                    <div class="page-node expandable expanded" data-type="api">
+                        <span class="tree-branch">├── </span><a href="#" class="link-item link-level-1">外部連携</a>
+                        <div style="margin-left: 30px;">
+                            <div class="page-node"><span class="tree-branch">│   ├── </span><a href="#" class="link-item external-link">https://line.me/ti/p/@2007331165（LINE Bot）</a></div>
+                            <div class="page-node"><span class="tree-branch">│   └── </span><a href="#" class="link-item external-link">tel:[phone]（電話発信）</a></div>
+                        </div>
+                    </div>
+                    <div class="page-node expandable expanded" data-type="api">
+                        <span class="tree-branch">└── </span><a href="#" class="link-item link-level-1">静的リソース</a>
+                        <div style="margin-left: 30px;">
+                            <div class="page-node"><span class="tree-branch">    ├── </span><a href="#" class="link-item link-level-2">/css/design-system.css（統一デザイン）</a></div>
+                            <div class="page-node"><span class="tree-branch">    └── </span><a href="#" class="link-item link-level-2">/app/v28-styles.css（アプリスタイル）</a></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 検索機能
+        document.getElementById('searchBox').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const allNodes = document.querySelectorAll('.page-node');
+            
+            allNodes.forEach(node => {
+                const text = node.textContent.toLowerCase();
+                if (searchTerm === '' || text.includes(searchTerm)) {
+                    node.style.display = '';
+                    if (searchTerm !== '') {
+                        node.classList.add('highlight');
+                    } else {
+                        node.classList.remove('highlight');
+                    }
+                } else {
+                    node.style.display = 'none';
+                    node.classList.remove('highlight');
+                }
+            });
+        });
+
+        // 展開・折りたたみ機能
+        document.querySelectorAll('.expandable').forEach(element => {
+            element.addEventListener('click', function(e) {
+                e.stopPropagation();
+                this.classList.toggle('expanded');
+                const childNodes = this.parentElement.querySelectorAll(':scope > div > .page-node');
+                childNodes.forEach(child => {
+                    child.classList.toggle('collapsed');
+                });
+            });
+        });
+
+        // コントロール機能
+        function showAll() {
+            document.querySelectorAll('.page-section').forEach(section => {
+                section.style.display = 'block';
+            });
+            updateActiveButton(event.target);
+        }
+
+        function showMainPages() {
+            document.querySelectorAll('.page-section').forEach(section => {
+                const title = section.querySelector('.page-title').textContent;
+                if (title.includes('index_ui_check') || title.includes('travel-guide/index') || title.includes('shops-database/index')) {
+                    section.style.display = 'block';
+                } else {
+                    section.style.display = 'none';
+                }
+            });
+            updateActiveButton(event.target);
+        }
+
+        function showExternalLinks() {
+            document.querySelectorAll('.page-node').forEach(node => {
+                if (node.querySelector('.external-link, .api-link')) {
+                    node.style.display = '';
+                } else {
+                    node.style.display = 'none';
+                }
+            });
+            updateActiveButton(event.target);
+        }
+
+        function collapseAll() {
+            document.querySelectorAll('.expandable').forEach(element => {
+                element.classList.remove('expanded');
+                const childNodes = element.parentElement.querySelectorAll(':scope > div > .page-node');
+                childNodes.forEach(child => {
+                    child.classList.add('collapsed');
+                });
+            });
+        }
+
+        function expandAll() {
+            document.querySelectorAll('.expandable').forEach(element => {
+                element.classList.add('expanded');
+                const childNodes = element.parentElement.querySelectorAll(':scope > div > .page-node');
+                childNodes.forEach(child => {
+                    child.classList.remove('collapsed');
+                });
+            });
+        }
+
+        function updateActiveButton(activeBtn) {
+            document.querySelectorAll('.control-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            activeBtn.classList.add('active');
+        }
+
+        // リンククリック時のアニメーション
+        document.querySelectorAll('.link-item').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                this.style.background = '#77C9D4';
+                this.style.color = 'white';
+                this.style.padding = '2px 6px';
+                this.style.borderRadius = '4px';
+                
+                setTimeout(() => {
+                    this.style.background = '';
+                    this.style.color = '';
+                    this.style.padding = '';
+                    this.style.borderRadius = '';
+                }, 500);
+            });
+        });
+
+        // 初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Dive Buddy\'s サイトマップフレームワーク初期化完了');
+        });
+    </script>
+</body>
+</html>

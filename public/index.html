@@ -4,8 +4,102 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dive Buddy's - 沖縄ダイビングで最高の思い出を💙</title>
-    <meta name="description" content="LINE Bot完結型・Web知識ベース統合システムで最適なダイビングショップをマッチング。口コミ重視で沖縄79店舗から初心者に安心・安全なショップを推薦。石垣島・宮古島での素晴らしいダイビング体験をJijiがサポートします。">
-    <meta name="keywords" content="ダイビング,初心者,沖縄,石垣島,宮古島,LINE Bot,口コミ,ダイビングショップ,マッチング,知識ベース">
+    <meta name="description" content="沖縄ダイビングの総合プラットフォーム。79店舗の詳細情報、リアルタイム海況、旅行プランニング、LINE Bot連携。初心者から上級者まで、最適なダイビング体験をトータルサポート。">
+    <meta name="keywords" content="沖縄ダイビング,ダイビングショップ,海況情報,ダイビング旅行,石垣島,宮古島,慶良間,LINE Bot,ダイビング予約,スキューバダイビング">
+    
+    <!-- 構造化データ - Website -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "Dive Buddy's",
+        "alternateName": "ダイブバディーズ",
+        "url": "https://dive-buddys.com",
+        "description": "沖縄ダイビングの総合プラットフォーム",
+        "potentialAction": {
+            "@type": "SearchAction",
+            "target": "https://dive-buddys.com/shops-database/search?q={search_term_string}",
+            "query-input": "required name=search_term_string"
+        },
+        "publisher": {
+            "@type": "Organization",
+            "name": "Dive Buddy's",
+            "url": "https://dive-buddys.com",
+            "logo": {
+                "@type": "ImageObject",
+                "url": "https://dive-buddys.com/images/logo.png",
+                "width": 300,
+                "height": 300
+            }
+        },
+        "sameAs": [
+            "https://line.me/R/ti/p/@diveBuddys"
+        ]
+    }
+    </script>
+    
+    <!-- 構造化データ - LocalBusiness -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "TravelAgency",
+        "name": "Dive Buddy's",
+        "description": "沖縄ダイビング専門の旅行・体験プラットフォーム",
+        "url": "https://dive-buddys.com",
+        "telephone": "+81-80-0000-0000",
+        "email": "info@dive-buddys.com",
+        "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "那覇市",
+            "addressRegion": "沖縄県",
+            "addressCountry": "JP"
+        },
+        "geo": {
+            "@type": "GeoCoordinates",
+            "latitude": 26.2124,
+            "longitude": 127.6792
+        },
+        "areaServed": [
+            {
+                "@type": "Place",
+                "name": "沖縄本島"
+            },
+            {
+                "@type": "Place", 
+                "name": "石垣島"
+            },
+            {
+                "@type": "Place",
+                "name": "宮古島"
+            }
+        ],
+        "serviceType": [
+            "ダイビングツアー",
+            "ダイビングショップ紹介",
+            "海況情報提供",
+            "旅行プランニング"
+        ]
+    }
+    </script>
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://dive-buddys.com/">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png">
+    <link rel="manifest" href="/favicon/site.webmanifest">
+    
+    <!-- Robots -->
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+    
+    <!-- Language -->
+    <meta name="language" content="ja">
+    
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#667eea">
     
     <!-- OGP設定 -->
     <meta property="og:title" content="Dive Buddy's - あなた専属の沖縄ダイビングバディ">
@@ -23,6 +117,9 @@
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- 統一デザインシステム -->
+    <link rel="stylesheet" href="/css/design-system.css">
     
     <!-- Styles -->
     <link rel="stylesheet" href="/css/common.css">
@@ -439,8 +536,48 @@
             color: #667eea;
         }
         
-        /* レスポンシブ */
-        @media (max-width: 768px) {
+        /* ========== モバイルファースト レスポンシブ ========== */
+        
+        /* スマートフォン（～375px） */
+        @media (max-width: 375px) {
+            .container {
+                padding: 0 16px;
+            }
+            
+            .hero-title {
+                font-size: 2rem;
+                line-height: 1.2;
+            }
+            
+            .hero-subtitle {
+                font-size: 1.1rem;
+            }
+            
+            .hero-stats {
+                grid-template-columns: 1fr 1fr;
+                gap: 16px;
+            }
+            
+            .btn-cta-primary, .btn-cta-secondary {
+                font-size: 1rem;
+                padding: 16px 24px;
+            }
+            
+            .main-nav-menu {
+                font-size: 0.9rem;
+            }
+            
+            .value-card {
+                padding: 20px;
+            }
+            
+            .value-title {
+                font-size: 1.2rem;
+            }
+        }
+        
+        /* スマートフォン（376px～768px） */
+        @media (min-width: 376px) and (max-width: 768px) {
             .hero-title {
                 font-size: 2.5rem;
             }
@@ -490,6 +627,111 @@
             .cta-buttons {
                 flex-direction: column;
                 align-items: center;
+                gap: 16px;
+            }
+        }
+        
+        /* タブレット（769px～1024px） */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .container {
+                max-width: 720px;
+            }
+            
+            .hero-title {
+                font-size: 3.5rem;
+            }
+            
+            .value-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 30px;
+            }
+            
+            .problems-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .testimonials-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .main-nav-menu {
+                gap: 20px;
+            }
+        }
+        
+        /* 大画面タブレット・小型デスクトップ（1025px～1440px） */
+        @media (min-width: 1025px) and (max-width: 1440px) {
+            .container {
+                max-width: 1200px;
+            }
+            
+            .value-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        
+        /* 大型デスクトップ（1441px～） */
+        @media (min-width: 1441px) {
+            .container {
+                max-width: 1400px;
+            }
+            
+            .hero-title {
+                font-size: 5rem;
+            }
+            
+            .hero-subtitle {
+                font-size: 2rem;
+            }
+        }
+        
+        /* ========== タッチデバイス対応 ========== */
+        @media (hover: none) and (pointer: coarse) {
+            .btn-cta-primary, .btn-cta-secondary {
+                min-height: 48px; /* タッチターゲットサイズ */
+                padding: 16px 32px;
+            }
+            
+            .main-nav-menu a {
+                padding: 12px 16px;
+            }
+            
+            .value-card:hover {
+                transform: none; /* ホバー効果無効化 */
+            }
+        }
+        
+        /* ========== ランドスケープ対応 ========== */
+        @media (orientation: landscape) and (max-height: 500px) {
+            .hero-landing {
+                padding: 60px 0;
+            }
+            
+            .hero-title {
+                font-size: 2rem;
+            }
+            
+            .jiji-character {
+                display: none;
+            }
+        }
+        
+        /* ========== アクセシビリティ対応 ========== */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+        
+        /* ========== ダークモード対応 ========== */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --color-base-bg: #1a1a1a;
+                --color-text-main: #ffffff;
+                --color-text-sub: #cccccc;
+                --color-bg-light: #2a2a2a;
             }
         }
     </style>
@@ -508,6 +750,7 @@
                 <li><a href="/about">サービス</a></li>
                 <li><a href="/member">会員システム</a></li>
                 <li><a href="/shops-database">ショップDB</a></li>
+                <li><a href="/diving-creators">クリエイター</a></li>
                 <li><a href="/travel-guide">旅行ガイド</a></li>
                 <li><a href="/weather-ocean">海況・天気</a></li>
                 <li><a href="/partners">ショップ向け</a></li>
@@ -537,7 +780,7 @@
             <div class="hero-content-landing">
                 <h1 class="hero-title">
                     初心者ダイバーの<br>
-                    <span style="color: #ffd93d;">『できない』</span>を<span style="color: #ffd93d;">『できる』</span>に変える<br>
+                    <span class="text-accent">『できない』</span>を<span class="text-accent">『できる』</span>に変える<br>
                     魔法の存在
                 </h1>
                 

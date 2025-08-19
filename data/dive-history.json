@@ -1,0 +1,183 @@
+{
+  "dive_history": [
+    {
+      "id": "dive_001",
+      "user_id": "user_demo_1",
+      "shop_id": "shop_demo_1",
+      "dive_date": "2025-07-15T09:00:00Z",
+      "location": "慶良間諸島",
+      "dive_site": "座間味島 古座間味ビーチ",
+      "depth": 18.5,
+      "duration": 45,
+      "water_temperature": 28,
+      "visibility": 25,
+      "equipment_used": [
+        "ウェットスーツ3mm",
+        "マスク",
+        "フィン",
+        "スノーケル",
+        "BCD",
+        "レギュレーター"
+      ],
+      "buddy": "沖縄花子",
+      "instructor": "ガイド田中",
+      "certification_earned": null,
+      "notes": "初の沖縄ダイビング。透明度が素晴らしく、カクレクマノミを見ることができました。",
+      "rating": 5,
+      "photos": [
+        "/images/dive_photos/dive_001_1.jpg",
+        "/images/dive_photos/dive_001_2.jpg"
+      ],
+      "marine_life": [
+        "カクレクマノミ",
+        "チョウチョウウオ",
+        "スズメダイ",
+        "ヤドカリ"
+      ],
+      "weather_conditions": {
+        "air_temperature": 31,
+        "wind_speed": 3,
+        "wave_height": 1.2,
+        "weather": "晴れ"
+      },
+      "created_at": "2025-07-15T21:00:00Z",
+      "updated_at": "2025-07-15T21:00:00Z"
+    },
+    {
+      "id": "dive_002",
+      "user_id": "user_demo_1",
+      "shop_id": "shop_demo_2",
+      "dive_date": "2025-07-20T10:30:00Z",
+      "location": "青の洞窟",
+      "dive_site": "真栄田岬",
+      "depth": 8.2,
+      "duration": 35,
+      "water_temperature": 29,
+      "visibility": 15,
+      "equipment_used": [
+        "ウェットスーツ3mm",
+        "マスク",
+        "フィン",
+        "スノーケル",
+        "水中ライト"
+      ],
+      "buddy": "石垣次郎",
+      "instructor": "ガイド佐藤",
+      "certification_earned": null,
+      "notes": "青の洞窟の神秘的な光景に感動！水中ライトの青い光が幻想的でした。",
+      "rating": 5,
+      "photos": [
+        "/images/dive_photos/dive_002_1.jpg"
+      ],
+      "marine_life": [
+        "ツバメウオ",
+        "ロクセンスズメダイ",
+        "リュウキュウハタンポ"
+      ],
+      "weather_conditions": {
+        "air_temperature": 32,
+        "wind_speed": 2,
+        "wave_height": 0.8,
+        "weather": "晴れ"
+      },
+      "created_at": "2025-07-20T18:00:00Z",
+      "updated_at": "2025-07-20T18:00:00Z"
+    },
+    {
+      "id": "dive_003",
+      "user_id": "user_demo_2",
+      "shop_id": "shop_demo_3",
+      "dive_date": "2025-07-25T08:00:00Z",
+      "location": "石垣島",
+      "dive_site": "マンタポイント川平石崎",
+      "depth": 22.3,
+      "duration": 50,
+      "water_temperature": 29,
+      "visibility": 30,
+      "equipment_used": [
+        "ウェットスーツ3mm",
+        "マスク",
+        "フィン",
+        "BCD",
+        "レギュレーター",
+        "ダイブコンピューター"
+      ],
+      "buddy": "宮古島花音",
+      "instructor": "ガイド山田",
+      "certification_earned": null,
+      "notes": "憧れのマンタに遭遇！3匹のマンタがクリーニングステーションで悠々と泳ぐ姿は圧巻でした。",
+      "rating": 5,
+      "photos": [
+        "/images/dive_photos/dive_003_1.jpg",
+        "/images/dive_photos/dive_003_2.jpg",
+        "/images/dive_photos/dive_003_3.jpg"
+      ],
+      "marine_life": [
+        "マンタ",
+        "ナポレオンフィッシュ",
+        "バラクーダ",
+        "ウミガメ",
+        "アカククリ"
+      ],
+      "weather_conditions": {
+        "air_temperature": 33,
+        "wind_speed": 4,
+        "wave_height": 1.5,
+        "weather": "晴れ"
+      },
+      "created_at": "2025-07-25T17:30:00Z",
+      "updated_at": "2025-07-25T17:30:00Z"
+    },
+    {
+      "id": "dive_004",
+      "user_id": "user_demo_3",
+      "shop_id": "shop_demo_4",
+      "dive_date": "2025-07-28T11:00:00Z",
+      "location": "宮古島",
+      "dive_site": "通り池",
+      "depth": 35.5,
+      "duration": 60,
+      "water_temperature": 28,
+      "visibility": 40,
+      "equipment_used": [
+        "ウェットスーツ5mm",
+        "マスク",
+        "フィン",
+        "BCD",
+        "レギュレーター",
+        "ダイブコンピューター",
+        "水中ライト",
+        "安全停止用フロート"
+      ],
+      "buddy": "沖縄太郎",
+      "instructor": "ガイド鈴木",
+      "certification_earned": null,
+      "notes": "宮古島の地形ダイビングを堪能。通り池の洞窟内での光のカーテンは神秘的でした。深度管理をしっかり行い、安全にダイビングを楽しめました。",
+      "rating": 5,
+      "photos": [
+        "/images/dive_photos/dive_004_1.jpg",
+        "/images/dive_photos/dive_004_2.jpg"
+      ],
+      "marine_life": [
+        "アカマツカサ",
+        "イセエビ",
+        "ウツボ",
+        "ハナダイ",
+        "クマノミ"
+      ],
+      "weather_conditions": {
+        "air_temperature": 30,
+        "wind_speed": 5,
+        "wave_height": 2.0,
+        "weather": "曇り"
+      },
+      "created_at": "2025-07-28T19:00:00Z",
+      "updated_at": "2025-07-28T19:00:00Z"
+    }
+  ],
+  "stats": {
+    "total_entries": 4,
+    "last_updated": "2025-07-29T10:00:00Z",
+    "active_divers": 3
+  }
+}

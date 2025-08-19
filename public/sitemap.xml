@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <!-- メインページ -->
+    <url>
+        <loc>https://dive-buddys.com/</loc>
+        <lastmod>2024-11-19</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>1.0</priority>
+    </url>
+    
+    <!-- サービス紹介 -->
+    <url>
+        <loc>https://dive-buddys.com/about</loc>
+        <lastmod>2024-11-19</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    
+    <!-- 沖縄ダイビングガイド（新導線v2.0最重要） -->
+    <url>
+        <loc>https://dive-buddys.com/diving-guide/</loc>
+        <lastmod>2024-11-19</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.95</priority>
+    </url>
+    
+    <url>
+        <loc>https://dive-buddys.com/diving-guide/ishigaki</loc>
+        <lastmod>2024-11-19</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.9</priority>
+    </url>
+    
+    <url>
+        <loc>https://dive-buddys.com/diving-guide/miyako</loc>
+        <lastmod>2024-11-19</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.9</priority>
+    </url>
+    
+    <url>
+        <loc>https://dive-buddys.com/diving-guide/okinawa</loc>
+        <lastmod>2024-11-19</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.9</priority>
+    </url>
+    
+    <!-- ショップデータベース -->
+    <url>
+        <loc>https://dive-buddys.com/shops-database</loc>
+        <lastmod>2024-11-19</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>0.9</priority>
+    </url>
+    
+    <url>
+        <loc>https://dive-buddys.com/shops-database/search</loc>
+        <lastmod>2025-07-29</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    
+    <url>
+        <loc>https://dive-buddys.com/shops-database/details.html</loc>
+        <lastmod>2025-07-29</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.7</priority>
+    </url>
+    
+    <!-- 旅行ガイド -->
+    <url>
+        <loc>https://dive-buddys.com/travel-guide</loc>
+        <lastmod>2025-07-29</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    
+    <url>
+        <loc>https://dive-buddys.com/travel-guide/accommodation</loc>
+        <lastmod>2025-07-29</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.7</priority>
+    </url>
+    
+    <url>
+        <loc>https://dive-buddys.com/travel-guide/cost-simulator</loc>
+        <lastmod>2025-07-29</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.7</priority>
+    </url>
+    
+    <!-- 海況・天気 -->
+    <url>
+        <loc>https://dive-buddys.com/weather-ocean</loc>
+        <lastmod>2024-11-19</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>0.85</priority>
+    </url>
+    
+    <url>
+        <loc>https://dive-buddys.com/weather-ocean/details</loc>
+        <lastmod>2024-11-19</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>0.8</priority>
+    </url>
+    
+    <!-- ブログ -->
+    <url>
+        <loc>https://dive-buddys.com/blog</loc>
+        <lastmod>2025-07-29</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>0.8</priority>
+    </url>
+    
+    <url>
+        <loc>https://dive-buddys.com/blog/search</loc>
+        <lastmod>2025-07-29</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+    </url>
+    
+    <!-- 会員システム -->
+    <url>
+        <loc>https://dive-buddys.com/member</loc>
+        <lastmod>2025-07-29</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.7</priority>
+    </url>
+    
+    <url>
+        <loc>https://dive-buddys.com/member/register</loc>
+        <lastmod>2025-07-29</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.6</priority>
+    </url>
+    
+    <url>
+        <loc>https://dive-buddys.com/member/points.html</loc>
+        <lastmod>2025-07-29</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+    </url>
+    
+    <url>
+        <loc>https://dive-buddys.com/member/profile.html</loc>
+        <lastmod>2025-07-29</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.5</priority>
+    </url>
+    
+    <!-- 口コミ -->
+    <url>
+        <loc>https://dive-buddys.com/reviews/submit.html</loc>
+        <lastmod>2025-07-29</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.6</priority>
+    </url>
+    
+    <!-- ショップ向けサービス -->
+    <url>
+        <loc>https://dive-buddys.com/partners</loc>
+        <lastmod>2025-07-29</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.6</priority>
+    </url>
+    
+    <url>
+        <loc>https://dive-buddys.com/shop/login.html</loc>
+        <lastmod>2025-07-29</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.5</priority>
+    </url>
+    
+    <!-- テストページ -->
+    <url>
+        <loc>https://dive-buddys.com/test/integration-test.html</loc>
+        <lastmod>2025-07-29</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.3</priority>
+    </url>
+    
+    <!-- API エンドポイント（重要なもののみ） -->
+    <url>
+        <loc>https://dive-buddys.com/api/health</loc>
+        <lastmod>2025-07-29</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>0.2</priority>
+    </url>
+    
+    <!-- 個別ショップページ（主要ショップのみ） -->
+    <url>
+        <loc>https://dive-buddys.com/shops-database/details.html?id=shop_demo_1</loc>
+        <lastmod>2025-07-29</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    
+    <url>
+        <loc>https://dive-buddys.com/shops-database/details.html?id=shop_demo_2</loc>
+        <lastmod>2025-07-29</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    
+    <url>
+        <loc>https://dive-buddys.com/shops-database/details.html?id=shop_demo_3</loc>
+        <lastmod>2025-07-29</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    
+    <!-- 地域別ページ -->
+    <url>
+        <loc>https://dive-buddys.com/areas/okinawa-main</loc>
+        <lastmod>2025-07-29</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.7</priority>
+    </url>
+    
+    <url>
+        <loc>https://dive-buddys.com/areas/ishigaki</loc>
+        <lastmod>2025-07-29</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.7</priority>
+    </url>
+    
+    <url>
+        <loc>https://dive-buddys.com/areas/miyakojima</loc>
+        <lastmod>2025-07-29</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.7</priority>
+    </url>
+    
+    <url>
+        <loc>https://dive-buddys.com/areas/kerama</loc>
+        <lastmod>2025-07-29</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.7</priority>
+    </url>
+    
+    <!-- その他 -->
+    <url>
+        <loc>https://dive-buddys.com/contact</loc>
+        <lastmod>2025-07-29</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.5</priority>
+    </url>
+    
+    <url>
+        <loc>https://dive-buddys.com/help</loc>
+        <lastmod>2025-07-29</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.4</priority>
+    </url>
+    
+    <url>
+        <loc>https://dive-buddys.com/legal</loc>
+        <lastmod>2025-07-29</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.3</priority>
+    </url>
+    
+    <url>
+        <loc>https://dive-buddys.com/privacy</loc>
+        <lastmod>2025-07-29</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.3</priority>
+    </url>
+    
+    <url>
+        <loc>https://dive-buddys.com/terms</loc>
+        <lastmod>2025-07-29</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.3</priority>
+    </url>
+</urlset>
