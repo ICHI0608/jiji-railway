@@ -724,7 +724,7 @@ async function generateAIResponse(currentMessage, userProfile, conversationHisto
         const systemPrompt = generateSystemPrompt(userProfile, conversationHistory, pastExperiences, divingPlans);
 
         const response = await openai.chat.completions.create({
-            model: "gpt-5",
+            model: "gpt-4o",
             messages: [
                 { role: "system", content: systemPrompt },
                 { role: "user", content: currentMessage }
