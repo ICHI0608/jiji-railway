@@ -729,8 +729,7 @@ async function generateAIResponse(currentMessage, userProfile, conversationHisto
                 { role: "system", content: systemPrompt },
                 { role: "user", content: currentMessage }
             ],
-            max_tokens: 1000,
-            temperature: 0.8,
+            max_completion_tokens: 1000,
             presence_penalty: 0.1,
             frequency_penalty: 0.1
         });
