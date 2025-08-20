@@ -3,8 +3,7 @@ const line = require('@line/bot-sdk');
 const OpenAI = require('openai');
 require('dotenv').config();
 
-// 分割されたモジュールをインポート
-const { generateSystemPrompt, JIJI_PERSONA_CONFIG } = require('./src/jiji-persona');
+// const { generateSystemPrompt, JIJI_PERSONA_CONFIG } = require('./src/jiji-persona');
 
 // ===== アンケートシステム（安全な追加機能） =====
 
@@ -410,8 +409,10 @@ let openaiAvailable = false;
 
 try {
     if (process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY !== 'sk-your_openai_api_key_here') {
+        // APIキーから改行文字を除去
+        const cleanApiKey = process.env.OPENAI_API_KEY.replace(/\r?\n|\r/g, '').trim();
         openai = new OpenAI({
-            apiKey: process.env.OPENAI_API_KEY,
+            apiKey: cleanApiKey,
         });
         openaiAvailable = true;
         console.log('✅ OpenAI利用可能');
